@@ -15,7 +15,7 @@ let userName = localStorage.getItem('reqord-user-name') || '';
 const _adminToken = 'YnVkZA==';
 let isAdmin = false;
 function applyRoleUI() {
-  const adminElements = ['#scanFolderButton', '#refreshFolderButton', '#saveButton', '#resetButton'];
+  const adminElements = ['#scanFolderButton', '#refreshFolderButton', '#saveButton', '#resetButton', '#syncCloudButton'];
   adminElements.forEach(sel => {
     const el = document.querySelector(sel);
     if (el) el.style.display = isAdmin ? '' : 'none';
@@ -69,7 +69,7 @@ function debouncedSync() {
   if (_syncTimer) clearTimeout(_syncTimer);
   _syncTimer = setTimeout(() => { sbSyncAll(); _syncTimer = null; }, 5000);
 }
-function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); debouncedSync(); return items; }
+function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); return items; }
 function loadDraftItems() { try { const current = JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(current) ? current.map(normalizeItem) : []; } catch { return []; } }
 function persistDraft() {
   try {
@@ -371,9 +371,49 @@ document.querySelector('#jsonFileInput').addEventListener('change', async (event
   event.target.value = '';
 });
 
+document.querySelector('#syncCloudButton').addEventListener('click', async () => {
+  if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
+  const user = await sbGetUser();
+  if (!user) {
+    const codeDialog = document.querySelector('#codeDialog');
+    const codeInput = document.querySelector('#codeDialogInput');
+    codeDialog.showModal();
+    let code = await new Promise(resolve => {
+      document.querySelector('#submitCodeDialog').addEventListener('click', () => {
+        const val = codeInput.value.trim();
+        if (val) { codeDialog.close(); resolve(val); }
+      }, { once: true });
+      document.querySelector('#cancelCodeDialog').addEventListener('click', () => {
+        codeDialog.close(); resolve(null);
+      }, { once: true });
+      document.querySelector('#closeCodeDialog').addEventListener('click', () => {
+        codeDialog.close(); resolve(null);
+      }, { once: true });
+    });
+    if (!code) { showToast('Kode wajib diisi'); return; }
+    code = code.trim();
+    const email = code + '@reqord.com';
+    let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
+    if (error) {
+      const res = await supabaseClient.auth.signUp({ email, password: code });
+      if (res.error) { showToast('Auth gagal: ' + res.error.message); console.error('[reqord] auth error:', res.error); return; }
+      showToast('Kode baru terdaftar');
+    } else {
+      showToast('Kode valid');
+    }
+  }
+  try {
+    showToast('Syncing...');
+    await sbSyncAll();
+    await sbLoadItems();
+    showToast('Sync selesai');
+  } catch (e) {
+    showToast('Sync gagal: ' + (e.message || 'unknown'));
+    console.error('[reqord] sync error:', e);
+  }
+});
 document.querySelector('#scanFolderButton').addEventListener('click', async () => {
   if (!window.showDirectoryPicker) { showToast('Browser tidak mendukung folder scan. Gunakan Chrome/Edge.'); return; }
-  // Ask for code (Supabase auth) only if not already logged in
   if (supabaseClient) {
     try {
       const user = await sbGetUser();
