@@ -530,35 +530,39 @@ async function parseWorkbook(file) { if (!window.XLSX) throw new Error('XLSX una
 loadWorkbook = async file => { const result = await parseWorkbook(file); items = result.items; const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const subitemSheet = workbook.SheetNames.find(name => /^subitems$/i.test(name)); if (subitemSheet) XLSX.utils.sheet_to_json(workbook.Sheets[subitemSheet]).forEach(row => { const item = items.find(candidate => String(candidate.id) === String(row.ParentID)) || items.find(candidate => candidate.title === String(row.WorkOrder || '').trim()); if (item && row.Subitem) { item.subitems = Array.isArray(item.subitems) ? item.subitems : []; item.subitems.push({ id: `${item.id}-${row.Order || item.subitems.length}`, title: String(row.Subitem), done: String(row.Done || '').toLowerCase() === 'yes' || String(row.Done || '').toLowerCase() === 'true', order: Number(row.Order) || item.subitems.length }); } }); lastImportReport = result.report; isLoadingWorkbook = true; saveItems(); isLoadingWorkbook = false; render(); };
 function setFormDates() { const el = document.querySelector('#requestDateInput'); if (el) el.value = nowDateTime(); }
 (async () => {
+try {
 console.log('[reqord] init: items =', items.length);
 if (!userName) {
   const nameDialog = document.querySelector('#nameDialog');
   const nameInput = document.querySelector('#nameDialogInput');
-  nameDialog.showModal();
-  userName = await new Promise(resolve => {
-    document.querySelector('#nameDialogSubmit').addEventListener('click', () => {
-      const val = nameInput.value.trim();
-      if (val) { localStorage.setItem('reqord-user-name', val); nameDialog.close(); resolve(val); }
-    }, { once: true });
-  });
+  if (nameDialog) {
+    nameDialog.showModal();
+    userName = await new Promise(resolve => {
+      document.querySelector('#nameDialogSubmit').addEventListener('click', () => {
+        const val = nameInput.value.trim();
+        if (val) { localStorage.setItem('reqord-user-name', val); nameDialog.close(); resolve(val); }
+      }, { once: true });
+    });
+  }
 }
 isAdmin = btoa((userName || '').toLowerCase()) === _adminToken;
 applyRoleUI();
 openDraftDatabase(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
-// Auto-pull from Supabase on load (public read)
 if (supabaseClient) {
   sbLoadItems().then(() => {
     console.log('[reqord] init: loaded from Supabase');
   }).catch(e => {
     console.log('[reqord] init: Supabase load failed, using localStorage', e);
   });
-  // Realtime subscription for live updates
   supabaseClient.channel('work_orders_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'work_orders' }, (payload) => {
       console.log('[reqord] realtime:', payload.eventType, payload.new?.id);
       sbLoadItems();
     })
     .subscribe();
+}
+} catch(e) {
+  console.error('[reqord] init error:', e);
 }
 })();
 
