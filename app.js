@@ -64,7 +64,13 @@ function loadItems() {
     return seedItems.map(normalizeItem);
   }
 }
-function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); if (isAdmin && supabaseClient) { sbSyncAll(); } return items; }
+let _syncTimer = null;
+function debouncedSync() {
+  if (!isAdmin || !supabaseClient) return;
+  if (_syncTimer) clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(() => { sbSyncAll(); _syncTimer = null; }, 5000);
+}
+function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); debouncedSync(); return items; }
 function loadDraftItems() { try { const current = JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(current) ? current.map(normalizeItem) : []; } catch { return []; } }
 function persistDraft() {
   try {
@@ -96,7 +102,7 @@ function loadActivities(workbook) { const activitySheet = workbook.SheetNames.fi
 async function loadActivitiesFromFile(file) { const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const validSheet = workbook.SheetNames.some(name => /request list|ongoing requests|done requests|project list|ongoing projects|done projects|daily tasks|activity|read me/i.test(name)); if (!validSheet) throw new Error('Workbook tidak memiliki sheet reqord yang dikenali'); loadActivities(workbook); }
 async function mergeNotesFromWorkbook(file) { const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const sheets = workbook.SheetNames.filter(name => /request list|ongoing requests|done requests|daily tasks|project list|ongoing projects|done projects/i.test(name)); sheets.forEach(name => XLSX.utils.sheet_to_json(workbook.Sheets[name]).forEach(row => { const title = String(row.Title || row.Task || '').trim(); const requestor = String(row.Requestor || '').trim(); const item = items.find(candidate => candidate.title === title && (!requestor || candidate.requestor === requestor)); if (item) item.note = String(row.Note || row.Catatan || '').trim(); })); render(); }
 function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
-function normalizeItem(item) { return { ...item, id: String(item.id || Date.now()), title: String(item.title || '').trim(), requestor: String(item.requestor || item.owner || '').trim(), subitems: Array.isArray(item.subitems) ? item.subitems.map((subitem, index) => ({ id: subitem.id || `${item.id}-${index}`, title: String(subitem.title || '').trim(), done: Boolean(subitem.done), order: subitem.order ?? index })).filter(subitem => subitem.title) : [], type: item.type === 'daily' || item.status === 'daily' ? 'daily' : 'project', status: normalizeStatus(item.status), priority: normalizePriority(item.priority), requestDate: normalizeDateValue(item.requestDate), date: normalizeDateValue(item.date || item.targetDone), done: Boolean(item.done), completedAt: item.completedAt || '', dailyDoneDate: item.dailyDoneDate || (item.done && item.type === 'daily' ? today() : '') }; }
+function normalizeItem(item) { return { ...item, id: String(item.id || Date.now()), title: String(item.title || '').trim(), requestor: String(item.requestor || item.owner || '').trim(), subitems: Array.isArray(item.subitems) ? item.subitems.map((subitem, index) => ({ id: subitem.id || `${item.id}-${index}`, title: String(subitem.title || '').trim(), done: Boolean(subitem.done), order: subitem.order ?? index })).filter(subitem => subitem.title) : [], type: item.type === 'daily' || item.status === 'daily' ? 'daily' : 'project', status: normalizeStatus(item.status), priority: normalizePriority(item.priority), requestDate: normalizeDateValue(item.requestDate), date: normalizeDateValue(item.date || item.targetDone), done: Boolean(item.done), completedAt: item.completedAt || '', dailyDoneDate: item.dailyDoneDate || (item.done && item.type === 'daily' ? today() : ''), updatedAt: item.updatedAt || '' }; }
 function normalizeStatus(value) { const text = String(value || '').toLowerCase(); if (text.includes('daily')) return 'daily'; if (text.includes('preview') || text.includes('review') || text.includes('waiting')) return 'preview'; if (text.includes('revision') || text.includes('revisi')) return 'revision'; if (text.includes('ongoing') || text.includes('progress') || text.includes('kerja')) return 'ongoing'; if (text.includes('done') || text.includes('selesai') || text.includes('complete')) return 'done'; return 'list'; }
 function normalizePriority(value) { const text = String(value || 'normal').toLowerCase(); return text.includes('high') || text.includes('penting') ? 'high' : text.includes('low') || text.includes('nanti') ? 'low' : 'normal'; }
 function completionDuration(item) { if (!item.completedAt || !item.requestDate) return '—'; const start = new Date(item.requestDate.includes('T') ? item.requestDate : `${item.requestDate}T00:00:00`); const end = new Date(item.completedAt); if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return '—'; const minutes = Math.max(0, Math.round((end - start) / 60000)); return minutes < 60 ? `${minutes} minutes` : `${Math.round((minutes / 60) * 10) / 10} jam`; }
@@ -514,6 +520,13 @@ if (supabaseClient) {
   }).catch(e => {
     console.log('[reqord] init: Supabase load failed, using localStorage', e);
   });
+  // Realtime subscription for live updates
+  supabaseClient.channel('work_orders_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'work_orders' }, (payload) => {
+      console.log('[reqord] realtime:', payload.eventType, payload.new?.id);
+      sbLoadItems();
+    })
+    .subscribe();
 }
 
 // === Supabase Auth & Sync ===
@@ -556,10 +569,19 @@ async function sbLoadItems() {
     .select('*')
     .order('created_at', { ascending: false });
   if (error) { showToast('Load gagal: ' + error.message); console.error('[reqord] sbLoadItems error:', error); return; }
-  items = (data || []).map(sbToItem);
+  const remote = (data || []).map(sbToItem);
+  // Merge: keep newer by updated_at, don't overwrite local changes
+  const byId = new Map(items.map(i => [String(i.id), i]));
+  for (const r of remote) {
+    const local = byId.get(String(r.id));
+    if (!local || (r.updatedAt && local.updatedAt && r.updatedAt > local.updatedAt)) {
+      byId.set(String(r.id), r);
+    }
+  }
+  items = [...byId.values()];
   persistDraft();
   render();
-  console.log('[reqord] sbLoadItems: loaded', items.length, 'items from Supabase');
+  console.log('[reqord] sbLoadItems: merged', remote.length, 'remote items, total', items.length);
 }
 
 function sbToItem(row) {
@@ -577,7 +599,8 @@ function sbToItem(row) {
     completedAt: row.completed_at ? row.completed_at.replace('T', ' ').slice(0, 16) : '',
     dailyDoneDate: row.daily_done_date,
     subitems: row.subitems || [],
-    note: row.note
+    note: row.note,
+    updatedAt: row.updated_at
   });
 }
 
