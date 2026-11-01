@@ -31,6 +31,8 @@ let doneVisibleLimit = 10;
 let openedFileHandle = null;
 let openedFileName = '';
 let hasUnsavedChanges = false;
+let lastSyncTime = null;
+let isLoadingFromCloud = false;
 let activities = [];
 let storageDatabase = null;
 let isLoadingWorkbook = false;
@@ -144,6 +146,26 @@ function renderRow(item) {
 }
 function renderDailyTasks(tasks) { refreshDailyDates(); const dailyItems = items.filter(item => item.type === 'daily'); document.querySelector('#dailyCount').textContent = dailyItems.length; document.querySelector('#dailyProgress').textContent = `${dailyItems.filter(isDailyDone).length} selesai hari ini`; document.querySelector('#dailyTable').innerHTML = tasks.map(renderDailyRow).join(''); document.querySelector('#dailyEmpty').hidden = tasks.length !== 0; makeRowsEditable(); }
 function renderDailyRow(item) { const doneToday = isDailyDone(item); const completeButton = `<button class="action-button complete-action daily-check ${doneToday ? 'daily-done' : ''}" data-row-action="daily-done" data-id="${item.id}" title="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-label="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-pressed="${doneToday}">${doneToday ? '☑' : '☐'}</button>`; const dailyStatus = `<span class="daily-status-label ${doneToday ? 'is-done' : ''}">${doneToday ? 'Selesai' : 'Belum selesai'}<small>${escapeHtml(displayDate(today(), false))}</small></span>`; return `<tr class="${doneToday ? 'daily-row-done' : ''}"><td class="title-cell ${doneToday ? 'daily-title-done' : ''}">${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><select class="status-select status-daily" data-action="status" data-id="${item.id}" aria-label="Status"><option value="daily" selected>Daily task</option><option value="list">Request list</option><option value="ongoing">Ongoing request</option><option value="done">Done request</option></select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority"><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td class="daily-status-cell">${dailyStatus}</td><td class="row-actions">${completeButton}<button class="action-button delete-action" data-row-action="delete" data-id="${item.id}" title="Hapus daily task" aria-label="Hapus daily task">⌫</button></td></tr>`; }
+function updateSyncStatus() {
+  const el = document.querySelector('#saveState');
+  if (!el) return;
+  if (isLoadingFromCloud) {
+    el.textContent = 'Memuat dari cloud...';
+    el.classList.add('syncing');
+    return;
+  }
+  el.classList.remove('syncing');
+  if (!supabaseClient) {
+    el.textContent = 'Offline (localStorage)';
+    return;
+  }
+  if (lastSyncTime) {
+    const mins = Math.round((Date.now() - lastSyncTime.getTime()) / 60000);
+    el.textContent = mins < 1 ? 'Synced baru saja' : `Synced ${mins} menit lalu`;
+  } else {
+    el.textContent = 'Belum sync';
+  }
+}
 function showToast(message) { const toast = document.querySelector('#toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2400); }
 function findItem(id) { return items.find(item => String(item.id) === String(id)); }
 
@@ -565,11 +587,19 @@ async function sbGetUser() {
 
 async function sbLoadItems() {
   if (!supabaseClient) return;
+  isLoadingFromCloud = true;
+  updateSyncStatus();
   const { data, error } = await supabaseClient
     .from('work_orders')
     .select('*')
     .order('created_at', { ascending: false });
-  if (error) { showToast('Load gagal: ' + error.message); console.error('[reqord] sbLoadItems error:', error); return; }
+  if (error) { 
+    showToast('Load gagal: ' + error.message); 
+    console.error('[reqord] sbLoadItems error:', error); 
+    isLoadingFromCloud = false;
+    updateSyncStatus();
+    return; 
+  }
   const remote = (data || []).map(sbToItem);
   // Merge: keep newer by updated_at, don't overwrite local changes
   const byId = new Map(items.map(i => [String(i.id), i]));
@@ -580,8 +610,11 @@ async function sbLoadItems() {
     }
   }
   items = [...byId.values()];
+  lastSyncTime = new Date();
   persistDraft();
   render();
+  isLoadingFromCloud = false;
+  updateSyncStatus();
   console.log('[reqord] sbLoadItems: merged', remote.length, 'remote items, total', items.length);
 }
 
@@ -651,6 +684,8 @@ async function sbSyncAll() {
   for (const item of items) {
     await sbUpsertItem(item);
   }
+  lastSyncTime = new Date();
+  updateSyncStatus();
   console.log('[reqord] sbSyncAll: synced', items.length, 'items');
 }
 
