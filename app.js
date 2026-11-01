@@ -16,7 +16,8 @@ if (!userName) {
   userName = (prompt('Siapa nama Anda?') || '').trim();
   if (userName) localStorage.setItem('reqord-user-name', userName);
 }
-const isAdmin = userName.toLowerCase() === 'budd';
+const _adminToken = 'YnVkZA=='; // base64 of "budd"
+const isAdmin = btoa(userName.toLowerCase()) === _adminToken;
 function applyRoleUI() {
   const adminElements = ['#scanFolderButton', '#refreshFolderButton', '#saveButton', '#resetButton'];
   adminElements.forEach(sel => {
