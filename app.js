@@ -379,23 +379,27 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
   if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
   const user = await sbGetUser();
   if (!user) {
-    const codeDialog = document.querySelector('#codeDialog');
-    const codeInput = document.querySelector('#codeDialogInput');
-    codeDialog.showModal();
-    let code = await new Promise(resolve => {
-      document.querySelector('#submitCodeDialog').addEventListener('click', () => {
-        const val = codeInput.value.trim();
-        if (val) { codeDialog.close(); resolve(val); }
-      }, { once: true });
-      document.querySelector('#cancelCodeDialog').addEventListener('click', () => {
-        codeDialog.close(); resolve(null);
-      }, { once: true });
-      document.querySelector('#closeCodeDialog').addEventListener('click', () => {
-        codeDialog.close(); resolve(null);
-      }, { once: true });
-    });
-    if (!code) { showToast('Kode wajib diisi'); return; }
-    code = code.trim();
+    const storedCode = localStorage.getItem('reqord-access-code');
+    let code = storedCode;
+    if (!code) {
+      const codeDialog = document.querySelector('#codeDialog');
+      const codeInput = document.querySelector('#codeDialogInput');
+      codeDialog.showModal();
+      code = await new Promise(resolve => {
+        document.querySelector('#submitCodeDialog').addEventListener('click', () => {
+          const val = codeInput.value.trim();
+          if (val) { codeDialog.close(); resolve(val); }
+        }, { once: true });
+        document.querySelector('#cancelCodeDialog').addEventListener('click', () => {
+          codeDialog.close(); resolve(null);
+        }, { once: true });
+        document.querySelector('#closeCodeDialog').addEventListener('click', () => {
+          codeDialog.close(); resolve(null);
+        }, { once: true });
+      });
+      if (!code) { showToast('Kode wajib diisi'); return; }
+      code = code.trim();
+    }
     const email = code + '@reqord.com';
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
     if (error) {
@@ -405,6 +409,7 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
     } else {
       showToast('Kode valid');
     }
+    localStorage.setItem('reqord-access-code', code);
   }
   try {
     showToast('Syncing...');
@@ -422,9 +427,28 @@ document.querySelector('#scanFolderButton').addEventListener('click', async () =
     try {
       const user = await sbGetUser();
       if (!user) {
-        let code = prompt('Masukkan kode akses:');
-        if (!code) { showToast('Kode wajib diisi'); return; }
-        code = code.trim();
+        // Try auto-login with stored code
+        const storedCode = localStorage.getItem('reqord-access-code');
+        let code = storedCode;
+        if (!code) {
+          const codeDialog = document.querySelector('#codeDialog');
+          const codeInput = document.querySelector('#codeDialogInput');
+          codeDialog.showModal();
+          code = await new Promise(resolve => {
+            document.querySelector('#submitCodeDialog').addEventListener('click', () => {
+              const val = codeInput.value.trim();
+              if (val) { codeDialog.close(); resolve(val); }
+            }, { once: true });
+            document.querySelector('#cancelCodeDialog').addEventListener('click', () => {
+              codeDialog.close(); resolve(null);
+            }, { once: true });
+            document.querySelector('#closeCodeDialog').addEventListener('click', () => {
+              codeDialog.close(); resolve(null);
+            }, { once: true });
+          });
+          if (!code) { showToast('Kode wajib diisi'); return; }
+          code = code.trim();
+        }
         const email = code + '@reqord.com';
         let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
         if (error) {
@@ -434,6 +458,7 @@ document.querySelector('#scanFolderButton').addEventListener('click', async () =
         } else {
           showToast('Kode valid');
         }
+        localStorage.setItem('reqord-access-code', code);
         await sbLoadItems();
       }
     } catch (e) {
@@ -593,6 +618,12 @@ isAdmin = btoa((userName || '').toLowerCase()) === _adminToken;
 applyRoleUI();
 openDraftDatabase(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
 if (supabaseClient) {
+  // Auto-login with stored code
+  const storedCode = localStorage.getItem('reqord-access-code');
+  if (storedCode) {
+    const email = storedCode + '@reqord.com';
+    try { await supabaseClient.auth.signInWithPassword({ email, password: storedCode }); } catch(e) {}
+  }
   sbLoadItems().then(() => {
     console.log('[reqord] init: loaded from Supabase');
   }).catch(e => {
