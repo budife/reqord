@@ -15,7 +15,7 @@ let userName = localStorage.getItem('reqord-user-name') || '';
 const _adminToken = 'YnVkZA==';
 let isAdmin = false;
 function applyRoleUI() {
-  const adminElements = ['#scanFolderButton', '#refreshFolderButton', '#saveButton', '#resetButton', '#syncCloudButton'];
+  const adminElements = ['#scanFolderButton', '#refreshFolderButton', '#saveButton', '#syncCloudButton'];
   adminElements.forEach(sel => {
     const el = document.querySelector(sel);
     if (el) el.style.display = isAdmin ? '' : 'none';
@@ -315,7 +315,8 @@ document.querySelector('#saveButton').addEventListener('click', () => {
   renderActiveFile();
   showToast(ok ? 'Data disimpan' : 'Gagal simpan');
 });
-document.querySelector('#resetButton').addEventListener('click', async () => {
+const resetBtn = document.querySelector('#resetButton');
+if (resetBtn) resetBtn.addEventListener('click', async () => {
   const ok = await confirmModal('Hapus semua item dan reset draft?', { title: 'Reset?', confirmLabel: 'Reset' });
   if (!ok) return;
   items = [];
@@ -330,7 +331,8 @@ document.querySelector('#resetButton').addEventListener('click', async () => {
   showToast('Draft direset');
 });
 
-document.querySelector('#exportJsonButton').addEventListener('click', () => {
+const exportBtn = document.querySelector('#exportJsonButton');
+if (exportBtn) exportBtn.addEventListener('click', () => {
   if (!items.length) { showToast('Tidak ada data untuk diexport'); return; }
   const data = JSON.stringify({ items, activities, exportedAt: new Date().toISOString() }, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
@@ -343,11 +345,13 @@ document.querySelector('#exportJsonButton').addEventListener('click', () => {
   showToast('JSON diexport');
 });
 
-document.querySelector('#importJsonButton').addEventListener('click', () => {
+const importBtn = document.querySelector('#importJsonButton');
+if (importBtn) importBtn.addEventListener('click', () => {
   document.querySelector('#jsonFileInput').click();
 });
 
-document.querySelector('#jsonFileInput').addEventListener('change', async (event) => {
+const jsonInput = document.querySelector('#jsonFileInput');
+if (jsonInput) jsonInput.addEventListener('change', async (event) => {
   const file = event.target.files[0];
   if (!file) return;
   try {
