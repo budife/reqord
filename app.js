@@ -64,7 +64,7 @@ function loadItems() {
     return seedItems.map(normalizeItem);
   }
 }
-function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); sbSyncAll(); return items; }
+function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); if (isAdmin && supabaseClient) { sbSyncAll(); } return items; }
 function loadDraftItems() { try { const current = JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(current) ? current.map(normalizeItem) : []; } catch { return []; } }
 function persistDraft() {
   try {
@@ -507,17 +507,12 @@ function setFormDates() { const el = document.querySelector('#requestDateInput')
 console.log('[reqord] init: items =', items.length);
 applyRoleUI();
 openDraftDatabase(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
-// Check auth and load from Supabase if logged in
+// Auto-pull from Supabase on load (public read)
 if (supabaseClient) {
-  sbGetUser().then(user => {
-    if (user) {
-      console.log('[reqord] init: user logged in:', user.email);
-      sbLoadItems();
-      updateAuthUI();
-    } else {
-      console.log('[reqord] init: no user, using localStorage');
-      updateAuthUI();
-    }
+  sbLoadItems().then(() => {
+    console.log('[reqord] init: loaded from Supabase');
+  }).catch(e => {
+    console.log('[reqord] init: Supabase load failed, using localStorage', e);
   });
 }
 
@@ -556,12 +551,9 @@ async function sbGetUser() {
 
 async function sbLoadItems() {
   if (!supabaseClient) return;
-  const user = await sbGetUser();
-  if (!user) return;
   const { data, error } = await supabaseClient
     .from('work_orders')
     .select('*')
-    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   if (error) { showToast('Load gagal: ' + error.message); console.error('[reqord] sbLoadItems error:', error); return; }
   items = (data || []).map(sbToItem);
@@ -612,10 +604,10 @@ function itemToSb(item, userId) {
 async function sbUpsertItem(item) {
   if (!supabaseClient) return;
   const user = await sbGetUser();
-  if (!user) return;
+  const userId = user ? user.id : null;
   const { error } = await supabaseClient
     .from('work_orders')
-    .upsert(itemToSb(item, user.id));
+    .upsert(itemToSb(item, userId));
   if (error) { showToast('Sync gagal: ' + error.message); console.error('[reqord] sbUpsertItem error:', error); }
 }
 

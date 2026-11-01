@@ -1,10 +1,10 @@
--- reqord Supabase Schema
+-- reqord Supabase Schema (shared: public read, admin write)
 -- Jalankan di Supabase SQL Editor
 
 -- 1. Tabel work_orders
 CREATE TABLE IF NOT EXISTS work_orders (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   requestor TEXT NOT NULL,
   month TEXT,
@@ -22,8 +22,7 @@ CREATE TABLE IF NOT EXISTS work_orders (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 2. Index untuk query cepat
-CREATE INDEX IF NOT EXISTS idx_work_orders_user_id ON work_orders(user_id);
+-- 2. Index
 CREATE INDEX IF NOT EXISTS idx_work_orders_status ON work_orders(status);
 CREATE INDEX IF NOT EXISTS idx_work_orders_month ON work_orders(month);
 
@@ -36,33 +35,40 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS work_orders_updated_at ON work_orders;
 CREATE TRIGGER work_orders_updated_at
   BEFORE UPDATE ON work_orders
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
 
--- 4. RLS (Row Level Security)
+-- 4. RLS (shared: public read, authenticated write)
 ALTER TABLE work_orders ENABLE ROW LEVEL SECURITY;
 
--- Policy: user hanya bisa CRUD data miliknya
-CREATE POLICY "Users can view own work_orders"
+-- Drop old per-user policies
+DROP POLICY IF EXISTS "Users can view own work_orders" ON work_orders;
+DROP POLICY IF EXISTS "Users can insert own work_orders" ON work_orders;
+DROP POLICY IF EXISTS "Users can update own work_orders" ON work_orders;
+DROP POLICY IF EXISTS "Users can delete own work_orders" ON work_orders;
+
+-- New shared policies
+CREATE POLICY "Public can view all work_orders"
   ON work_orders FOR SELECT
-  USING (auth.uid() = user_id);
+  USING (true);
 
-CREATE POLICY "Users can insert own work_orders"
+CREATE POLICY "Authenticated can insert work_orders"
   ON work_orders FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (auth.uid() IS NOT NULL);
 
-CREATE POLICY "Users can update own work_orders"
+CREATE POLICY "Authenticated can update work_orders"
   ON work_orders FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (auth.uid() IS NOT NULL)
+  WITH CHECK (auth.uid() IS NOT NULL);
 
-CREATE POLICY "Users can delete own work_orders"
+CREATE POLICY "Authenticated can delete work_orders"
   ON work_orders FOR DELETE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() IS NOT NULL);
 
--- 5. Enable Realtime (optional, skip if already added)
+-- 5. Enable Realtime
 DO $$ BEGIN
   ALTER PUBLICATION supabase_realtime ADD TABLE work_orders;
 EXCEPTION WHEN duplicate_object THEN NULL;
