@@ -12,12 +12,8 @@ const seedItems = [
   { id: 4, title: 'Kirim invoice project September', requestor: 'Saya', type: 'project', status: 'done', priority: 'low', requestDate: '', date: '' }
 ];
 let userName = localStorage.getItem('reqord-user-name') || '';
-if (!userName) {
-  userName = (prompt('Siapa nama Anda?') || '').trim();
-  if (userName) localStorage.setItem('reqord-user-name', userName);
-}
-const _adminToken = 'YnVkZA=='; // base64 of "budd"
-const isAdmin = btoa(userName.toLowerCase()) === _adminToken;
+const _adminToken = 'YnVkZA==';
+let isAdmin = false;
 function applyRoleUI() {
   const adminElements = ['#scanFolderButton', '#refreshFolderButton', '#saveButton', '#resetButton'];
   adminElements.forEach(sel => {
@@ -533,7 +529,20 @@ if (originalWriteFile) window.XLSX.writeFile = async workbook => { try { addActi
 async function parseWorkbook(file) { if (!window.XLSX) throw new Error('XLSX unavailable'); const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const requestSheets = workbook.SheetNames.filter(name => /request list|ongoing requests|done requests|project list|ongoing projects|done projects/i.test(name)); const dailySheet = workbook.SheetNames.find(name => /daily tasks/i.test(name)); const recognized = requestSheets.length > 0 || Boolean(dailySheet) || workbook.SheetNames.some(name => /^activity$|^read me$/i.test(name)); if (!recognized) throw new Error('Workbook tidak memiliki sheet reqord yang dikenali'); const report = { loaded: 0, skippedEmpty: 0, skippedInvalid: 0 }; const imported = []; requestSheets.forEach(sheetName => XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]).forEach((row, index) => { const title = String(row.Title || row.title || row.Name || '').trim(); if (!title) { report.skippedEmpty += 1; return; } const requestDate = normalizeDateValue(row.RequestDate || row.requestDate) || today(); const sheetStatus = /ongoing/i.test(sheetName) ? 'ongoing' : /done/i.test(sheetName) ? 'done' : 'list'; imported.push(normalizeItem({ id: Date.now() + imported.length + index, title, requestor: row.Requestor || row.requestor || row.Owner || row.owner, type: 'project', status: row.Status ? normalizeStatus(row.Status) : sheetStatus, priority: normalizePriority(row.Priority), requestDate, date: normalizeDateValue(row.TargetDone || row.targetDone || row.Deadline || row.deadline) || dateAfterDays(3, requestDate) })); report.loaded += 1; })); if (dailySheet) XLSX.utils.sheet_to_json(workbook.Sheets[dailySheet]).forEach((row, index) => { const title = String(row.Task || row.Title || '').trim(); if (!title) { report.skippedEmpty += 1; return; } imported.push(normalizeItem({ id: Date.now() + imported.length + index, title, requestor: row.Requestor, type: 'daily', status: 'daily', priority: normalizePriority(row.Priority), requestDate: today(), date: today(), done: String(row.Done || '').toLowerCase() === 'yes' || String(row.Done || '').toLowerCase() === 'true' })); report.loaded += 1; }); return { items: imported, report }; }
 loadWorkbook = async file => { const result = await parseWorkbook(file); items = result.items; const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const subitemSheet = workbook.SheetNames.find(name => /^subitems$/i.test(name)); if (subitemSheet) XLSX.utils.sheet_to_json(workbook.Sheets[subitemSheet]).forEach(row => { const item = items.find(candidate => String(candidate.id) === String(row.ParentID)) || items.find(candidate => candidate.title === String(row.WorkOrder || '').trim()); if (item && row.Subitem) { item.subitems = Array.isArray(item.subitems) ? item.subitems : []; item.subitems.push({ id: `${item.id}-${row.Order || item.subitems.length}`, title: String(row.Subitem), done: String(row.Done || '').toLowerCase() === 'yes' || String(row.Done || '').toLowerCase() === 'true', order: Number(row.Order) || item.subitems.length }); } }); lastImportReport = result.report; isLoadingWorkbook = true; saveItems(); isLoadingWorkbook = false; render(); };
 function setFormDates() { const el = document.querySelector('#requestDateInput'); if (el) el.value = nowDateTime(); }
+(async () => {
 console.log('[reqord] init: items =', items.length);
+if (!userName) {
+  const nameDialog = document.querySelector('#nameDialog');
+  const nameInput = document.querySelector('#nameDialogInput');
+  nameDialog.showModal();
+  userName = await new Promise(resolve => {
+    document.querySelector('#nameDialogSubmit').addEventListener('click', () => {
+      const val = nameInput.value.trim();
+      if (val) { localStorage.setItem('reqord-user-name', val); nameDialog.close(); resolve(val); }
+    }, { once: true });
+  });
+}
+isAdmin = btoa((userName || '').toLowerCase()) === _adminToken;
 applyRoleUI();
 openDraftDatabase(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
 // Auto-pull from Supabase on load (public read)
@@ -551,6 +560,7 @@ if (supabaseClient) {
     })
     .subscribe();
 }
+})();
 
 // === Supabase Auth & Sync ===
 async function sbSignUp(email, password) {
