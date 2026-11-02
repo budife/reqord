@@ -12,7 +12,7 @@ const seedItems = [
   { id: 4, title: 'Kirim invoice project September', requestor: 'Saya', type: 'project', status: 'done', priority: 'low', requestDate: '', date: '' }
 ];
 let userName = '';
-try { const stored = localStorage.getItem('reqord-user-name'); if (stored) userName = atob(stored); } catch(e) {}
+try { const stored = localStorage.getItem('reqord-username'); if (stored) userName = atob(stored); } catch(e) {}
 const _adminToken = 'YnVkZA==';
 let isAdmin = false;
 function applyRoleUI() {
@@ -379,7 +379,7 @@ if (jsonInput) jsonInput.addEventListener('change', async (event) => {
 document.querySelector('#syncCloudButton').addEventListener('click', async () => {
   if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
   // Require login
-  if (!localStorage.getItem('reqord-access-code') || !localStorage.getItem('reqord-user-name')) {
+  if (!localStorage.getItem('reqord-access-code') || !localStorage.getItem('reqord-username')) {
     const dialog = document.querySelector('#loginDialog');
     if (dialog) dialog.showModal();
     return;
@@ -443,7 +443,7 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
 document.querySelector('#scanFolderButton').addEventListener('click', async () => {
   if (!window.showDirectoryPicker) { showToast('Browser tidak mendukung folder scan. Gunakan Chrome/Edge.'); return; }
   // Require login
-  if (!localStorage.getItem('reqord-access-code') || !localStorage.getItem('reqord-user-name')) {
+  if (!localStorage.getItem('reqord-access-code') || !localStorage.getItem('reqord-username')) {
     const dialog = document.querySelector('#loginDialog');
     if (dialog) dialog.showModal();
     return;
@@ -626,14 +626,15 @@ async function scanFolderHandle(root) {
 const logoutBtn = document.querySelector('#logoutBtn');
 if (logoutBtn) {
   logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('reqord-user-name');
+    localStorage.removeItem('reqord-username');
     localStorage.removeItem('reqord-access-code');
+    localStorage.removeItem('reqord-is-admin');
     localStorage.removeItem('reqord-session');
     if (supabaseClient) supabaseClient.auth.signOut();
     window.location.reload();
   });
 }
-window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
+// Login modal handler
 const loginLink = document.querySelector('#loginLink');
 if (loginLink) {
   loginLink.addEventListener('click', (e) => {
@@ -657,60 +658,140 @@ if (cancelLoginDialog) {
 const submitLoginDialog = document.querySelector('#submitLoginDialog');
 if (submitLoginDialog) {
   submitLoginDialog.addEventListener('click', async () => {
-    const name = document.querySelector('#loginNameInput').value.trim();
-    const code = document.querySelector('#loginCodeInput').value.trim();
-    if (!name) { showToast('Nama wajib diisi'); return; }
-    if (!code) { showToast('Kode wajib diisi'); return; }
+    const username = document.querySelector('#loginNameInput').value.trim();
+    const password = document.querySelector('#loginCodeInput').value.trim();
+    if (!username) { showToast('Username wajib diisi'); return; }
+    if (!password) { showToast('Password wajib diisi'); return; }
     if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
-    const email = code + '@reqord.com';
-    let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
+    const email = username + '@reqord.com';
+    let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) {
-      const res = await supabaseClient.auth.signUp({ email, password: code });
-      if (res.error) {
-        if (res.error.message.includes('rate limit') || res.error.message.includes('after') || res.error.message.includes('security')) {
-          showToast('Terlalu banyak percobaan. Tunggu 1 menit.');
-        } else {
-          showToast('Auth gagal: ' + res.error.message);
-        }
-        return;
-      }
+      showToast('Login gagal: ' + (error.message || 'username/password salah'));
+      return;
     }
-    localStorage.setItem('reqord-user-name', btoa(name.toLowerCase()));
-    localStorage.setItem('reqord-access-code', btoa(code));
+    localStorage.setItem('reqord-username', btoa(username.toLowerCase()));
+    localStorage.setItem('reqord-access-code', btoa(password));
+    const user = data.user;
+    const isAdminUser = user?.user_metadata?.role === 'admin';
+    localStorage.setItem('reqord-is-admin', isAdminUser ? '1' : '0');
     document.querySelector('#loginDialog').close();
     window.location.reload();
   });
 }
-function normalizeWorkbookDateCells(workbook) { const dataSheets = workbook.SheetNames.filter(name => !/^activity$|^read me$|^subitems$/i.test(name)); dataSheets.forEach(name => { const sheet = workbook.Sheets[name]; const rows = XLSX.utils.sheet_to_json(sheet); if (rows.length) { const enriched = rows.map(row => { const title = String(row.Title || row.Task || '').trim(); const requestor = String(row.Requestor || '').trim(); const item = items.find(candidate => candidate.title === title && (!requestor || candidate.requestor === requestor)); return { ...row, Note: item?.note || row.Note || '' }; }); workbook.Sheets[name] = XLSX.utils.json_to_sheet(enriched); } }); const subitemRows = items.flatMap(item => (item.subitems || []).map((subitem, index) => ({ ParentID: item.id, WorkOrder: item.title, Subitem: subitem.title, Done: subitem.done ? 'Yes' : 'No', Order: subitem.order ?? index }))); const subitemSheet = XLSX.utils.json_to_sheet(subitemRows, { header: ['ParentID', 'WorkOrder', 'Subitem', 'Done', 'Order'] }); subitemSheet['!autofilter'] = { ref: `A1:E${Math.max(subitemRows.length + 1, 1)}` }; subitemSheet['!cols'] = [{ wch: 18 }, { wch: 48 }, { wch: 48 }, { wch: 10 }, { wch: 10 }]; if (workbook.SheetNames.includes('Subitems')) workbook.Sheets.Subitems = subitemSheet; else XLSX.utils.book_append_sheet(workbook, subitemSheet, 'Subitems'); workbook.SheetNames.forEach(name => { const sheet = workbook.Sheets[name]; Object.keys(sheet).forEach(address => { if (address[0] === '!') return; const cell = sheet[address]; if (typeof cell.v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(cell.v)) cell.v = cell.v.replace('T', ' '); }); }); }
-function addActivitySheet(workbook) { addActivity('Workbook disimpan', {}, openedFileName || 'Buat satu sekarang aja'); removeDefaultSheets(workbook); const rows = activities.map(activity => ({ Date: activity.date, Action: activity.action, Title: activity.title, Requestor: activity.requestor, Details: activity.details || '' })); const sheet = XLSX.utils.json_to_sheet(rows, { header: ['Date', 'Action', 'Title', 'Requestor', 'Details'] }); sheet['!autofilter'] = { ref: `A1:E${Math.max(rows.length + 1, 1)}` }; sheet['!cols'] = [{ wch: 20 }, { wch: 32 }, { wch: 48 }, { wch: 22 }, { wch: 48 }]; if (workbook.SheetNames.includes('Activity')) workbook.Sheets.Activity = sheet; else XLSX.utils.book_append_sheet(workbook, sheet, 'Activity'); normalizeWorkbookDateCells(workbook); }
-function removeDefaultSheets(workbook) { workbook.SheetNames = workbook.SheetNames.filter(name => !/^(sheet\s*1|sheet\s*2|sheet\s*3)$/i.test(name.trim())); getWorkbookBytes(workbook); }
-const originalWriteFile = window.XLSX?.writeFile;
-function getWorkbookBytes(workbook) { const bytes = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' }); if (!bytes || !bytes.byteLength) throw new Error('Workbook kosong atau gagal dibuat'); return bytes; }
-function downloadWorkbook(workbook, filename) { const bytes = getWorkbookBytes(workbook); const url = URL.createObjectURL(new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })); const link = document.createElement('a'); link.href = url; link.download = filename; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
-async function ensureWritePermission() { if (!openedFileHandle) return false; if (openedFileHandle.queryPermission && await openedFileHandle.queryPermission({ mode: 'readwrite' }) === 'granted') return true; if (openedFileHandle.requestPermission) return await openedFileHandle.requestPermission({ mode: 'readwrite' }) === 'granted'; return true; }
-async function writeWorkbookToHandle(workbook, handle) { const bytes = getWorkbookBytes(workbook); const writable = await handle.createWritable(); try { await writable.write(bytes); await writable.close(); return bytes.byteLength; } catch (error) { try { await writable.abort(); } catch {} throw error; } }
-if (originalWriteFile) window.XLSX.writeFile = async workbook => { try { addActivitySheet(workbook); const filename = saveAsRequested ? 'reqord-work-orders.xlsx' : (openedFileName || 'reqord-work-orders.xlsx'); if (saveAsRequested) { if (window.showSaveFilePicker) { openedFileHandle = await window.showSaveFilePicker({ suggestedName: filename, types: [{ description: 'Excel workbook', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }] }); openedFileName = openedFileHandle.name; await ensureWritePermission(); await writeWorkbookToHandle(workbook, openedFileHandle); } else downloadWorkbook(workbook, filename); } else if (openedFileHandle && await ensureWritePermission()) { await writeWorkbookToHandle(workbook, openedFileHandle); } else if (window.showSaveFilePicker) { openedFileHandle = await window.showSaveFilePicker({ suggestedName: filename, types: [{ description: 'Excel workbook', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }] }); openedFileName = openedFileHandle.name; await writeWorkbookToHandle(workbook, openedFileHandle); } else { openedFileName = filename; downloadWorkbook(workbook, openedFileName); } hasUnsavedChanges = false; persistDraft(); renderActiveFile(); showToast(`${openedFileName} berhasil disimpan`); } catch (error) { if (error.name === 'AbortError') return; showToast(`Save gagal: ${error.message || 'browser menolak akses file'}`); } finally { isSaving = false; const saveButton = document.querySelector('#exportButton'); if (saveButton) saveButton.disabled = false; renderActiveFile(); } };
-async function parseWorkbook(file) { if (!window.XLSX) throw new Error('XLSX unavailable'); const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const requestSheets = workbook.SheetNames.filter(name => /request list|ongoing requests|done requests|project list|ongoing projects|done projects/i.test(name)); const dailySheet = workbook.SheetNames.find(name => /daily tasks/i.test(name)); const recognized = requestSheets.length > 0 || Boolean(dailySheet) || workbook.SheetNames.some(name => /^activity$|^read me$/i.test(name)); if (!recognized) throw new Error('Workbook tidak memiliki sheet reqord yang dikenali'); const report = { loaded: 0, skippedEmpty: 0, skippedInvalid: 0 }; const imported = []; requestSheets.forEach(sheetName => XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]).forEach((row, index) => { const title = String(row.Title || row.title || row.Name || '').trim(); if (!title) { report.skippedEmpty += 1; return; } const requestDate = normalizeDateValue(row.RequestDate || row.requestDate) || today(); const sheetStatus = /ongoing/i.test(sheetName) ? 'ongoing' : /done/i.test(sheetName) ? 'done' : 'list'; imported.push(normalizeItem({ id: Date.now() + imported.length + index, title, requestor: row.Requestor || row.requestor || row.Owner || row.owner, type: 'project', status: row.Status ? normalizeStatus(row.Status) : sheetStatus, priority: normalizePriority(row.Priority), requestDate, date: normalizeDateValue(row.TargetDone || row.targetDone || row.Deadline || row.deadline) || dateAfterDays(3, requestDate) })); report.loaded += 1; })); if (dailySheet) XLSX.utils.sheet_to_json(workbook.Sheets[dailySheet]).forEach((row, index) => { const title = String(row.Task || row.Title || '').trim(); if (!title) { report.skippedEmpty += 1; return; } imported.push(normalizeItem({ id: Date.now() + imported.length + index, title, requestor: row.Requestor, type: 'daily', status: 'daily', priority: normalizePriority(row.Priority), requestDate: today(), date: today(), done: String(row.Done || '').toLowerCase() === 'yes' || String(row.Done || '').toLowerCase() === 'true' })); report.loaded += 1; }); return { items: imported, report }; }
-loadWorkbook = async file => { const result = await parseWorkbook(file); items = result.items; const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const subitemSheet = workbook.SheetNames.find(name => /^subitems$/i.test(name)); if (subitemSheet) XLSX.utils.sheet_to_json(workbook.Sheets[subitemSheet]).forEach(row => { const item = items.find(candidate => String(candidate.id) === String(row.ParentID)) || items.find(candidate => candidate.title === String(row.WorkOrder || '').trim()); if (item && row.Subitem) { item.subitems = Array.isArray(item.subitems) ? item.subitems : []; item.subitems.push({ id: `${item.id}-${row.Order || item.subitems.length}`, title: String(row.Subitem), done: String(row.Done || '').toLowerCase() === 'yes' || String(row.Done || '').toLowerCase() === 'true', order: Number(row.Order) || item.subitems.length }); } }); lastImportReport = result.report; isLoadingWorkbook = true; saveItems(); isLoadingWorkbook = false; render(); };
-function setFormDates() { const el = document.querySelector('#requestDateInput'); if (el) el.value = nowDateTime(); }
-(async () => {
-try {
-console.log('[reqord] init: items =', items.length);
-// No name dialog anymore - name is set via login page
-isAdmin = btoa((userName || '').toLowerCase()) === _adminToken && !!localStorage.getItem('reqord-access-code');
-applyRoleUI();
-// Update login/logout UI
-const loginLink = document.querySelector('#loginLink');
-const logoutBtn = document.querySelector('#logoutBtn');
+// Register modal handler
+const showRegisterLink = document.querySelector('#showRegisterLink');
+if (showRegisterLink) {
+  showRegisterLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelector('#loginDialog').close();
+    document.querySelector('#registerDialog').showModal();
+  });
+}
+const showLoginLink = document.querySelector('#showLoginLink');
+if (showLoginLink) {
+  showLoginLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelector('#registerDialog').close();
+    document.querySelector('#loginDialog').showModal();
+  });
+}
+const closeRegisterDialog = document.querySelector('#closeRegisterDialog');
+if (closeRegisterDialog) {
+  closeRegisterDialog.addEventListener('click', () => {
+    document.querySelector('#registerDialog').close();
+  });
+}
+const cancelRegisterDialog = document.querySelector('#cancelRegisterDialog');
+if (cancelRegisterDialog) {
+  cancelRegisterDialog.addEventListener('click', () => {
+    document.querySelector('#registerDialog').close();
+  });
+}
+const submitRegisterDialog = document.querySelector('#submitRegisterDialog');
+if (submitRegisterDialog) {
+  submitRegisterDialog.addEventListener('click', async () => {
+    const username = document.querySelector('#registerNameInput').value.trim();
+    const password = document.querySelector('#registerPassInput').value.trim();
+    const invite = document.querySelector('#registerInviteInput').value.trim();
+    if (!username) { showToast('Username wajib diisi'); return; }
+    if (!password || password.length < 4) { showToast('Password minimal 4 karakter'); return; }
+    if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
+    const email = username + '@reqord.com';
+    const isAdminUser = invite === 'budd-reqord';
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: { data: { role: isAdminUser ? 'admin' : 'viewer', username } }
+    });
+    if (error) {
+      if (error.message.includes('rate limit') || error.message.includes('after') || error.message.includes('security')) {
+        showToast('Terlalu banyak percobaan. Tunggu 1 menit.');
+      } else {
+        showToast('Register gagal: ' + error.message);
+      }
+      return;
+    }
+    localStorage.setItem('reqord-username', btoa(username.toLowerCase()));
+    localStorage.setItem('reqord-access-code', btoa(password));
+    localStorage.setItem('reqord-is-admin', isAdminUser ? '1' : '0');
+    document.querySelector('#registerDialog').close();
+    showToast(isAdminUser ? 'Admin terdaftar!' : 'Akun terdaftar!');
+    window.location.reload();
+  });
+}
+// Change password modal handler
+const closeChangePassDialog = document.querySelector('#closeChangePassDialog');
+if (closeChangePassDialog) {
+  closeChangePassDialog.addEventListener('click', () => {
+    document.querySelector('#changePassDialog').close();
+  });
+}
+const cancelChangePassDialog = document.querySelector('#cancelChangePassDialog');
+if (cancelChangePassDialog) {
+  cancelChangePassDialog.addEventListener('click', () => {
+    document.querySelector('#changePassDialog').close();
+  });
+}
+const submitChangePassDialog = document.querySelector('#submitChangePassDialog');
+if (submitChangePassDialog) {
+  submitChangePassDialog.addEventListener('click', async () => {
+    const newPass = document.querySelector('#newPassInput').value.trim();
+    const confirmPass = document.querySelector('#confirmPassInput').value.trim();
+    if (!newPass || newPass.length < 4) { showToast('Password minimal 4 karakter'); return; }
+    if (newPass !== confirmPass) { showToast('Password tidak cocok'); return; }
+    if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
+    const { error } = await supabaseClient.auth.updateUser({ password: newPass });
+    if (error) {
+      showToast('Gagal ubah password: ' + error.message);
+      return;
+    }
+    localStorage.setItem('reqord-access-code', btoa(newPass));
+    document.querySelector('#changePassDialog').close();
+    showToast('Password berhasil diubah');
+  });
+}
+const changePassBtn = document.querySelector('#changePassBtn');
+if (changePassBtn) {
+  changePassBtn.addEventListener('click', () => {
+    document.querySelector('#changePassDialog').showModal();
+  });
+}
+window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
+const _loginLink = document.querySelector('#loginLink');
+const _logoutBtn = document.querySelector('#logoutBtn');
 const userStatus = document.querySelector('#userStatus');
 const hasCode = !!localStorage.getItem('reqord-access-code');
+isAdmin = localStorage.getItem('reqord-is-admin') === '1';
+const _changePassBtn = document.querySelector('#changePassBtn');
 if (hasCode && userName) {
-  if (loginLink) loginLink.style.display = 'none';
-  if (logoutBtn) logoutBtn.style.display = '';
+  if (_loginLink) _loginLink.style.display = 'none';
+  if (_logoutBtn) _logoutBtn.style.display = '';
+  if (_changePassBtn) _changePassBtn.style.display = isAdmin ? '' : 'none';
   if (userStatus) userStatus.textContent = userName + (isAdmin ? ' (admin)' : '');
 } else {
-  if (loginLink) loginLink.style.display = '';
-  if (logoutBtn) logoutBtn.style.display = 'none';
+  if (_loginLink) _loginLink.style.display = '';
+  if (_logoutBtn) _logoutBtn.style.display = 'none';
+  if (_changePassBtn) _changePassBtn.style.display = 'none';
   if (userStatus) userStatus.textContent = '';
 }
 openDraftDatabase(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
@@ -727,10 +808,6 @@ if (supabaseClient) {
     })
     .subscribe();
 }
-} catch(e) {
-  console.error('[reqord] init error:', e);
-}
-})();
 
 // === Supabase Auth & Sync ===
 async function sbSignUp(email, password) {
