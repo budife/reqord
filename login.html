@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>reqord — Login</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: var(--bg, #0f1117); color: var(--text, #e2e8f0); font-family: system-ui, sans-serif; }
+    .login-card { background: var(--card, #1a1d27); border: 1px solid var(--border, #2a2d3a); border-radius: 12px; padding: 2rem; width: 100%; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    .login-card h1 { margin: 0 0 0.5rem; font-size: 1.5rem; }
+    .login-card p { margin: 0 0 1.5rem; color: var(--muted, #94a3b8); font-size: 0.9rem; }
+    .login-card label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--muted, #94a3b8); }
+    .login-card input { width: 100%; padding: 0.75rem; border: 1px solid var(--border, #2a2d3a); border-radius: 8px; background: var(--input, #0f1117); color: var(--text, #e2e8f0); font-size: 1rem; margin-bottom: 1rem; box-sizing: border-box; }
+    .login-card button { width: 100%; padding: 0.75rem; border: none; border-radius: 8px; background: var(--accent, #6366f1); color: #fff; font-size: 1rem; cursor: pointer; }
+    .login-card button:hover { opacity: 0.9; }
+    .login-card .error { color: #f87171; font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+    .login-card .hint { margin-top: 1rem; font-size: 0.8rem; color: var(--muted, #94a3b8); text-align: center; }
+    .login-card .hint a { color: var(--accent, #6366f1); }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>reqord</h1>
+    <p>Masuk dengan nama dan kode akses Anda</p>
+    <div class="error" id="loginError"></div>
+    <label for="loginName">Nama</label>
+    <input type="text" id="loginName" placeholder="Nama Anda (misal: budd)" autocomplete="username">
+    <label for="loginCode">Kode Akses</label>
+    <input type="password" id="loginCode" placeholder="Masukkan kode akses" autocomplete="current-password">
+    <button id="loginBtn">Masuk</button>
+    <div class="hint">
+      Belum punya kode? Masukkan kode baru — akan otomatis terdaftar.<br>
+      <a href="index.html">Lihat sebagai viewer (read-only)</a>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://htyfykkurammflwefxgw.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_iUul7iVeH-ReFlSxVT-ulQ_qhkgzPAz';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const name = document.getElementById('loginName').value.trim();
+      const code = document.getElementById('loginCode').value.trim();
+      if (!name) { showError('Nama wajib diisi'); return; }
+      if (!code) { showError('Kode wajib diisi'); return; }
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.textContent = 'Memproses...';
+      const email = code + '@reqord.com';
+      let { data, error } = await supabase.auth.signInWithPassword({ email, password: code });
+      if (error) {
+        const res = await supabase.auth.signUp({ email, password: code });
+        if (res.error) {
+          if (res.error.message.includes('rate limit') || res.error.message.includes('after') || res.error.message.includes('security')) {
+            showError('Terlalu banyak percobaan. Tunggu 1 menit.');
+          } else {
+            showError('Auth gagal: ' + res.error.message);
+          }
+          btn.disabled = false;
+          btn.textContent = 'Masuk';
+          return;
+        }
+      }
+      localStorage.setItem('reqord-user-name', name);
+      localStorage.setItem('reqord-access-code', code);
+      window.location.href = 'index.html';
+    });
+
+    function showError(msg) {
+      const el = document.getElementById('loginError');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    document.getElementById('loginCode').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('loginBtn').click();
+    });
+  </script>
+</body>
+</html>

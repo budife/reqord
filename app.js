@@ -609,6 +609,15 @@ async function scanFolderHandle(root) {
     return scanned.length;
 }
 
+// Logout button handler
+const logoutBtn = document.querySelector('#logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('reqord-user-name');
+    localStorage.removeItem('reqord-access-code');
+    window.location.reload();
+  });
+}
 window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
 function normalizeWorkbookDateCells(workbook) { const dataSheets = workbook.SheetNames.filter(name => !/^activity$|^read me$|^subitems$/i.test(name)); dataSheets.forEach(name => { const sheet = workbook.Sheets[name]; const rows = XLSX.utils.sheet_to_json(sheet); if (rows.length) { const enriched = rows.map(row => { const title = String(row.Title || row.Task || '').trim(); const requestor = String(row.Requestor || '').trim(); const item = items.find(candidate => candidate.title === title && (!requestor || candidate.requestor === requestor)); return { ...row, Note: item?.note || row.Note || '' }; }); workbook.Sheets[name] = XLSX.utils.json_to_sheet(enriched); } }); const subitemRows = items.flatMap(item => (item.subitems || []).map((subitem, index) => ({ ParentID: item.id, WorkOrder: item.title, Subitem: subitem.title, Done: subitem.done ? 'Yes' : 'No', Order: subitem.order ?? index }))); const subitemSheet = XLSX.utils.json_to_sheet(subitemRows, { header: ['ParentID', 'WorkOrder', 'Subitem', 'Done', 'Order'] }); subitemSheet['!autofilter'] = { ref: `A1:E${Math.max(subitemRows.length + 1, 1)}` }; subitemSheet['!cols'] = [{ wch: 18 }, { wch: 48 }, { wch: 48 }, { wch: 10 }, { wch: 10 }]; if (workbook.SheetNames.includes('Subitems')) workbook.Sheets.Subitems = subitemSheet; else XLSX.utils.book_append_sheet(workbook, subitemSheet, 'Subitems'); workbook.SheetNames.forEach(name => { const sheet = workbook.Sheets[name]; Object.keys(sheet).forEach(address => { if (address[0] === '!') return; const cell = sheet[address]; if (typeof cell.v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(cell.v)) cell.v = cell.v.replace('T', ' '); }); }); }
 function addActivitySheet(workbook) { addActivity('Workbook disimpan', {}, openedFileName || 'Buat satu sekarang aja'); removeDefaultSheets(workbook); const rows = activities.map(activity => ({ Date: activity.date, Action: activity.action, Title: activity.title, Requestor: activity.requestor, Details: activity.details || '' })); const sheet = XLSX.utils.json_to_sheet(rows, { header: ['Date', 'Action', 'Title', 'Requestor', 'Details'] }); sheet['!autofilter'] = { ref: `A1:E${Math.max(rows.length + 1, 1)}` }; sheet['!cols'] = [{ wch: 20 }, { wch: 32 }, { wch: 48 }, { wch: 22 }, { wch: 48 }]; if (workbook.SheetNames.includes('Activity')) workbook.Sheets.Activity = sheet; else XLSX.utils.book_append_sheet(workbook, sheet, 'Activity'); normalizeWorkbookDateCells(workbook); }
@@ -640,6 +649,20 @@ if (!userName) {
 }
 isAdmin = btoa((userName || '').toLowerCase()) === _adminToken;
 applyRoleUI();
+// Update login/logout UI
+const loginLink = document.querySelector('#loginLink');
+const logoutBtn = document.querySelector('#logoutBtn');
+const userStatus = document.querySelector('#userStatus');
+const hasCode = !!localStorage.getItem('reqord-access-code');
+if (hasCode && userName) {
+  if (loginLink) loginLink.style.display = 'none';
+  if (logoutBtn) logoutBtn.style.display = '';
+  if (userStatus) userStatus.textContent = userName + (isAdmin ? ' (admin)' : '');
+} else {
+  if (loginLink) loginLink.style.display = '';
+  if (logoutBtn) logoutBtn.style.display = 'none';
+  if (userStatus) userStatus.textContent = '';
+}
 openDraftDatabase(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
 if (supabaseClient) {
   sbLoadItems().then(() => {
