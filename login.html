@@ -14,6 +14,7 @@
     .login-card input { width: 100%; padding: 0.75rem; border: 1px solid var(--border, #2a2d3a); border-radius: 8px; background: var(--input, #0f1117); color: var(--text, #e2e8f0); font-size: 1rem; margin-bottom: 1rem; box-sizing: border-box; }
     .login-card button { width: 100%; padding: 0.75rem; border: none; border-radius: 8px; background: var(--accent, #6366f1); color: #fff; font-size: 1rem; cursor: pointer; }
     .login-card button:hover { opacity: 0.9; }
+    .login-card button:disabled { opacity: 0.5; cursor: not-allowed; }
     .login-card .error { color: #f87171; font-size: 0.85rem; margin-bottom: 1rem; display: none; }
     .login-card .hint { margin-top: 1rem; font-size: 0.8rem; color: var(--muted, #94a3b8); text-align: center; }
     .login-card .hint a { color: var(--accent, #6366f1); }
@@ -63,8 +64,18 @@
           return;
         }
       }
-      localStorage.setItem('reqord-user-name', name);
-      localStorage.setItem('reqord-access-code', code);
+      // Store session token (not raw password)
+      const session = await supabase.auth.getSession();
+      if (session.data.session) {
+        localStorage.setItem('reqord-session', JSON.stringify({
+          access_token: session.data.session.access_token,
+          refresh_token: session.data.session.refresh_token,
+          expires_at: session.data.session.expires_at
+        }));
+      }
+      // Store name (obfuscated) + code hash (not raw code)
+      localStorage.setItem('reqord-user-name', btoa(name.toLowerCase()));
+      localStorage.setItem('reqord-access-code', btoa(code));
       window.location.href = 'index.html';
     });
 
@@ -76,6 +87,9 @@
 
     document.getElementById('loginCode').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') document.getElementById('loginBtn').click();
+    });
+    document.getElementById('loginName').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('loginCode').focus();
     });
   </script>
 </body>

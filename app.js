@@ -11,7 +11,8 @@ const seedItems = [
   { id: 3, title: 'Review proposal dari tim desain', requestor: 'AR', type: 'project', status: 'ongoing', priority: 'normal', requestDate: '', date: '' },
   { id: 4, title: 'Kirim invoice project September', requestor: 'Saya', type: 'project', status: 'done', priority: 'low', requestDate: '', date: '' }
 ];
-let userName = localStorage.getItem('reqord-user-name') || '';
+let userName = '';
+try { const stored = localStorage.getItem('reqord-user-name'); if (stored) userName = atob(stored); } catch(e) {}
 const _adminToken = 'YnVkZA==';
 let isAdmin = false;
 function applyRoleUI() {
@@ -380,7 +381,7 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
   const user = await sbGetUser();
   if (!user) {
     const storedCode = localStorage.getItem('reqord-access-code');
-    let code = storedCode;
+    let code = storedCode ? atob(storedCode) : null;
     if (!code) {
       const codeDialog = document.querySelector('#codeDialog');
       const codeInput = document.querySelector('#codeDialogInput');
@@ -441,7 +442,7 @@ document.querySelector('#scanFolderButton').addEventListener('click', async () =
       if (!user) {
         // Try auto-login with stored code
         const storedCode = localStorage.getItem('reqord-access-code');
-        let code = storedCode;
+        let code = storedCode ? atob(storedCode) : null;
         if (!code) {
           const codeDialog = document.querySelector('#codeDialog');
           const codeInput = document.querySelector('#codeDialogInput');
@@ -615,6 +616,8 @@ if (logoutBtn) {
   logoutBtn.addEventListener('click', () => {
     localStorage.removeItem('reqord-user-name');
     localStorage.removeItem('reqord-access-code');
+    localStorage.removeItem('reqord-session');
+    if (supabaseClient) supabaseClient.auth.signOut();
     window.location.reload();
   });
 }
@@ -642,7 +645,7 @@ if (!userName) {
     userName = await new Promise(resolve => {
       document.querySelector('#nameDialogSubmit').addEventListener('click', () => {
         const val = nameInput.value.trim();
-        if (val) { localStorage.setItem('reqord-user-name', val); nameDialog.close(); resolve(val); }
+        if (val) { localStorage.setItem('reqord-user-name', btoa(val.toLowerCase())); nameDialog.close(); resolve(val); }
       }, { once: true });
     });
   }
