@@ -403,8 +403,20 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
     const email = code + '@reqord.com';
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
     if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        localStorage.removeItem('reqord-access-code');
+      }
       const res = await supabaseClient.auth.signUp({ email, password: code });
-      if (res.error) { showToast('Auth gagal: ' + res.error.message); console.error('[reqord] auth error:', res.error); return; }
+      if (res.error) { 
+        if (res.error.message.includes('rate limit') || res.error.message.includes('after') || res.error.message.includes('security')) {
+          showToast('Terlalu banyak percobaan. Tunggu 1 menit lalu coba lagi.');
+        } else {
+          showToast('Auth gagal: ' + res.error.message);
+          localStorage.removeItem('reqord-access-code');
+        }
+        console.error('[reqord] auth error:', res.error); 
+        return; 
+      }
       showToast('Kode baru terdaftar');
     } else {
       showToast('Kode valid');
@@ -452,8 +464,20 @@ document.querySelector('#scanFolderButton').addEventListener('click', async () =
         const email = code + '@reqord.com';
         let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
         if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            localStorage.removeItem('reqord-access-code');
+          }
           const res = await supabaseClient.auth.signUp({ email, password: code });
-          if (res.error) { showToast('Auth gagal: ' + res.error.message); console.error('[reqord] auth error:', res.error); return; }
+          if (res.error) { 
+            if (res.error.message.includes('rate limit') || res.error.message.includes('after') || res.error.message.includes('security')) {
+              showToast('Terlalu banyak percobaan. Tunggu 1 menit lalu coba lagi.');
+            } else {
+              showToast('Auth gagal: ' + res.error.message);
+              localStorage.removeItem('reqord-access-code');
+            }
+            console.error('[reqord] auth error:', res.error); 
+            return; 
+          }
           showToast('Kode baru terdaftar');
         } else {
           showToast('Kode valid');
@@ -618,12 +642,6 @@ isAdmin = btoa((userName || '').toLowerCase()) === _adminToken;
 applyRoleUI();
 openDraftDatabase(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
 if (supabaseClient) {
-  // Auto-login with stored code
-  const storedCode = localStorage.getItem('reqord-access-code');
-  if (storedCode) {
-    const email = storedCode + '@reqord.com';
-    try { await supabaseClient.auth.signInWithPassword({ email, password: storedCode }); } catch(e) {}
-  }
   sbLoadItems().then(() => {
     console.log('[reqord] init: loaded from Supabase');
   }).catch(e => {
