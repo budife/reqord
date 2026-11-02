@@ -17,7 +17,7 @@
     <header class="topbar">
       <a class="brand" href="#"><span class="brand-mark">R</span><span>reqord</span></a>
       <div class="workspace"><span class="workspace-dot"></span> reqord <b>/</b> <strong>Work order manager</strong></div>
-       <div class="top-actions"><button class="profile-trigger activity-trigger" id="activityButton" aria-label="Buka history dan activity"><span class="settings-icon" aria-hidden="true">◷</span><span class="profile-trigger-text"><strong>History &amp; Activity</strong><small>reqord</small></span></button><span id="userStatus" style="font-size:0.85rem;color:var(--muted,#94a3b8);margin-right:0.5rem;"></span><a href="login.html" class="secondary-button" style="text-decoration:none;display:inline-flex;align-items:center;" id="loginLink">Login</a><button class="secondary-button" id="logoutBtn" style="display:none;">Logout</button></div>
+       <div class="top-actions"><button class="profile-trigger activity-trigger" id="activityButton" aria-label="Buka history dan activity"><span class="settings-icon" aria-hidden="true">◷</span><span class="profile-trigger-text"><strong>History &amp; Activity</strong><small>reqord</small></span></button><span id="userStatus" style="font-size:0.85rem;color:var(--muted,#94a3b8);margin-right:0.5rem;"></span><a href="#" class="secondary-button" style="text-decoration:none;display:inline-flex;align-items:center;" id="loginLink">Login</a><button class="secondary-button" id="logoutBtn" style="display:none;">Logout</button></div>
     </header>
 
      <section class="intro"><div><div class="eyebrow">WORK ORDER MANAGER</div><h1>Request work orders</h1><p>Tambah request dan lihat progresnya dalam tiga tabel sederhana.</p></div><div class="intro-actions"><span class="active-file" id="activeFileName"><i class="sync-dot"></i>Tidak ada file aktif</span><button class="secondary-button" id="scanFolderButton">Scan Folder</button><button class="secondary-button" id="refreshFolderButton">Refresh</button><button class="secondary-button" id="saveButton">Save</button><button class="secondary-button" id="syncCloudButton">Sync to Cloud</button><input id="jsonFileInput" type="file" accept=".json" hidden></div></section>
@@ -35,10 +35,13 @@
     <footer><span><i class="sync-dot"></i> Open file terlebih dahulu · Save changes ke file yang sama</span><span class="mono">reqord · REQUEST WORK ORDERS</span><span class="app-version">reqord v0.4.0</span><span class="maker-credit">crafted by <button class="maker-trigger" id="makerButton" type="button" aria-label="Meet the maker">budife.psd</button></span></footer>
   </main>
   <div id="toast" class="toast" role="status"></div>
-  <dialog id="codeDialog" class="delete-dialog">
-    <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">KODE AKSES</span><h2>Masukkan Kode</h2></div></div>
-    <input id="codeDialogInput" class="delete-confirm-input" type="password" placeholder="Kode akses..." aria-label="Kode akses">
-    <div class="delete-actions"><button class="secondary-button" id="cancelCodeDialog">Batal</button><button class="secondary-button" id="closeCodeDialog">Tutup</button><button class="primary-button" id="submitCodeDialog">Masuk</button></div>
+  <dialog id="loginDialog" class="delete-dialog">
+    <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">LOGIN</span><h2>Masuk ke reqord</h2></div><button class="modal-close" id="closeLoginDialog" aria-label="Tutup">x</button></div>
+    <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Nama</label>
+    <input id="loginNameInput" class="delete-confirm-input" type="text" placeholder="Nama Anda (misal: budd)" aria-label="Nama">
+    <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Kode Akses</label>
+    <input id="loginCodeInput" class="delete-confirm-input" type="password" placeholder="Kode akses..." aria-label="Kode akses">
+    <div class="delete-actions"><button class="secondary-button" id="cancelLoginDialog">Batal</button><button class="primary-button" id="submitLoginDialog">Masuk</button></div>
   </dialog>
   <dialog id="deleteDialog" class="delete-dialog">
     <div class="delete-modal-head"><span class="delete-warning">!</span><div><span class="eyebrow">PERMANENT ACTION</span><h2>Delete request?</h2></div><button class="modal-close" id="closeDeleteButton" aria-label="Tutup konfirmasi delete">×</button></div>
@@ -73,6 +76,6 @@
     <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.4.0</span><span>Made thoughtfully</span></div>
   </dialog>
     <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="true"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History &amp; Activity</h2></div><button class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=43"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=44"></script>
 </body>
 </html>
