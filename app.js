@@ -378,6 +378,11 @@ if (jsonInput) jsonInput.addEventListener('change', async (event) => {
 
 document.querySelector('#syncCloudButton').addEventListener('click', async () => {
   if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
+  // Require login
+  if (!localStorage.getItem('reqord-access-code') || !localStorage.getItem('reqord-user-name')) {
+    window.location.href = 'login.html';
+    return;
+  }
   const user = await sbGetUser();
   if (!user) {
     const storedCode = localStorage.getItem('reqord-access-code');
@@ -436,6 +441,11 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
 });
 document.querySelector('#scanFolderButton').addEventListener('click', async () => {
   if (!window.showDirectoryPicker) { showToast('Browser tidak mendukung folder scan. Gunakan Chrome/Edge.'); return; }
+  // Require login
+  if (!localStorage.getItem('reqord-access-code') || !localStorage.getItem('reqord-user-name')) {
+    window.location.href = 'login.html';
+    return;
+  }
   if (supabaseClient) {
     try {
       const user = await sbGetUser();
@@ -637,20 +647,8 @@ function setFormDates() { const el = document.querySelector('#requestDateInput')
 (async () => {
 try {
 console.log('[reqord] init: items =', items.length);
-if (!userName) {
-  const nameDialog = document.querySelector('#nameDialog');
-  const nameInput = document.querySelector('#nameDialogInput');
-  if (nameDialog) {
-    nameDialog.showModal();
-    userName = await new Promise(resolve => {
-      document.querySelector('#nameDialogSubmit').addEventListener('click', () => {
-        const val = nameInput.value.trim();
-        if (val) { localStorage.setItem('reqord-user-name', btoa(val.toLowerCase())); nameDialog.close(); resolve(val); }
-      }, { once: true });
-    });
-  }
-}
-isAdmin = btoa((userName || '').toLowerCase()) === _adminToken;
+// No name dialog anymore - name is set via login page
+isAdmin = btoa((userName || '').toLowerCase()) === _adminToken && !!localStorage.getItem('reqord-access-code');
 applyRoleUI();
 // Update login/logout UI
 const loginLink = document.querySelector('#loginLink');

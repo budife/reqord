@@ -35,16 +35,11 @@
     <footer><span><i class="sync-dot"></i> Open file terlebih dahulu · Save changes ke file yang sama</span><span class="mono">reqord · REQUEST WORK ORDERS</span><span class="app-version">reqord v0.4.0</span><span class="maker-credit">crafted by <button class="maker-trigger" id="makerButton" type="button" aria-label="Meet the maker">budife.psd</button></span></footer>
   </main>
   <div id="toast" class="toast" role="status"></div>
-  <dialog id="nameDialog" class="delete-dialog">
-  <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">WELCOME</span><h2>Siapa nama Anda?</h2></div></div>
-  <input id="nameDialogInput" class="delete-confirm-input" autocomplete="off" placeholder="Masukkan nama..." aria-label="Nama">
-  <div class="delete-actions"><button class="primary-button" id="nameDialogSubmit">Lanjutkan</button></div>
-</dialog>
-<dialog id="codeDialog" class="delete-dialog">
-  <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">AKSES</span><h2>Masukkan kode akses</h2></div><button class="modal-close" id="closeCodeDialog" aria-label="Tutup">x</button></div>
-  <input id="codeDialogInput" class="delete-confirm-input" autocomplete="off" placeholder="Kode akses..." aria-label="Kode akses">
-  <div class="delete-actions"><button class="secondary-button" id="cancelCodeDialog">Batal</button><button class="primary-button" id="submitCodeDialog">Lanjutkan</button></div>
-</dialog>
+  <dialog id="codeDialog" class="delete-dialog">
+    <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">KODE AKSES</span><h2>Masukkan Kode</h2></div></div>
+    <input id="codeDialogInput" class="delete-confirm-input" type="password" placeholder="Kode akses..." aria-label="Kode akses">
+    <div class="delete-actions"><button class="secondary-button" id="cancelCodeDialog">Batal</button><button class="secondary-button" id="closeCodeDialog">Tutup</button><button class="primary-button" id="submitCodeDialog">Masuk</button></div>
+  </dialog>
   <dialog id="deleteDialog" class="delete-dialog">
     <div class="delete-modal-head"><span class="delete-warning">!</span><div><span class="eyebrow">PERMANENT ACTION</span><h2>Delete request?</h2></div><button class="modal-close" id="closeDeleteButton" aria-label="Tutup konfirmasi delete">×</button></div>
     <p class="delete-copy">Request ini akan dihapus permanen dan tidak bisa dikembalikan.</p>
@@ -78,6 +73,6 @@
     <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.4.0</span><span>Made thoughtfully</span></div>
   </dialog>
     <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="true"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History &amp; Activity</h2></div><button class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=41"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=42"></script>
 </body>
 </html>
