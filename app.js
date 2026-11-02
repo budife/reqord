@@ -715,6 +715,7 @@ if (submitRegisterDialog) {
     const invite = document.querySelector('#registerInviteInput').value.trim();
     if (!username) { showToast('Username wajib diisi'); return; }
     if (!password || password.length < 4) { showToast('Password minimal 4 karakter'); return; }
+    if (invite !== 'budd-reqord') { showToast('Kode invitation wajib diisi dan valid'); return; }
     if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
     const email = username + '@reqord.com';
     const isAdminUser = invite === 'budd-reqord';
