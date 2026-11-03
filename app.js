@@ -407,7 +407,7 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
       if (!code) { showToast('Kode wajib diisi'); return; }
       code = code.trim();
     }
-    const email = code + '@reqord.com';
+    const email = code + '@gmail.com';
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
@@ -474,7 +474,7 @@ document.querySelector('#scanFolderButton').addEventListener('click', async () =
           if (!code) { showToast('Kode wajib diisi'); return; }
           code = code.trim();
         }
-        const email = code + '@reqord.com';
+        const email = code + '@gmail.com';
         let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
@@ -663,7 +663,7 @@ if (submitLoginDialog) {
     if (!username) { showToast('Username wajib diisi'); return; }
     if (!password) { showToast('Password wajib diisi'); return; }
     if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
-    const email = username + '@reqord.com';
+    const email = username + '@gmail.com';
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) {
       showToast('Login gagal: ' + (error.message || 'username/password salah'));
@@ -717,7 +717,7 @@ if (submitRegisterDialog) {
     if (!password || password.length < 4) { showToast('Password minimal 4 karakter'); return; }
     if (invite !== 'budd-reqord') { showToast('Kode invitation wajib diisi dan valid'); return; }
     if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
-    const email = username + '@reqord.com';
+    const email = username + '@gmail.com';
     const isAdminUser = invite === 'budd-reqord';
     const { data, error } = await supabaseClient.auth.signUp({
       email,
