@@ -44,6 +44,15 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-12 (Auth hardening)
+
+- Agent/model: Hermes Agent.
+- Permintaan: user melaporkan "invalid email" saat register/login.
+- Penyebab: username mengandung spasi/karakter khusus, lalu dijadikan email `<username>@gmail.com`.
+- Perubahan: tambah `normalizeUsername()` (lowercase + buang karakter selain `a-z0-9._-`) di login & register; fallback auth scan/sync memakai `userName` (bukan password) sebagai bagian email; placeholder username diperjelas.
+- Validasi: `node --check app.js`, smoke test, dan tes `normalizeUsername` via node.
+- Catatan: kode invitation tetap `budd-reqord`. Reset password tidak bisa karena email pemakai fake (`@gmail.com`).
+
 ### 2026-11-12 (Public view & auto-sync)
 
 - Agent/model: Hermes Agent.

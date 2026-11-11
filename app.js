@@ -407,7 +407,7 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
       if (!code) { showToast('Kode wajib diisi'); return; }
       code = code.trim();
     }
-    const email = code + '@gmail.com';
+    const email = userName + '@gmail.com';
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
@@ -474,7 +474,7 @@ document.querySelector('#scanFolderButton').addEventListener('click', async () =
           if (!code) { showToast('Kode wajib diisi'); return; }
           code = code.trim();
         }
-        const email = code + '@gmail.com';
+        const email = userName + '@gmail.com';
         let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
@@ -659,7 +659,7 @@ if (cancelLoginDialog) {
 const submitLoginDialog = document.querySelector('#submitLoginDialog');
 if (submitLoginDialog) {
   submitLoginDialog.addEventListener('click', async () => {
-    const username = document.querySelector('#loginNameInput').value.trim();
+    const username = normalizeUsername(document.querySelector('#loginNameInput').value);
     const password = document.querySelector('#loginCodeInput').value.trim();
     if (!username) { showToast('Username wajib diisi'); return; }
     if (!password) { showToast('Password wajib diisi'); return; }
@@ -711,7 +711,7 @@ if (cancelRegisterDialog) {
 const submitRegisterDialog = document.querySelector('#submitRegisterDialog');
 if (submitRegisterDialog) {
   submitRegisterDialog.addEventListener('click', async () => {
-    const username = document.querySelector('#registerNameInput').value.trim();
+    const username = normalizeUsername(document.querySelector('#registerNameInput').value);
     const password = document.querySelector('#registerPassInput').value.trim();
     const invite = document.querySelector('#registerInviteInput').value.trim();
     if (!username) { showToast('Username wajib diisi'); return; }
@@ -812,6 +812,7 @@ if (supabaseClient) {
 }
 
 // === Supabase Auth & Sync ===
+function normalizeUsername(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9._-]/g, ''); }
 async function sbSignUp(email, password) {
   if (!supabaseClient) { showToast('Supabase tidak tersedia'); return null; }
   const { data, error } = await supabaseClient.auth.signUp({ email, password });

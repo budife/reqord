@@ -13,6 +13,11 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 - Scan folder dan edit otomatis tersimpan ke Supabase (debounced 5 detik); sinkronisasi langsung setelah scan.
 
+### Fixed
+
+- Login/register: username dinormalisasi (huruf kecil, tanpa spasi/karakter khusus) supaya email `<username>@gmail.com` selalu valid.
+- Scan/sync: fallback auth memakai username (bukan password) sebagai bagian email.
+
 ## [0.4.0] - 2026-09-25
 
 ### Added
