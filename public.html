@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>reqord | Papan status publik</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="public.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brand-mark">R</span><span>reqord</span></a>
+      <div class="workspace"><span class="workspace-dot"></span> reqord <b>/</b> <strong>Papan status publik</strong></div>
+      <div class="top-actions"><span class="badge">Read-only</span></div>
+    </header>
+
+    <section class="intro">
+      <div>
+        <div class="eyebrow">PUBLIC BOARD</div>
+        <h1>Status work order</h1>
+        <p>Requestor, judul, dan status terbaru. Data ini hanya bisa dibaca.</p>
+      </div>
+      <div class="intro-actions">
+        <span class="live"><i class="sync-dot"></i><span id="liveState">Menghubungkan...</span></span>
+        <a class="secondary-button" href="index.html">Buka app</a>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Cari requestor atau judul..."></div>
+      <select id="monthFilter" aria-label="Filter bulan"><option value="all">Semua bulan</option></select>
+      <span class="result-count" id="resultCount">0 work orders</span>
+    </section>
+
+    <div class="table-stack" id="board"></div>
+
+    <footer>
+      <span><i class="sync-dot"></i> Data read-only dari reqord</span>
+      <span class="mono">reqord · PUBLIC BOARD</span>
+    </footer>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="public.js"></script>
+</body>
+</html>

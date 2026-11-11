@@ -70,7 +70,7 @@ function debouncedSync() {
   if (_syncTimer) clearTimeout(_syncTimer);
   _syncTimer = setTimeout(() => { sbSyncAll(); _syncTimer = null; }, 5000);
 }
-function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); return items; }
+function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); debouncedSync(); return items; }
 function loadDraftItems() { try { const current = JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(current) ? current.map(normalizeItem) : []; } catch { return []; } }
 function persistDraft() {
   try {
@@ -618,6 +618,7 @@ async function scanFolderHandle(root) {
     normalized.forEach(item => addActivity('Folder scan', item, `${item.title} (${item.requestor})`));
     saveItems();
     render();
+    if (isAdmin) sbSyncAll();
     showToast(`${scanned.length} item ditambahkan${duplicates.length ? `, ${duplicates.length} duplikat di-skip` : ''}`);
     return scanned.length;
 }

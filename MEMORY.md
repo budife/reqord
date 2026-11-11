@@ -44,6 +44,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-12 (Public view & auto-sync)
+
+- Agent/model: Hermes Agent.
+- Permintaan: user ingin login → scan folder → update langsung; plus mode lihat publik (read-only).
+- Perubahan: `app.js` `saveItems()` → `debouncedSync()`; `scanFolderHandle()` → `sbSyncAll()`; tambah `public.html`, `public.js`, `public.css`; link "Public board" di `index.html`.
+- Validasi: `node --check app.js`, `node --check public.js`, `node test/app-smoke.test.js`.
+- Catatan: kolom `note` tidak ditampilkan di publik, tapi API Supabase masih memungkinkan membaca `note` (RLS public SELECT). Pertimbangkan view SQL bila perlu ketat.
+
 ### 2026-09-21 (Reload clean reset)
 
 - Permintaan: saat tekan F5, aplikasi harus clean/reset cache dan list kembali kosong.

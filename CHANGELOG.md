@@ -4,6 +4,15 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 ## [Unreleased]
 
+### Added
+
+- Papan publik read-only di `public.html` (requestor, judul, status) dengan search, filter bulan, dan realtime.
+- Link "Public board" di app.
+
+### Changed
+
+- Scan folder dan edit otomatis tersimpan ke Supabase (debounced 5 detik); sinkronisasi langsung setelah scan.
+
 ## [0.4.0] - 2026-09-25
 
 ### Added
