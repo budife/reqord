@@ -3,14 +3,9 @@ const SUPABASE_URL = 'https://htyfykkurammflwefxgw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_iUul7iVeH-ReFlSxVT-ulQ_qhkgzPAz';
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 const STORAGE_KEY = 'reqord-request-work-orders';
+const ACTIVITIES_KEY = 'reqord-activities';
 const LEGACY_STORAGE_KEY = 'synaps-project-work-orders';
 const groups = { list: 'Request list', ongoing: 'Ongoing request', revision: 'On revision', preview: 'Preview', done: 'Done request' };
-const seedItems = [
-  { id: 1, title: 'Update harga produk di website sebelum Jumat', requestor: 'Saya', type: 'project', status: 'list', priority: 'high', requestDate: '', date: '' },
-  { id: 2, title: 'Buat laporan performa campaign bulan ini', requestor: 'Saya', type: 'project', status: 'list', priority: 'normal', requestDate: '', date: '' },
-  { id: 3, title: 'Review proposal dari tim desain', requestor: 'AR', type: 'project', status: 'ongoing', priority: 'normal', requestDate: '', date: '' },
-  { id: 4, title: 'Kirim invoice project September', requestor: 'Saya', type: 'project', status: 'done', priority: 'low', requestDate: '', date: '' }
-];
 let userName = '';
 try { const stored = localStorage.getItem('reqord-username'); if (stored) userName = atob(stored); } catch(e) {}
 const _adminToken = 'YnVkZA==';
@@ -30,7 +25,7 @@ let openedFileName = '';
 let hasUnsavedChanges = false;
 let lastSyncTime = null;
 let isLoadingFromCloud = false;
-let activities = [];
+let activities = loadStoredActivities();
 let storageDatabase = null;
 let isLoadingWorkbook = false;
 let isSaving = false;
@@ -40,6 +35,7 @@ let deletedItem = null;
 let priorityFilter = 'all';
 let sortFilter = 'newest';
 let monthFilter = 'all';
+let requestorFilter = 'all';
 const tableMap = { list: document.querySelector('#listTable'), ongoing: document.querySelector('#ongoingTable'), revision: document.querySelector('#revisionTable'), preview: document.querySelector('#previewTable'), done: document.querySelector('#doneTable') };
 const selectedIds = new Set();
 
@@ -58,11 +54,11 @@ function loadItems() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
       return migrated;
     }
-    console.log('[reqord] loadItems: no data, using seed');
-    return seedItems.map(normalizeItem);
+    console.log('[reqord] loadItems: no data, starting empty');
+    return [];
   } catch (e) {
     console.error('[reqord] loadItems error:', e);
-    return seedItems.map(normalizeItem);
+    return [];
   }
 }
 let _syncTimer = null;
@@ -77,6 +73,7 @@ function persistDraft() {
   try {
     const json = JSON.stringify(items);
     localStorage.setItem(STORAGE_KEY, json);
+    try { localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(activities)); } catch { /* ignore */ }
     console.log('[reqord] persistDraft: saved', items.length, 'items');
     return true;
   } catch (e) {
@@ -86,7 +83,9 @@ function persistDraft() {
   }
 }
 function openDraftDatabase() { if (!window.indexedDB) return; const request = indexedDB.open('reqord-storage', 1); request.onupgradeneeded = () => { const db = request.result; db.createObjectStore('draft', { keyPath: 'id' }); db.createObjectStore('folderHandle', { keyPath: 'id' }); }; request.onsuccess = () => { storageDatabase = request.result; restoreFolderHandle(); }; }
-function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details }); persistDraft(); renderActivities(); }
+function loadStoredActivities() { try { const raw = localStorage.getItem(ACTIVITIES_KEY); const parsed = JSON.parse(raw); return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
+function activityKey(activity) { return [activity.date, activity.action, activity.title, activity.details].join('|'); }
+function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details }); persistDraft(); debouncedActivitySync(); renderActivities(); }
 function renderActivities() { const list = document.querySelector('#activityList'); if (!list) return; list.innerHTML = activities.length ? activities.map(activity => `<div class="activity-item"><strong>${escapeHtml(activity.action)}</strong><span>${escapeHtml(activity.title || activity.details || 'reqord')}</span><small>${escapeHtml(displayDate(activity.date, true))}${activity.requestor ? ` · ${escapeHtml(activity.requestor)}` : ''}</small></div>`).join('') : '<p class="activity-empty">Belum ada activity.</p>'; }
 function centerActionGroups() { document.querySelectorAll('.table-scroll td.row-actions').forEach(cell => { let group = cell.querySelector('.actions-inner'); if (!group) { group = document.createElement('div'); group.className = 'actions-inner'; while (cell.firstChild) group.append(cell.firstChild); cell.append(group); } const count = group.querySelectorAll('.action-button').length; group.dataset.count = String(count); group.style.setProperty('--action-count', Math.min(count, 3)); group.className = `actions-inner actions-count-${count}`; }); }
 function enhanceDurationCells() { document.querySelectorAll('.duration-cell').forEach(cell => { if (cell.querySelector('.duration-edit-button')) return; const row = cell.closest('tr'); const control = row?.querySelector('[data-id]'); const item = control && findItem(control.dataset.id); if (!item) return; cell.innerHTML = `<span>${escapeHtml(completionDuration(item))}</span><button class="duration-edit-button" data-duration-edit-id="${item.id}" type="button" title="Edit waktu pengerjaan" aria-label="Edit waktu pengerjaan">✎</button>`; }); }
@@ -97,7 +96,7 @@ function removeActionCells() { document.querySelectorAll('.table-scroll tbody tr
 function normalizeStatusSelects() { document.querySelectorAll('.status-select').forEach(select => { const item = findItem(select.dataset.id); const current = item?.status || select.value; select.innerHTML = '<option value="list">Request list</option><option value="ongoing">Ongoing request</option><option value="preview">Preview</option><option value="revision">On revision</option><option value="done">Done request</option><option value="daily">Daily tasks</option>'; select.value = current; if (!isAdmin) select.disabled = true; }); }
 function reorderTableColumns() { document.querySelectorAll('.table-scroll tbody tr').forEach(row => { const cells = row.children; if (cells.length > 4) row.insertBefore(cells[4], cells[3]); }); }
 function makeRowsEditable() { if (!isAdmin) return; document.querySelectorAll('.table-scroll tbody tr').forEach(row => { const control = row.querySelector('[data-id]'); if (!control) return; const id = control.dataset.id; const item = findItem(id); const title = row.querySelector('.title-cell'); const requestor = row.querySelector('td:nth-child(2)'); if (title) { title.removeAttribute('contenteditable'); title.removeAttribute('data-action'); title.removeAttribute('data-id'); title.classList.add('has-subitems'); title.dataset.subitemId = id; title.tabIndex = 0; title.setAttribute('role', 'button'); title.setAttribute('aria-label', `Tambah subitem untuk ${item?.title || 'work order'}`); } if (requestor) { requestor.removeAttribute('contenteditable'); requestor.removeAttribute('data-action'); requestor.removeAttribute('data-id'); } const actions = row.querySelector('.row-actions'); const status = row.querySelector('.status-select')?.value; if (actions && !actions.querySelector('[data-row-action="edit"]')) actions.insertAdjacentHTML('afterbegin', `<button class="action-button edit-action" data-row-action="edit" data-id="${id}" title="Edit work order" aria-label="Edit work order">✎</button>`); if (actions && status === 'done') { if (!actions.querySelector('[data-row-action="revision"]')) actions.insertAdjacentHTML('beforeend', `<button class="action-button revision-action" data-row-action="revision" data-id="${id}" title="Kembalikan untuk revisi" aria-label="Kembalikan untuk revisi">↻</button>`); if (!actions.querySelector('[data-row-action="delete"]')) actions.insertAdjacentHTML('beforeend', `<button class="action-button delete-action" data-row-action="delete" data-id="${id}" title="Hapus" aria-label="Hapus">⌫</button>`); } if (status === 'list') actions.querySelector('[data-row-action="complete"]')?.remove(); row.querySelector('.estimate-cell')?.remove(); row.querySelector('.target-cell')?.remove(); row.querySelector('.duration-cell')?.remove(); if (item && status === 'done') { const durationCell = document.createElement('td'); durationCell.className = 'duration-cell'; durationCell.textContent = completionDuration(item); const requestDateCell = row.querySelector('td:nth-child(5)'); if (requestDateCell) requestDateCell.after(durationCell); } }); }
-function renderActiveFile() { const label = document.querySelector('#activeFileName'); const state = document.querySelector('#saveState'); const name = openedFileName || 'Tidak ada file aktif'; const fileIsDirty = Boolean(openedFileName && hasUnsavedChanges); if (label) { label.innerHTML = `<i class="sync-dot"></i>${escapeHtml(name)}`; label.classList.toggle('is-dirty', fileIsDirty); } if (state) { state.textContent = hasUnsavedChanges ? 'Unsaved changes' : openedFileName ? 'Saved to workbook' : 'Ready'; state.className = `save-state ${hasUnsavedChanges ? 'is-dirty' : ''}`; } }
+function renderActiveFile() { const label = document.querySelector('#activeFileName'); const state = document.querySelector('#saveState'); const name = openedFileName || 'Siap'; const fileIsDirty = Boolean(openedFileName && hasUnsavedChanges); if (label) { label.innerHTML = `<i class="sync-dot"></i>${escapeHtml(name)}`; label.classList.toggle('is-dirty', fileIsDirty); } if (state) { state.textContent = hasUnsavedChanges ? 'Unsaved changes' : 'Tersimpan ke cloud'; state.className = `save-state ${hasUnsavedChanges ? 'is-dirty' : ''}`; } }
 function importReportMessage() { const { loaded, skippedEmpty, skippedInvalid } = lastImportReport; return `Loaded ${loaded} row${loaded === 1 ? '' : 's'}${skippedEmpty ? ` · ${skippedEmpty} empty skipped` : ''}${skippedInvalid ? ` · ${skippedInvalid} invalid skipped` : ''}`; }
 function loadActivities(workbook) { const activitySheet = workbook.SheetNames.find(name => /^activity$/i.test(name)); activities = activitySheet ? XLSX.utils.sheet_to_json(workbook.Sheets[activitySheet]).map(row => ({ date: row.Date || '', action: row.Action || '', title: row.Title || '', requestor: row.Requestor || '', details: row.Details || '' })).filter(activity => activity.action || activity.title || activity.details).reverse() : []; renderActivities(); }
 async function loadActivitiesFromFile(file) { const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const validSheet = workbook.SheetNames.some(name => /request list|ongoing requests|done requests|project list|ongoing projects|done projects|daily tasks|activity|read me/i.test(name)); if (!validSheet) throw new Error('Workbook tidak memiliki sheet reqord yang dikenali'); loadActivities(workbook); }
@@ -135,7 +134,7 @@ function chooseRequestor(name) { const input = document.querySelector('#requesto
 function titleSimilarity(query, title) { const words = query.toLowerCase().split(/\s+/).filter(Boolean); const candidate = title.toLowerCase(); if (!words.length) return 0; return words.filter(word => candidate.includes(word)).length / words.length; }
 function renderTitleSuggestions() { const input = document.querySelector('#titleInput'); const suggestions = document.querySelector('#titleSuggestions'); if (!input || !suggestions) return; const query = input.value.trim(); if (query.length < 3) { suggestions.hidden = true; return; } const matches = items.map(item => ({ item, score: titleSimilarity(query, item.title) })).filter(match => match.score >= .5).sort((a, b) => b.score - a.score).slice(0, 5); suggestions.innerHTML = matches.length ? `<div class="suggestion-heading">Similar work orders<span>${matches.length}</span></div>${matches.map(({ item }) => `<button type="button" role="option" data-title-id="${item.id}"><span class="suggestion-name">${escapeHtml(item.title)}</span><small>${escapeHtml(groups[item.status] || 'Daily task')} · ${escapeHtml(item.requestor || 'No requestor')}</small></button>`).join('')}` : ''; suggestions.hidden = !matches.length; }
 function closeTitleSuggestions() { const s = document.querySelector('#titleSuggestions'); if (s) s.hidden = true; }
-function render() { const query = document.querySelector('#searchInput').value.trim().toLowerCase(); if (query) doneVisibleLimit = 10; let visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (priorityFilter === 'all' || item.priority === priorityFilter) && (monthFilter === 'all' || item.month === monthFilter)); visible.sort((a, b) => { if (sortFilter === 'priority') return ['high', 'normal', 'low'].indexOf(a.priority) - ['high', 'normal', 'low'].indexOf(b.priority); if (sortFilter === 'target') return (a.date || '').localeCompare(b.date || ''); const result = (a.requestDate || '').localeCompare(b.requestDate || ''); return sortFilter === 'oldest' ? result : -result; }); Object.keys(tableMap).forEach(status => { const allRows = visible.filter(item => item.type === 'project' && item.status === status); const rows = status === 'done' ? allRows.slice(0, doneVisibleLimit) : allRows; tableMap[status].innerHTML = rows.map(renderRow).join(''); document.querySelector(`#${status}Count`).textContent = items.filter(item => item.type === 'project' && item.status === status).length; document.querySelector(`#${status}Empty`).hidden = rows.length !== 0; if (status === 'done') { const loadMoreButton = document.querySelector('#loadMoreDoneButton'); loadMoreButton.hidden = allRows.length <= 10 || rows.length >= allRows.length; loadMoreButton.textContent = `Load more done works (${Math.min(doneVisibleLimit + 10, allRows.length)}/${allRows.length})`; } }); renderDailyTasks(visible.filter(item => item.type === 'daily')); makeRowsEditable(); removeActionCells(); reorderTableColumns(); normalizeStatusSelects(); enhanceDurationCells(); renderInlineSubitems(); normalizeDailyProgressCells(); document.querySelector('#resultCount').textContent = `${visible.length} of ${items.length}`; renderActiveFile(); renderRequestorSuggestions(); refreshMonthFilter(); }
+function render() { const query = document.querySelector('#searchInput').value.trim().toLowerCase(); if (query) doneVisibleLimit = 10; let visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (priorityFilter === 'all' || item.priority === priorityFilter) && (monthFilter === 'all' || item.month === monthFilter) && (requestorFilter === 'all' || item.requestor === requestorFilter)); visible.sort((a, b) => { if (sortFilter === 'priority') return ['high', 'normal', 'low'].indexOf(a.priority) - ['high', 'normal', 'low'].indexOf(b.priority); if (sortFilter === 'target') return (a.date || '').localeCompare(b.date || ''); const result = (a.requestDate || '').localeCompare(b.requestDate || ''); return sortFilter === 'oldest' ? result : -result; }); Object.keys(tableMap).forEach(status => { const allRows = visible.filter(item => item.type === 'project' && item.status === status); const rows = status === 'done' ? allRows.slice(0, doneVisibleLimit) : allRows; tableMap[status].innerHTML = rows.map(renderRow).join(''); document.querySelector(`#${status}Count`).textContent = items.filter(item => item.type === 'project' && item.status === status).length; document.querySelector(`#${status}Empty`).hidden = rows.length !== 0; if (status === 'done') { const loadMoreButton = document.querySelector('#loadMoreDoneButton'); loadMoreButton.hidden = allRows.length <= 10 || rows.length >= allRows.length; loadMoreButton.textContent = `Load more done works (${Math.min(doneVisibleLimit + 10, allRows.length)}/${allRows.length})`; } }); renderDailyTasks(visible.filter(item => item.type === 'daily')); makeRowsEditable(); removeActionCells(); reorderTableColumns(); normalizeStatusSelects(); enhanceDurationCells(); renderInlineSubitems(); normalizeDailyProgressCells(); document.querySelector('#resultCount').textContent = `${visible.length} of ${items.length}`; renderActiveFile(); renderRequestorSuggestions(); refreshMonthFilter(); refreshRequestorFilter(); }
 function renderRow(item) {
   const canEdit = isAdmin;
   const checkBox = canEdit ? `<input type="checkbox" class="row-check" data-id="${item.id}" ${selectedIds.has(String(item.id)) ? 'checked' : ''} aria-label="Pilih ${escapeHtml(item.title)}">` : '';
@@ -175,6 +174,7 @@ document.querySelector('#searchInput').addEventListener('input', render);
 document.querySelector('#priorityFilter').addEventListener('change', event => { priorityFilter = event.target.value; render(); });
 document.querySelector('#sortFilter').addEventListener('change', event => { sortFilter = event.target.value; render(); });
 document.querySelector('#monthFilter').addEventListener('change', event => { monthFilter = event.target.value; render(); });
+document.querySelector('#requestorFilter').addEventListener('change', event => { requestorFilter = event.target.value; render(); });
 
 function refreshMonthFilter() {
   const select = document.querySelector('#monthFilter');
@@ -183,6 +183,14 @@ function refreshMonthFilter() {
   const current = select.value;
   select.innerHTML = '<option value="all">All months</option>' + months.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
   if (months.includes(current)) select.value = current;
+}
+function refreshRequestorFilter() {
+  const select = document.querySelector('#requestorFilter');
+  if (!select) return;
+  const names = [...new Set(items.map(item => item.requestor).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'id'));
+  const current = select.value;
+  select.innerHTML = '<option value="all">Semua requestor</option>' + names.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+  if (names.includes(current)) select.value = current;
 }
 document.querySelector('#loadMoreDoneButton').addEventListener('click', () => { doneVisibleLimit += 10; render(); });
 
@@ -257,6 +265,25 @@ document.querySelector('.table-stack').addEventListener('change', event => {
   if (!input) return;
   if (input.checked) selectedIds.add(input.dataset.id); else selectedIds.delete(input.dataset.id);
   updateBulkBar();
+});
+document.querySelector('#bulkDelete').addEventListener('click', async () => {
+  if (!selectedIds.size) return;
+  const ok = await confirmModal(`Hapus ${selectedIds.size} work order secara permanen?`, { title: 'Hapus work order?', eyebrow: 'PERMANENT ACTION', confirmLabel: 'Hapus' });
+  if (!ok) return;
+  let deleted = 0;
+  selectedIds.forEach(id => {
+    const item = findItem(id);
+    if (!item) return;
+    addActivity('Work order dihapus', item);
+    sbDeleteItem(id);
+    deleted += 1;
+  });
+  items = items.filter(item => !selectedIds.has(String(item.id)));
+  selectedIds.clear();
+  updateBulkBar();
+  saveItems();
+  render();
+  showToast(`${deleted} work order dihapus`);
 });
 document.querySelector('#bulkClear').addEventListener('click', () => {
   selectedIds.clear();
@@ -891,6 +918,7 @@ if (supabaseClient) {
   }).catch(e => {
     console.log('[reqord] init: Supabase load failed, using localStorage', e);
   });
+  sbLoadActivities();
   supabaseClient.channel('work_orders_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'work_orders' }, (payload) => {
       console.log('[reqord] realtime:', payload.eventType, payload.new?.id);
@@ -1036,6 +1064,28 @@ async function sbSyncAll() {
   lastSyncTime = new Date();
   updateSyncStatus();
   console.log('[reqord] sbSyncAll: synced', items.length, 'items');
+}
+
+// === Activity sync (reqord_meta) ===
+let _activityTimer = null;
+function debouncedActivitySync() {
+  if (_activityTimer) clearTimeout(_activityTimer);
+  _activityTimer = setTimeout(() => { sbSaveActivities(); _activityTimer = null; }, 5000);
+}
+async function sbSaveActivities() {
+  if (!supabaseClient) return;
+  const { error } = await supabaseClient.from('reqord_meta').upsert({ key: 'activities', value: activities, updated_at: new Date().toISOString() });
+  if (error) console.error('[reqord] activity sync error:', error);
+}
+async function sbLoadActivities() {
+  if (!supabaseClient) return;
+  const { data, error } = await supabaseClient.from('reqord_meta').select('value').eq('key', 'activities').maybeSingle();
+  if (error || !data || !Array.isArray(data.value)) return;
+  const seen = new Set(activities.map(activityKey));
+  data.value.forEach(activity => { const key = activityKey(activity); if (!seen.has(key)) { activities.push(activity); seen.add(key); } });
+  activities.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  renderActivities();
+  console.log('[reqord] sbLoadActivities: merged', data.value.length, 'remote activities');
 }
 
 // Auth state listener

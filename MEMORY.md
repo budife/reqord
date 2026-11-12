@@ -44,6 +44,19 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-12 (Cleanup pass: seed, activity sync, filter, bulk delete)
+
+- Agent/model: Hermes Agent.
+- Permintaan: user minta audit "apa lagi yang kurang", lalu minta #1-#5 dikerjakan.
+- Perubahan:
+  - Hapus seed items — app mulai kosong.
+  - `activities` kini disimpan ke localStorage (`reqord-activities`) dan disinkronkan ke Supabase lewat tabel `reqord_meta` (debounce 5 detik).
+  - Teks UI era Excel diganti (footer, save state, intro).
+  - Filter requestor di toolbar (`#requestorFilter`).
+  - Bulk delete via tombol "Hapus" di bulk bar + konfirmasi modal.
+- Validasi: `node --check app.js`, smoke test.
+- Catatan: diperlukan SQL `reqord_meta` di `supabase-schema.sql` bagian 6 (dijalankan di SQL Editor) agar sinkron activity berfungsi.
+
 ### 2026-11-12 (Bulk status change)
 
 - Agent/model: Hermes Agent.

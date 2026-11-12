@@ -187,3 +187,5 @@ body:not(.is-admin) #selectAllButton { display: none !important; }
 .bulk-field { display: block; margin: 14px 22px 4px; color: var(--muted); font-size: 13px; }
 .bulk-field select { display: block; width: 100%; margin-top: 7px; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: #fbfcf8; color: var(--text); font: 500 13px Manrope, system-ui, sans-serif; }
 th .check-all { margin-right: 6px; vertical-align: -1px; accent-color: var(--green-dark); cursor: pointer; }
+.bulk-delete { color: #ffb4b4; border-color: #7a3b3b; }
+.bulk-delete:hover { background: rgba(185,107,103,.14); }

@@ -73,3 +73,15 @@ DO $$ BEGIN
   ALTER PUBLICATION supabase_realtime ADD TABLE work_orders;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+-- 6. Activity sync (opsional, untuk History & Activity multi-device)
+CREATE TABLE IF NOT EXISTS reqord_meta (
+  key TEXT PRIMARY KEY,
+  value JSONB,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE reqord_meta ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Auth can read meta" ON reqord_meta FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "Auth can insert meta" ON reqord_meta FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Auth can update meta" ON reqord_meta FOR UPDATE USING (auth.uid() IS NOT NULL);

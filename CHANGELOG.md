@@ -9,10 +9,15 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Papan publik read-only di `public.html` (requestor, judul, status) dengan search, filter bulan, dan realtime.
 - Link "Public board" di app.
 - Pilih banyak work order (checkbox di kolom Title, select-all di header Title) lalu ubah status sekaligus lewat modal "Ubah Status".
+- Hapus banyak work order sekaligus (tombol "Hapus" di bulk bar, dengan konfirmasi).
+- Filter requestor di toolbar.
+- History & Activity kini tersimpan (localStorage) dan disinkronkan ke Supabase (`reqord_meta`).
 
 ### Changed
 
 - Scan folder dan edit otomatis tersimpan ke Supabase (debounced 5 detik); sinkronisasi langsung setelah scan.
+- Item contoh (seed) dihapus — app mulai dari tabel kosong.
+- Teks UI era Excel ("Open file...", "Saved to workbook", "tiga tabel") diganti.
 
 ### Fixed
 
