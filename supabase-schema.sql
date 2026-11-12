@@ -82,6 +82,10 @@ CREATE TABLE IF NOT EXISTS reqord_meta (
 
 ALTER TABLE reqord_meta ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Auth can read meta" ON reqord_meta;
+DROP POLICY IF EXISTS "Auth can insert meta" ON reqord_meta;
+DROP POLICY IF EXISTS "Auth can update meta" ON reqord_meta;
+
 CREATE POLICY "Auth can read meta" ON reqord_meta FOR SELECT USING (auth.uid() IS NOT NULL);
 CREATE POLICY "Auth can insert meta" ON reqord_meta FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Auth can update meta" ON reqord_meta FOR UPDATE USING (auth.uid() IS NOT NULL);
