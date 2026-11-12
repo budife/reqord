@@ -17,6 +17,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 - Login/register: username dinormalisasi (huruf kecil, tanpa spasi/karakter khusus) supaya email `<username>@gmail.com` selalu valid.
 - Scan/sync: fallback auth memakai username (bukan password) sebagai bagian email.
+- Scan: ID item kini unik. Sebelumnya `Date.now()` bisa bentrok untuk ratusan item, sehingga item saling menimpa di Supabase dan list memadat.
 
 ## [0.4.0] - 2026-09-25
 

@@ -44,6 +44,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-12 (Scan item loss / duplicate IDs)
+
+- Agent/model: Hermes Agent.
+- Permintaan: user lapor scan mendeteksi 147 folder tapi hanya 4 yang muncul.
+- Penyebab: `normalizeItem()` meng-generate id dengan `Date.now()`. Ratusan item diproses dalam hitungan milidetik → banyak id bentrok. Saat `sbSyncAll()` upsert by id, item saling menimpa di Supabase; realtime `sbLoadItems()` lalu memadatkan list berdasarkan id.
+- Perubahan: tambah `generateItemId()` (timestamp + counter + random) dan `repairItemIds()` untuk memperbaiki data lama yang id-nya bentrok; dipanggil saat load dan sebelum merge cloud.
+- Validasi: `node --check app.js`, smoke test, simulasi 147 item → 147 id unik, dan repair 1 id → 147 id unik.
+
 ### 2026-11-12 (Auth hardening)
 
 - Agent/model: Hermes Agent.
