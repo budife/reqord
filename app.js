@@ -671,7 +671,7 @@ if (submitLoginDialog) {
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) {
       if (error.message.includes('not confirmed')) showToast('Akun belum terkonfirmasi. Daftar ulang pakai username baru.');
-      else showToast('Login gagal: ' + (error.message || 'username/password salah'));
+      else showToast(`Login gagal untuk ${email}: ${error.message || 'username/password salah'}`);
       return;
     }
     localStorage.setItem('reqord-username', btoa(username.toLowerCase()));
