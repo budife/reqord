@@ -34,6 +34,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Klik centang di kolom Title tidak lagi membuka modal detail — centang hanya toggle pilihan (klik judul yang membuka modal).
 - Status sinkron kini satu indikator yang stabil: `Ada perubahan…` → `Menyinkron… n/N` → `Tersinkron · baru saja` (atau `Gagal sinkron` / `Offline`). Dulu teksnya bolak-balik antara "Unsaved changes" dan "Synced" karena dua fungsi saling menimpa elemen yang sama.
 - Load dari cloud (termasuk realtime) tidak lagi me-render tabel kalau isinya sama — dropdown status yang sedang dibuka tidak tertutup saat sync selesai.
+- Perbandingan data sekarang mengabaikan `updatedAt` (metadata) dan realtime load didebounce 1,5 detik, jadi sync 147 item tidak lagi memicu render beruntun yang menutup dropdown.
 
 ### Removed
 
