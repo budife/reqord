@@ -41,11 +41,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ### 2026-11-12 (Responsive audit & fixes)
 
-- Agent/model: Hermes Agent.
-- Permintaan: user minta audit responsif sampai ke akar dan perbaiki.
-- Temuan: aturan lebar kolom base (`.table-scroll td:nth-child(n){width:%}`) menimpa layout mobile, jadi sel tabel hanya 40px dan konten terpotong; label kolom mobile tertukar (Priority/Date); filter toolbar tidak wrap sehingga overflow; header aktif di mobile (tombol Ganti Password + username panjang) melewati viewport.
-- Perbaikan (semua di `@media(max-width:600px)`): `width:100%!important` untuk sel tabel, label kolom dibetulkan, `.table-filters{flex-wrap:wrap}` + `select{flex:1 1 40%;min-width:0}`, header diperkecil (teks profile & tombol Ganti Password disembunyikan, username dibatasi, brand dikecilkan).
-- Validasi: sweep 320/360/414/480/600/601/650/700/768/820/900/1024/1280/1440 → horizontal overflow 0 di semua lebar; sel mobile penuh (289px @360); label benar.
+- Permintaan: audit responsif sampai ke akar dan perbaiki.
+- Temuan: aturan lebar kolom base menimpa layout mobile (sel tabel jadi 40px), label kolom tertukar, filter toolbar tidak wrap, header aktif overflow di mobile.
+- Perbaikan: `width:100%!important` untuk sel di mobile, label kolom dibetulkan, filter wrap, header diperkecil.
+- Validasi: sweep 320–1440 → horizontal overflow 0.
+
+### 2026-11-12 (Sync status)
+
+- `#saveState` jadi satu state machine: `Ada perubahan…` → `Menyinkron… n/N` → `Tersinkron · baru saja` (atau `Gagal sinkron` / `Offline`); `renderActiveFile` tidak lagi menimpanya, dot ikut berubah warna.
 
 ### 2026-11-12 (Cleanup pass: seed, activity sync, filter, bulk delete)
 
