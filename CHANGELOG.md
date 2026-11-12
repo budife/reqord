@@ -21,6 +21,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Scan folder dan edit otomatis tersimpan ke Supabase (debounced 5 detik); sinkronisasi langsung setelah scan.
 - Item contoh (seed) dihapus — app mulai dari tabel kosong.
 - Teks UI era Excel ("Open file...", "Saved to workbook", "tiga tabel") diganti.
+- Sync ke cloud sekarang **manual**: otomatis (debounced 5 detik) dihapus, cukup tekan tombol "Sync to Cloud". Status menampilkan `Ada perubahan · belum disinkron` dan tombol menyala saat ada yang pending.
 
 ### Fixed
 

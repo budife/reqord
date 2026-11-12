@@ -21,7 +21,7 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 - Status: dropdown di tabel; item berpindah tabel otomatis. Ada status `Daily task`.
 - Edit: klik Title membuka modal Work order details (edit + subitems). Subitem inline + checklist.
 - Search title/requestor, filter priority/sort/bulan/requestor.
-- Persist: localStorage (`reqord-request-work-orders`) + IndexedDB (folder handle) + auto-sync Supabase (5 detik).
+- Persist: localStorage (`reqord-request-work-orders`) + IndexedDB (folder handle); sync ke Supabase **manual** lewat tombol "Sync to Cloud" (status: Ada perubahan · belum disinkron → Menyinkron… n/N → Tersinkron).
 - Auth: login username + kode (Supabase Auth, email `<username>@gmail.com`); tombol Logout/Ganti Password di header.
 - Public board: `public.html` read-only (requestor, judul, status), realtime.
 - Aksi massal: centang di kolom Title atau "Pilih semua" → bulk bar (ubah status / hapus).

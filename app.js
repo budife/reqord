@@ -15,9 +15,10 @@ let doneVisibleLimit = 10;
 let openedFileHandle = null;
 let openedFileName = '';
 let hasUnsavedChanges = false;
+let hasUnsyncedChanges = false;
 let lastSyncTime = null;
 let isLoadingFromCloud = false;
-let syncState = 'idle'; // idle | pending | syncing | error
+let syncState = 'idle'; // idle | syncing | error
 let syncProgress = { done: 0, total: 0 };
 let activities = loadStoredActivities();
 let storageDatabase = null;
@@ -54,15 +55,7 @@ function loadItems() {
     return [];
   }
 }
-let _syncTimer = null;
-function debouncedSync() {
-  if (!isAdmin || !supabaseClient) return;
-  syncState = 'pending';
-  updateSyncStatus();
-  if (_syncTimer) clearTimeout(_syncTimer);
-  _syncTimer = setTimeout(() => { sbSyncAll(); _syncTimer = null; }, 5000);
-}
-function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); debouncedSync(); return items; }
+function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; hasUnsyncedChanges = true; persistDraft(); updateSyncStatus(); return items; }
 function persistDraft() {
   try {
     const json = JSON.stringify(items);
@@ -79,7 +72,7 @@ function persistDraft() {
 function openDraftDatabase() { if (!window.indexedDB) return; const request = indexedDB.open('reqord-storage', 1); request.onupgradeneeded = () => { const db = request.result; db.createObjectStore('draft', { keyPath: 'id' }); db.createObjectStore('folderHandle', { keyPath: 'id' }); }; request.onsuccess = () => { storageDatabase = request.result; restoreFolderHandle(); }; }
 function loadStoredActivities() { try { const raw = localStorage.getItem(ACTIVITIES_KEY); const parsed = JSON.parse(raw); return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
 function activityKey(activity) { return [activity.date, activity.action, activity.title, activity.details].join('|'); }
-function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details }); persistDraft(); debouncedActivitySync(); renderActivities(); }
+function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details }); persistDraft(); renderActivities(); }
 function renderActivities() { const list = document.querySelector('#activityList'); if (!list) return; list.innerHTML = activities.length ? activities.map(activity => `<div class="activity-item"><strong>${escapeHtml(activity.action)}</strong><span>${escapeHtml(activity.title || activity.details || 'reqord')}</span><small>${escapeHtml(displayDate(activity.date, true))}${activity.requestor ? ` · ${escapeHtml(activity.requestor)}` : ''}</small></div>`).join('') : '<p class="activity-empty">Belum ada activity.</p>'; }
 function enhanceDurationCells() { document.querySelectorAll('.duration-cell').forEach(cell => { if (cell.querySelector('.duration-edit-button')) return; const row = cell.closest('tr'); const control = row?.querySelector('[data-id]'); const item = control && findItem(control.dataset.id); if (!item) return; cell.innerHTML = `<span>${escapeHtml(completionDuration(item))}</span><button class="duration-edit-button" data-duration-edit-id="${item.id}" type="button" title="Edit waktu pengerjaan" aria-label="Edit waktu pengerjaan">✎</button>`; }); }
 function normalizeDailyProgressCells() { document.querySelectorAll('#dailyTable tr').forEach(row => { const item = findItem(row.querySelector('[data-id]')?.dataset.id); const title = row.querySelector('.title-cell'); const requestor = row.querySelector('td:nth-child(2)'); const status = row.querySelector('.status-select')?.closest('td'); const priority = row.querySelector('.priority-select')?.closest('td'); if (!item || !title || !requestor || !status || !priority) return; [...row.children].forEach(cell => { if (![title, requestor, status, priority].includes(cell)) cell.remove(); }); const progress = document.createElement('td'); progress.className = 'daily-progress-cell-wrap'; const done = isDailyDone(item); progress.innerHTML = `<span class="daily-progress-cell"><small>${escapeHtml(displayDate(today(), false))}</small><button class="action-button complete-action daily-check ${done ? 'daily-done' : ''}" data-row-action="daily-done" data-id="${item.id}" title="${done ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-label="${done ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-pressed="${done}">${done ? '☑' : '☐'}</button></span>`; priority.after(progress); }); }
@@ -138,18 +131,19 @@ function renderDailyRow(item) { const doneToday = isDailyDone(item); const compl
 function updateSyncStatus() {
   const el = document.querySelector('#saveState');
   const dot = document.querySelector('#activeFileName .sync-dot');
+  const syncBtn = document.querySelector('#syncCloudButton');
   if (!el) return;
   el.classList.remove('syncing', 'is-dirty', 'is-pending', 'is-error');
   if (dot) dot.classList.remove('syncing', 'is-pending', 'is-error');
+  if (syncBtn) syncBtn.classList.toggle('has-pending', hasUnsyncedChanges && syncState !== 'syncing');
   if (!supabaseClient) { el.textContent = 'Offline (localStorage)'; return; }
-  if (isLoadingFromCloud) { el.textContent = 'Memuat dari cloud…'; el.classList.add('syncing'); if (dot) dot.classList.add('syncing'); return; }
   if (syncState === 'syncing') {
     el.textContent = syncProgress.total > 1 ? `Menyinkron… ${syncProgress.done}/${syncProgress.total}` : 'Menyinkron…';
     el.classList.add('syncing'); if (dot) dot.classList.add('syncing');
-  } else if (syncState === 'pending') {
-    el.textContent = 'Ada perubahan…'; el.classList.add('is-pending'); if (dot) dot.classList.add('is-pending');
   } else if (syncState === 'error') {
     el.textContent = 'Gagal sinkron'; el.classList.add('is-error'); if (dot) dot.classList.add('is-error');
+  } else if (hasUnsyncedChanges) {
+    el.textContent = 'Ada perubahan · belum disinkron'; el.classList.add('is-pending'); if (dot) dot.classList.add('is-pending');
   } else if (lastSyncTime) {
     const mins = Math.max(0, Math.round((Date.now() - lastSyncTime.getTime()) / 60000));
     el.textContent = mins < 1 ? 'Tersinkron · baru saja' : `Tersinkron · ${mins} mnt lalu`;
@@ -723,8 +717,7 @@ async function scanFolderHandle(root) {
     normalized.forEach(item => addActivity('Folder scan', item, `${item.title} (${item.requestor})`));
     saveItems();
     render();
-    if (isAdmin) sbSyncAll();
-    showToast(`${scanned.length} item ditambahkan${duplicates.length ? `, ${duplicates.length} duplikat di-skip` : ''}`);
+    showToast(`${scanned.length} item ditambahkan${duplicates.length ? `, ${duplicates.length} duplikat di-skip` : ''} · tekan "Sync to Cloud" untuk mengirim`);
     return scanned.length;
 }
 
@@ -957,8 +950,7 @@ async function sbLoadItems(showLoading = false) {
   const signature = list => JSON.stringify([...list].sort((a, b) => String(a.id).localeCompare(String(b.id))).map(normalizeItem));
   const unchanged = signature(next) === signature(items);
   items = next;
-  lastSyncTime = new Date();
-  if (showLoading) syncState = 'idle';
+  if (showLoading) { lastSyncTime = new Date(); syncState = 'idle'; }
   // Jangan re-render bila isinya sama saja — re-render akan menutup dropdown status yang sedang dibuka.
   if (!unchanged) { persistDraft(); render(); }
   if (showLoading) isLoadingFromCloud = false;
@@ -1040,22 +1032,19 @@ async function sbSyncAll() {
     syncProgress.done++;
     updateSyncStatus();
   }
+  if (!failed && !(await sbSaveActivities())) failed = true;
   syncState = failed ? 'error' : 'idle';
-  lastSyncTime = new Date();
+  if (!failed) { hasUnsyncedChanges = false; lastSyncTime = new Date(); }
   updateSyncStatus();
   console.log('[reqord] sbSyncAll: synced', items.length, 'items', failed ? '(ada yang gagal)' : '');
 }
 
 // === Activity sync (reqord_meta) ===
-let _activityTimer = null;
-function debouncedActivitySync() {
-  if (_activityTimer) clearTimeout(_activityTimer);
-  _activityTimer = setTimeout(() => { sbSaveActivities(); _activityTimer = null; }, 5000);
-}
 async function sbSaveActivities() {
-  if (!supabaseClient) return;
+  if (!supabaseClient) return true;
   const { error } = await supabaseClient.from('reqord_meta').upsert({ key: 'activities', value: activities, updated_at: new Date().toISOString() });
-  if (error) console.error('[reqord] activity sync error:', error);
+  if (error) { console.error('[reqord] activity sync error:', error); return false; }
+  return true;
 }
 async function sbLoadActivities() {
   if (!supabaseClient) return;

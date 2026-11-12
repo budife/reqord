@@ -32,10 +32,11 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 - Export JSON / Import JSON.
 - Reset button (hapus semua data + folder handle).
 
-### Auto-sync
+### Sync ke Cloud (manual)
 
-- Setiap perubahan (scan folder, edit, ubah status/priority, subitem) otomatis tersimpan ke Supabase dalam 5 detik.
-- Tombol "Sync to Cloud" tetap ada sebagai fallback manual.
+- Perubahan tersimpan lokal dulu (localStorage); tekan "Sync to Cloud" untuk mengirim semua ke Supabase.
+- Status di toolbar: `Ada perubahan · belum disinkron` → `Menyinkron… n/N` → `Tersinkron · baru saja`.
+- Tombol "Sync to Cloud" menyala (kuning) bila ada perubahan yang belum disinkron.
 
 ### Login & Sync
 
