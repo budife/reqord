@@ -667,7 +667,8 @@ if (submitLoginDialog) {
     const email = username + '@gmail.com';
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) {
-      showToast('Login gagal: ' + (error.message || 'username/password salah'));
+      if (error.message.includes('not confirmed')) showToast('Akun belum terkonfirmasi. Daftar ulang pakai username baru.');
+      else showToast('Login gagal: ' + (error.message || 'username/password salah'));
       return;
     }
     localStorage.setItem('reqord-username', btoa(username.toLowerCase()));
@@ -728,6 +729,8 @@ if (submitRegisterDialog) {
     if (error) {
       if (error.message.includes('rate limit') || error.message.includes('after') || error.message.includes('security')) {
         showToast('Terlalu banyak percobaan. Tunggu 1 menit.');
+      } else if (error.message.includes('already registered')) {
+        showToast('Username sudah dipakai. Silakan login atau pakai username lain.');
       } else {
         showToast('Register gagal: ' + error.message);
       }
