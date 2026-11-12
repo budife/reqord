@@ -906,10 +906,12 @@ if (supabaseClient) {
     console.log('[reqord] init: Supabase load failed, using localStorage', e);
   });
   sbLoadActivities();
+  let _realtimeTimer = null;
   supabaseClient.channel('work_orders_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'work_orders' }, (payload) => {
       console.log('[reqord] realtime:', payload.eventType, payload.new?.id);
-      sbLoadItems();
+      if (_realtimeTimer) clearTimeout(_realtimeTimer);
+      _realtimeTimer = setTimeout(() => { _realtimeTimer = null; sbLoadItems(); }, 1500);
     })
     .subscribe();
 }
@@ -947,7 +949,7 @@ async function sbLoadItems(showLoading = false) {
     }
   }
   const next = [...byId.values()];
-  const signature = list => JSON.stringify([...list].sort((a, b) => String(a.id).localeCompare(String(b.id))).map(normalizeItem));
+  const signature = list => JSON.stringify([...list].sort((a, b) => String(a.id).localeCompare(String(b.id))).map(item => ({ ...normalizeItem(item), updatedAt: '' })));
   const unchanged = signature(next) === signature(items);
   items = next;
   if (showLoading) { lastSyncTime = new Date(); syncState = 'idle'; }
