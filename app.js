@@ -193,7 +193,24 @@ function updateBulkBar() {
   bar.hidden = selectedIds.size === 0;
   const count = document.querySelector('#bulkCount');
   if (count) count.textContent = String(selectedIds.size);
+  const openButton = document.querySelector('#bulkOpen');
+  if (openButton) openButton.textContent = `Ubah Status (${selectedIds.size})`;
+  document.querySelectorAll('.check-all').forEach(box => {
+    const tbody = box.closest('table')?.querySelector('tbody');
+    if (!tbody) return;
+    const boxes = [...tbody.querySelectorAll('.row-check')];
+    box.checked = boxes.length > 0 && boxes.every(input => input.checked);
+  });
 }
+document.querySelectorAll('.check-all').forEach(box => box.addEventListener('change', event => {
+  const tbody = event.target.closest('table')?.querySelector('tbody');
+  if (!tbody) return;
+  tbody.querySelectorAll('.row-check').forEach(input => {
+    input.checked = event.target.checked;
+    if (event.target.checked) selectedIds.add(input.dataset.id); else selectedIds.delete(input.dataset.id);
+  });
+  updateBulkBar();
+}));
 document.querySelector('#selectAllButton').addEventListener('click', () => {
   const boxes = [...document.querySelectorAll('.row-check')];
   const allChecked = boxes.length > 0 && boxes.every(input => input.checked);
@@ -203,15 +220,18 @@ document.querySelector('#selectAllButton').addEventListener('click', () => {
   });
   updateBulkBar();
 });
-document.querySelector('.table-stack').addEventListener('change', event => {
-  const input = event.target.closest('.row-check');
-  if (!input) return;
-  if (input.checked) selectedIds.add(input.dataset.id); else selectedIds.delete(input.dataset.id);
-  updateBulkBar();
-});
-document.querySelector('#bulkApply').addEventListener('click', () => {
-  const status = document.querySelector('#bulkStatus').value;
+const bulkDialog = document.querySelector('#bulkDialog');
+document.querySelector('#bulkOpen').addEventListener('click', () => {
   if (!selectedIds.size) return;
+  document.querySelector('#bulkDialogMessage').textContent = `Ubah ${selectedIds.size} work order menjadi:`;
+  bulkDialog.showModal();
+});
+document.querySelector('#closeBulkDialog').addEventListener('click', () => bulkDialog.close());
+document.querySelector('#cancelBulkDialog').addEventListener('click', () => bulkDialog.close());
+bulkDialog.addEventListener('click', event => { if (event.target === bulkDialog) bulkDialog.close(); });
+document.querySelector('#applyBulkDialog').addEventListener('click', () => {
+  const status = document.querySelector('#bulkDialogStatus').value;
+  if (!selectedIds.size) { bulkDialog.close(); return; }
   let changed = 0;
   selectedIds.forEach(id => {
     const item = findItem(id);
@@ -229,7 +249,14 @@ document.querySelector('#bulkApply').addEventListener('click', () => {
   selectedIds.clear();
   updateBulkBar();
   render();
+  bulkDialog.close();
   showToast(`${changed} work order dijadikan ${label}`);
+});
+document.querySelector('.table-stack').addEventListener('change', event => {
+  const input = event.target.closest('.row-check');
+  if (!input) return;
+  if (input.checked) selectedIds.add(input.dataset.id); else selectedIds.delete(input.dataset.id);
+  updateBulkBar();
 });
 document.querySelector('#bulkClear').addEventListener('click', () => {
   selectedIds.clear();

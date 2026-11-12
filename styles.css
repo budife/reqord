@@ -184,3 +184,6 @@ body:not(.is-admin) #selectAllButton { display: none !important; }
 .bulk-bar select { background: #26331f; color: #fff; border: 1px solid #4e6b3d; border-radius: 7px; padding: 7px 9px; font: 500 13px Manrope, system-ui, sans-serif; cursor: pointer; }
 .bulk-bar .primary-button { padding: 8px 14px; font-size: 13px; }
 .bulk-bar .secondary-button { background: transparent; color: #dcebe0; border-color: #4e6b3d; padding: 8px 14px; font-size: 13px; }
+.bulk-field { display: block; margin: 14px 22px 4px; color: var(--muted); font-size: 13px; }
+.bulk-field select { display: block; width: 100%; margin-top: 7px; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: #fbfcf8; color: var(--text); font: 500 13px Manrope, system-ui, sans-serif; }
+th .check-all { margin-right: 6px; vertical-align: -1px; accent-color: var(--green-dark); cursor: pointer; }
