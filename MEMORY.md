@@ -25,7 +25,7 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 - Auth: login username + kode (Supabase Auth, email `<username>@gmail.com`); tombol Logout/Ganti Password di header.
 - Public board: `public.html` read-only (requestor, judul, status), realtime.
 - Aksi massal: centang di kolom Title atau "Pilih semua" → bulk bar (ubah status / hapus).
-- Export/Import JSON dan Reset tersedia di toolbar intro.
+- Export/Import JSON tersedia di toolbar intro.
 - Versi: v0.5.0.
 - Stack: vanilla JS + HTML + CSS (no build), CDN Supabase JS. XLSX/Excel sudah tidak dipakai.
 - Browser: Chromium (File System Access API).

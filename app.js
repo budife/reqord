@@ -334,7 +334,7 @@ profileDialog.addEventListener('click', event => { if (event.target === profileD
 document.querySelectorAll('[data-maker-tab]').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('[data-maker-tab]').forEach(button => button.classList.toggle('active', button === tab)); document.querySelectorAll('[data-maker-content]').forEach(content => { content.hidden = content.dataset.makerContent !== tab.dataset.makerTab; }); }));
 document.querySelector('.profile-footer span').innerHTML = '<i class="sync-dot"></i> reqord v0.5.0';
 const fallbackReleaseNotes = [
-  { version: 'v0.5.0', date: '2026-11-12', dateLabel: '12 Nov 2026', title: 'Scan folder, sync cloud & public board', highlights: ['Scan Folder: pilih folder Google Drive, work order langsung terisi dari nama folder', 'Login username + kode, sync otomatis ke Supabase, dan Public board read-only', 'Aksi massal: pilih banyak work order, ubah status atau hapus sekaligus', 'Layout mobile diperbaiki: tabel penuh, filter wrap, header rapat', 'Tombol Tambah, Export/Import JSON, dan Reset tersedia kembali'] },
+  { version: 'v0.5.0', date: '2026-11-12', dateLabel: '12 Nov 2026', title: 'Scan folder, sync cloud & public board', highlights: ['Scan Folder: pilih folder Google Drive, work order langsung terisi dari nama folder', 'Login username + kode, sync otomatis ke Supabase, dan Public board read-only', 'Aksi massal: pilih banyak work order, ubah status atau hapus sekaligus', 'Layout mobile diperbaiki: tabel penuh, filter wrap, header rapat', 'Tombol Tambah dan Export/Import JSON tersedia kembali'] },
   { version: 'v0.3.0', date: '2026-09-23', dateLabel: '23 Sep 2026', title: 'Subitems inline & status Preview/Revision', highlights: ['Subitems ala Monday.com: tampil inline di bawah tiap request + checklist modal', 'Tambah, centang, dan hapus subitem; tersimpan ke sheet Subitems + restore saat Load', 'Status baru Preview dan On revision, pindah full via dropdown', 'Delete pindah ke modal edit + undo; kolom Est. bisa diedit manual', 'Progress Daily = tanggal + checkbox; subitem selalu ikut tabel parentnya'] },
   { version: 'v0.3.0', date: '2026-09-22', dateLabel: '22 Sep 2026', title: 'Durasi, catatan & rapikan tabel', highlights: ['Estimasi diganti waktu pengerjaan aktual (Est.) yang dihitung saat request selesai', 'Catatan per work order: kolom Catatan, popup, dan tersimpan di Excel', 'Urutan tabel final + kolom Date/Priority diselaraskan + grid seragam tanpa scrollbar', 'Validasi baris saat import + laporan hasil Load; workbook kosong tetap bisa dibuka', 'Save as New dihapus; alur jadi Load → Edit → Save (aman buat OneDrive)', 'F5 = reset bersih; tanggal Excel tanpa huruf T; tombol/icon actions dirapikan'] },
   { version: 'v0.2.0', date: '2026-09-21', dateLabel: '21 Sep 2026', title: 'Buat satu sekarang aja, activity & tampilan baru', highlights: ['Mode draft lokal (New/Load/Save) + autosave + nama file aktif + status unsaved', 'Panel History & Activity + sheet Activity di workbook + timestamp lokal', 'Alur status lengkap + modal edit + hapus pakai konfirmasi + undo', 'Daily: label/kolom tanggal, reset tengah malam, strikethrough, checkbox jelas', 'Ikon actions dirapikan + tipografi tabel + fokus tipis + date picker matcha', 'Save anti file 0 byte + izin tulis + banner kalau library Excel gagal dimuat', 'Tab Recent changes di modal maker + judul mirip anti-duplikat + favicon RQ'] },
@@ -435,22 +435,6 @@ document.querySelector('#refreshFolderButton').addEventListener('click', async (
       addActivity('Refresh selesai', {}, `${found} campaign ditemukan`);
     }
   } catch (e) { showToast(`Refresh gagal: ${e.message}`); addActivity('Refresh gagal', {}, e.message); }
-});
-
-const resetBtn = document.querySelector('#resetButton');
-if (resetBtn) resetBtn.addEventListener('click', async () => {
-  const ok = await confirmModal('Hapus semua item dan reset draft?', { title: 'Reset?', confirmLabel: 'Reset' });
-  if (!ok) return;
-  items = [];
-  activities = [];
-  openedFileHandle = null;
-  openedFileName = '';
-  hasUnsavedChanges = false;
-  persistDraft();
-  renderActiveFile();
-  renderActivities();
-  render();
-  showToast('Draft direset');
 });
 
 const exportBtn = document.querySelector('#exportJsonButton');

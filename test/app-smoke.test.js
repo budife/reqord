@@ -56,7 +56,6 @@ assert.match(fs.readFileSync('styles.css', 'utf8'), /td\.row-actions\{display:ta
 assert.match(fs.readFileSync('styles.css', 'utf8'), /table-layout:fixed/);
 assert.match(fs.readFileSync('styles.css', 'utf8'), /table-scroll table\{width:100%/);
 assert.match(markup, /exportJsonButton/);
-assert.match(markup, /resetButton/);
 assert.match(markup, /addDialog/);
 assert.match(markup, /submitAddDialog/);
 assert.match(source, /isSaving/);

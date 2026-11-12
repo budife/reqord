@@ -9,7 +9,7 @@
       "Login username + kode, sync otomatis ke Supabase, dan Public board read-only",
       "Aksi massal: pilih banyak work order, ubah status atau hapus sekaligus",
       "Layout mobile diperbaiki: tabel penuh, filter wrap, header rapat",
-      "Tombol Tambah, Export/Import JSON, dan Reset tersedia kembali"
+      "Tombol Tambah dan Export/Import JSON tersedia kembali"
     ]
   },
   {

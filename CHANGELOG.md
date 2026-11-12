@@ -44,6 +44,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 - Kode mati: fitur Excel/XLSX (loadWorkbook, downloadTemplate, loadActivities*, mergeNotesFromWorkbook), suggestion lama yang tidak terpakai, dan helper auth yang tidak dipanggil. CDN SheetJS dihapus.
 - Elemen UI yang sudah tidak dirender (banner Excel).
+- Tombol Save (redundan — semua perubahan sudah langsung tersimpan otomatis) dan tombol Reset (hanya mengosongkan lokal, data cloud balik lagi).
 
 ## [0.4.0] - 2026-09-25
 

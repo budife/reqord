@@ -29,7 +29,6 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 - Data persist di localStorage (key: `reqord-request-work-orders`).
 - Folder handle persist di IndexedDB.
 - Export JSON / Import JSON.
-- Reset button (hapus semua data + folder handle).
 
 ### Sync ke Cloud (manual)
 
