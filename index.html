@@ -22,7 +22,7 @@
 
      <section class="intro"><div><div class="eyebrow">WORK ORDER MANAGER</div><h1>Request work orders</h1><p>Tambah request dan lihat progresnya dalam tiga tabel sederhana.</p></div><div class="intro-actions"><span class="active-file" id="activeFileName"><i class="sync-dot"></i>Tidak ada file aktif</span><button class="secondary-button" id="scanFolderButton">Scan Folder</button><button class="secondary-button" id="refreshFolderButton">Refresh</button><button class="secondary-button" id="saveButton">Save</button><button class="secondary-button" id="syncCloudButton">Sync to Cloud</button><a class="secondary-button" href="public.html" style="text-decoration:none;">Public board</a><input id="jsonFileInput" type="file" accept=".json" hidden></div></section>
 
-    <section class="toolbar"><div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Search work orders..."></div><div class="table-filters"><select id="priorityFilter" aria-label="Filter priority"><option value="all">All priorities</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select><select id="sortFilter" aria-label="Sort work orders"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="target">Target done</option><option value="priority">Priority</option></select><select id="monthFilter" aria-label="Filter month"><option value="all">All months</option></select></div><span class="result-count" id="resultCount">0 work orders</span><span class="save-state" id="saveState">Ready</span></section>
+    <section class="toolbar"><div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Search work orders..."></div><div class="table-filters"><select id="priorityFilter" aria-label="Filter priority"><option value="all">All priorities</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select><select id="sortFilter" aria-label="Sort work orders"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="target">Target done</option><option value="priority">Priority</option></select><select id="monthFilter" aria-label="Filter month"><option value="all">All months</option></select></div><span class="result-count" id="resultCount">0 work orders</span><button class="secondary-button" id="selectAllButton" type="button">Pilih semua</button><span class="save-state" id="saveState">Ready</span></section>
 
     <section class="table-stack">
        <article class="table-panel glass"><div class="table-heading"><div><span class="table-marker marker-list"></span><h2>Request list</h2><span class="table-count" id="listCount">0</span><p>New request received</p></div><span class="table-state">LIST</span></div><div class="table-scroll"><table><thead><tr><th>Title</th><th>Requestor</th><th>Status</th><th>Request date</th><th>Priority</th></tr></thead><tbody id="listTable"></tbody></table></div><div class="table-empty" id="listEmpty">Belum ada request list.</div></article>
@@ -32,6 +32,21 @@
        <article class="table-panel glass"><div class="table-heading"><div><span class="table-marker marker-done"></span><h2>Done requests</h2><span class="table-count" id="doneCount">0</span><p>All clear</p></div><span class="table-state done-state">DONE</span></div><div class="table-scroll"><table><thead><tr><th>Title</th><th>Requestor</th><th>Status</th><th>Request date</th><th>Priority</th><th>Est.</th></tr></thead><tbody id="doneTable"></tbody></table></div><div class="table-empty" id="doneEmpty">Belum ada done request.</div><button class="load-more-button" id="loadMoreDoneButton" type="button" hidden>Load more done works</button></article>
         <article class="table-panel glass daily-panel"><div class="table-heading"><div><span class="table-marker marker-daily"></span><h2>Daily tasks</h2><span class="table-count" id="dailyCount">0</span><span class="daily-progress" id="dailyProgress">0 selesai hari ini</span><p>Recurring tasks for today</p></div><span class="table-state daily-state">DAILY</span></div><div class="table-scroll"><table><thead><tr><th>Title</th><th>Requestor</th><th>Status</th><th>Priority</th><th>Progress</th></tr></thead><tbody id="dailyTable"></tbody></table></div><div class="table-empty" id="dailyEmpty">Belum ada daily task.</div></article>
     </section>
+    <div class="bulk-bar" id="bulkBar" hidden>
+      <span class="bulk-count"><strong id="bulkCount">0</strong> dipilih</span>
+      <label class="bulk-label">Jadikan
+        <select id="bulkStatus" aria-label="Status baru">
+          <option value="list">Request list</option>
+          <option value="ongoing">Ongoing request</option>
+          <option value="preview">Preview</option>
+          <option value="revision">On revision</option>
+          <option value="done">Done request</option>
+        </select>
+      </label>
+      <button class="primary-button" id="bulkApply" type="button">Terapkan</button>
+      <button class="secondary-button" id="bulkClear" type="button">Batal</button>
+    </div>
+
     <footer><span><i class="sync-dot"></i> Open file terlebih dahulu · Save changes ke file yang sama</span><span class="mono">reqord · REQUEST WORK ORDERS</span><span class="app-version">reqord v0.4.0</span><span class="maker-credit">crafted by <button class="maker-trigger" id="makerButton" type="button" aria-label="Meet the maker">budife.psd</button></span></footer>
   </main>
   <div id="toast" class="toast" role="status"></div>

@@ -41,6 +41,7 @@ let priorityFilter = 'all';
 let sortFilter = 'newest';
 let monthFilter = 'all';
 const tableMap = { list: document.querySelector('#listTable'), ongoing: document.querySelector('#ongoingTable'), revision: document.querySelector('#revisionTable'), preview: document.querySelector('#previewTable'), done: document.querySelector('#doneTable') };
+const selectedIds = new Set();
 
 function loadItems() {
   try {
@@ -137,12 +138,13 @@ function closeTitleSuggestions() { const s = document.querySelector('#titleSugge
 function render() { const query = document.querySelector('#searchInput').value.trim().toLowerCase(); if (query) doneVisibleLimit = 10; let visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (priorityFilter === 'all' || item.priority === priorityFilter) && (monthFilter === 'all' || item.month === monthFilter)); visible.sort((a, b) => { if (sortFilter === 'priority') return ['high', 'normal', 'low'].indexOf(a.priority) - ['high', 'normal', 'low'].indexOf(b.priority); if (sortFilter === 'target') return (a.date || '').localeCompare(b.date || ''); const result = (a.requestDate || '').localeCompare(b.requestDate || ''); return sortFilter === 'oldest' ? result : -result; }); Object.keys(tableMap).forEach(status => { const allRows = visible.filter(item => item.type === 'project' && item.status === status); const rows = status === 'done' ? allRows.slice(0, doneVisibleLimit) : allRows; tableMap[status].innerHTML = rows.map(renderRow).join(''); document.querySelector(`#${status}Count`).textContent = items.filter(item => item.type === 'project' && item.status === status).length; document.querySelector(`#${status}Empty`).hidden = rows.length !== 0; if (status === 'done') { const loadMoreButton = document.querySelector('#loadMoreDoneButton'); loadMoreButton.hidden = allRows.length <= 10 || rows.length >= allRows.length; loadMoreButton.textContent = `Load more done works (${Math.min(doneVisibleLimit + 10, allRows.length)}/${allRows.length})`; } }); renderDailyTasks(visible.filter(item => item.type === 'daily')); makeRowsEditable(); removeActionCells(); reorderTableColumns(); normalizeStatusSelects(); enhanceDurationCells(); renderInlineSubitems(); normalizeDailyProgressCells(); document.querySelector('#resultCount').textContent = `${visible.length} of ${items.length}`; renderActiveFile(); renderRequestorSuggestions(); refreshMonthFilter(); }
 function renderRow(item) {
   const canEdit = isAdmin;
+  const checkBox = canEdit ? `<input type="checkbox" class="row-check" data-id="${item.id}" ${selectedIds.has(String(item.id)) ? 'checked' : ''} aria-label="Pilih ${escapeHtml(item.title)}">` : '';
   const takeButton = canEdit && item.status === 'list' ? `<button class="action-button take-action" data-row-action="take" data-id="${item.id}" title="Saya mau kerjain" aria-label="Saya mau kerjain">▶</button>` : '';
   const completeButton = canEdit && item.status !== 'done' ? `<button class="action-button complete-action" data-row-action="complete" data-id="${item.id}" title="Tandai selesai" aria-label="Tandai selesai">✓</button>` : '';
   const revisionButton = canEdit && item.status === 'done' ? `<button class="action-button revision-action" data-row-action="revision" data-id="${item.id}" title="Kembalikan untuk revisi" aria-label="Kembalikan untuk revisi">↻</button>` : '';
   const deleteButton = canEdit ? `<button class="action-button delete-action" data-row-action="delete" data-id="${item.id}" title="Hapus request" aria-label="Hapus request">⌫</button>` : '';
   const disabledAttr = canEdit ? '' : 'disabled';
-  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell">${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}><option value="list" ${item.status === 'list' ? 'selected' : ''}>Request list</option><option value="ongoing" ${item.status === 'ongoing' ? 'selected' : ''}>Ongoing request</option><option value="done" ${item.status === 'done' ? 'selected' : ''}>Done request</option><option value="daily" ${item.type === 'daily' ? 'selected' : ''}>Daily task</option></select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td>${escapeHtml(displayDate(item.requestDate, true))}</td><td class="target-cell" title="Target done: ${escapeHtml(displayDate(item.date, true))}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
+  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell">${checkBox}${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}><option value="list" ${item.status === 'list' ? 'selected' : ''}>Request list</option><option value="ongoing" ${item.status === 'ongoing' ? 'selected' : ''}>Ongoing request</option><option value="done" ${item.status === 'done' ? 'selected' : ''}>Done request</option><option value="daily" ${item.type === 'daily' ? 'selected' : ''}>Daily task</option></select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td>${escapeHtml(displayDate(item.requestDate, true))}</td><td class="target-cell" title="Target done: ${escapeHtml(displayDate(item.date, true))}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
 }
 function renderDailyTasks(tasks) { refreshDailyDates(); const dailyItems = items.filter(item => item.type === 'daily'); document.querySelector('#dailyCount').textContent = dailyItems.length; document.querySelector('#dailyProgress').textContent = `${dailyItems.filter(isDailyDone).length} selesai hari ini`; document.querySelector('#dailyTable').innerHTML = tasks.map(renderDailyRow).join(''); document.querySelector('#dailyEmpty').hidden = tasks.length !== 0; makeRowsEditable(); }
 function renderDailyRow(item) { const doneToday = isDailyDone(item); const completeButton = `<button class="action-button complete-action daily-check ${doneToday ? 'daily-done' : ''}" data-row-action="daily-done" data-id="${item.id}" title="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-label="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-pressed="${doneToday}">${doneToday ? '☑' : '☐'}</button>`; const dailyStatus = `<span class="daily-status-label ${doneToday ? 'is-done' : ''}">${doneToday ? 'Selesai' : 'Belum selesai'}<small>${escapeHtml(displayDate(today(), false))}</small></span>`; return `<tr class="${doneToday ? 'daily-row-done' : ''}"><td class="title-cell ${doneToday ? 'daily-title-done' : ''}">${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><select class="status-select status-daily" data-action="status" data-id="${item.id}" aria-label="Status"><option value="daily" selected>Daily task</option><option value="list">Request list</option><option value="ongoing">Ongoing request</option><option value="done">Done request</option></select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority"><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td class="daily-status-cell">${dailyStatus}</td><td class="row-actions">${completeButton}<button class="action-button delete-action" data-row-action="delete" data-id="${item.id}" title="Hapus daily task" aria-label="Hapus daily task">⌫</button></td></tr>`; }
@@ -183,6 +185,58 @@ function refreshMonthFilter() {
   if (months.includes(current)) select.value = current;
 }
 document.querySelector('#loadMoreDoneButton').addEventListener('click', () => { doneVisibleLimit += 10; render(); });
+
+// === Bulk selection ===
+function updateBulkBar() {
+  const bar = document.querySelector('#bulkBar');
+  if (!bar) return;
+  bar.hidden = selectedIds.size === 0;
+  const count = document.querySelector('#bulkCount');
+  if (count) count.textContent = String(selectedIds.size);
+}
+document.querySelector('#selectAllButton').addEventListener('click', () => {
+  const boxes = [...document.querySelectorAll('.row-check')];
+  const allChecked = boxes.length > 0 && boxes.every(input => input.checked);
+  boxes.forEach(input => {
+    input.checked = !allChecked;
+    if (!allChecked) selectedIds.add(input.dataset.id); else selectedIds.delete(input.dataset.id);
+  });
+  updateBulkBar();
+});
+document.querySelector('.table-stack').addEventListener('change', event => {
+  const input = event.target.closest('.row-check');
+  if (!input) return;
+  if (input.checked) selectedIds.add(input.dataset.id); else selectedIds.delete(input.dataset.id);
+  updateBulkBar();
+});
+document.querySelector('#bulkApply').addEventListener('click', () => {
+  const status = document.querySelector('#bulkStatus').value;
+  if (!selectedIds.size) return;
+  let changed = 0;
+  selectedIds.forEach(id => {
+    const item = findItem(id);
+    if (!item) return;
+    item.status = normalizeStatus(status);
+    item.type = item.status === 'daily' ? 'daily' : 'project';
+    if (item.status === 'done') { item.done = true; item.completedAt = item.completedAt || new Date().toISOString(); }
+    changed += 1;
+  });
+  const label = groups[status] || status;
+  if (changed) {
+    addActivity(`${changed} work order dijadikan ${label}`, {}, `${changed} item`);
+    saveItems();
+  }
+  selectedIds.clear();
+  updateBulkBar();
+  render();
+  showToast(`${changed} work order dijadikan ${label}`);
+});
+document.querySelector('#bulkClear').addEventListener('click', () => {
+  selectedIds.clear();
+  document.querySelectorAll('.row-check').forEach(input => { input.checked = false; });
+  document.querySelectorAll('.check-all').forEach(input => { input.checked = false; });
+  updateBulkBar();
+});
 let editTargetId = null;
 const editDialog = document.querySelector('#editDialog');
 const noteDialog = document.querySelector('#noteDialog');
@@ -802,6 +856,7 @@ if (hasCode && userName) {
   if (_changePassBtn) _changePassBtn.style.display = 'none';
   if (userStatus) userStatus.textContent = '';
 }
+document.body.classList.toggle('is-admin', isAdmin);
 openDraftDatabase(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
 if (supabaseClient) {
   sbLoadItems().then(() => {
