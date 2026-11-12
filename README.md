@@ -46,9 +46,9 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 
 ### Ubah Status Banyak Sekali
 
-- Centang work order di kolom Title (bisa dari tabel mana pun).
-- Klik "Pilih semua" untuk memilih semua yang tampil.
-- Pilih status di bulk bar yang muncul, lalu klik "Terapkan".
+- Centang work order di kolom Title (bisa dari tabel mana pun), atau gunakan checkbox "Pilih semua" di header kolom Title pada tiap tabel.
+- Tombol "Pilih semua" di toolbar memilih semua yang tampil.
+- Bulk bar muncul: klik "Ubah Status (N)" → modal pilih status → "Terapkan".
 
 ### Debug
 
