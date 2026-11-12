@@ -2,6 +2,25 @@
 
 Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti kategori sederhana agar mudah dibaca oleh manusia dan AI agent.
 
+## [v0.5.0] — 2026-11-12
+
+### Added
+
+- Tombol `+ Tambah` dengan modal Tambah work order (Title, Requestor, Priority, suggestion).
+- Tombol Export / Import JSON dan Reset kembali tersedia di toolbar intro.
+- Riwayat versi v0.5.0 (release-notes.json + Recent changes).
+
+### Fixed
+
+- Fallback auth saat sesi Supabase tidak valid: dulu bisa error karena `#codeDialog` sudah tidak ada, sekarang membuka login dialog.
+- Scan folder: pemisah ` - ` disepatatkan (tidak lagi memotong nama bertanda hubung), dan folder tanpa pemisah pakai requestor `Unknown` (dulu nama bulan).
+- Layout mobile: tabel penuh, label kolom benar, filter wrap, header rapat, tanpa overflow 320–1440px.
+
+### Removed
+
+- Kode mati: fitur Excel/XLSX (loadWorkbook, downloadTemplate, loadActivities*, mergeNotesFromWorkbook), suggestion lama yang tidak terpakai, dan helper auth yang tidak dipanggil. CDN SheetJS dihapus.
+- Elemen UI yang sudah tidak dirender (banner Excel).
+
 ## [Unreleased]
 
 ### Added

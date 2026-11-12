@@ -1,5 +1,18 @@
 [
   {
+    "version": "v0.5.0",
+    "date": "2026-11-12",
+    "dateLabel": "12 Nov 2026",
+    "title": "Scan folder, sync cloud & public board",
+    "highlights": [
+      "Scan Folder: pilih folder Google Drive, work order langsung terisi dari nama folder",
+      "Login username + kode, sync otomatis ke Supabase, dan Public board read-only",
+      "Aksi massal: pilih banyak work order, ubah status atau hapus sekaligus",
+      "Layout mobile diperbaiki: tabel penuh, filter wrap, header rapat",
+      "Tombol Tambah, Export/Import JSON, dan Reset tersedia kembali"
+    ]
+  },
+  {
     "version": "v0.4.0",
     "date": "2026-09-25",
     "dateLabel": "25 Sep 2026",

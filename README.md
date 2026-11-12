@@ -37,6 +37,12 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 - Setiap perubahan (scan folder, edit, ubah status/priority, subitem) otomatis tersimpan ke Supabase dalam 5 detik.
 - Tombol "Sync to Cloud" tetap ada sebagai fallback manual.
 
+### Login & Sync
+
+- Login memakai username + kode (password); tersimpan di localStorage (`reqord-username`, `reqord-access-code`).
+- Backend Supabase Auth (email `<username>@gmail.com`); tombol Logout dan Ganti Password di header saat login.
+- Register otomatis saat kode belum terdaftar.
+
 ### Papan Publik (read-only)
 
 - URL: `public.html` — bisa dibagikan ke siapa saja, tanpa login.
@@ -83,6 +89,7 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 
 ## Status
 
+- Versi: v0.5.0.
 - Fase: prototype folder-scan work order tracker.
 - Stack: vanilla JS + HTML + CSS (no build step).
 - Storage: localStorage (items) + IndexedDB (folder handle).

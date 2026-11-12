@@ -10,14 +10,6 @@ let userName = '';
 try { const stored = localStorage.getItem('reqord-username'); if (stored) userName = atob(stored); } catch(e) {}
 const _adminToken = 'YnVkZA==';
 let isAdmin = false;
-function applyRoleUI() {
-  const adminElements = ['#scanFolderButton', '#refreshFolderButton', '#saveButton', '#syncCloudButton'];
-  adminElements.forEach(sel => {
-    const el = document.querySelector(sel);
-    if (el) el.style.display = isAdmin ? '' : 'none';
-  });
-  // Hide edit/status interactions for non-admin (handled in render via isAdmin check)
-}
 let items = repairItemIds(loadItems());
 let doneVisibleLimit = 10;
 let openedFileHandle = null;
@@ -30,7 +22,6 @@ let storageDatabase = null;
 let isLoadingWorkbook = false;
 let isSaving = false;
 const saveAsRequested = false;
-let lastImportReport = { loaded: 0, skippedEmpty: 0, skippedInvalid: 0 };
 let deletedItem = null;
 let priorityFilter = 'all';
 let sortFilter = 'newest';
@@ -68,7 +59,6 @@ function debouncedSync() {
   _syncTimer = setTimeout(() => { sbSyncAll(); _syncTimer = null; }, 5000);
 }
 function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; persistDraft(); debouncedSync(); return items; }
-function loadDraftItems() { try { const current = JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(current) ? current.map(normalizeItem) : []; } catch { return []; } }
 function persistDraft() {
   try {
     const json = JSON.stringify(items);
@@ -87,9 +77,7 @@ function loadStoredActivities() { try { const raw = localStorage.getItem(ACTIVIT
 function activityKey(activity) { return [activity.date, activity.action, activity.title, activity.details].join('|'); }
 function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details }); persistDraft(); debouncedActivitySync(); renderActivities(); }
 function renderActivities() { const list = document.querySelector('#activityList'); if (!list) return; list.innerHTML = activities.length ? activities.map(activity => `<div class="activity-item"><strong>${escapeHtml(activity.action)}</strong><span>${escapeHtml(activity.title || activity.details || 'reqord')}</span><small>${escapeHtml(displayDate(activity.date, true))}${activity.requestor ? ` · ${escapeHtml(activity.requestor)}` : ''}</small></div>`).join('') : '<p class="activity-empty">Belum ada activity.</p>'; }
-function centerActionGroups() { document.querySelectorAll('.table-scroll td.row-actions').forEach(cell => { let group = cell.querySelector('.actions-inner'); if (!group) { group = document.createElement('div'); group.className = 'actions-inner'; while (cell.firstChild) group.append(cell.firstChild); cell.append(group); } const count = group.querySelectorAll('.action-button').length; group.dataset.count = String(count); group.style.setProperty('--action-count', Math.min(count, 3)); group.className = `actions-inner actions-count-${count}`; }); }
 function enhanceDurationCells() { document.querySelectorAll('.duration-cell').forEach(cell => { if (cell.querySelector('.duration-edit-button')) return; const row = cell.closest('tr'); const control = row?.querySelector('[data-id]'); const item = control && findItem(control.dataset.id); if (!item) return; cell.innerHTML = `<span>${escapeHtml(completionDuration(item))}</span><button class="duration-edit-button" data-duration-edit-id="${item.id}" type="button" title="Edit waktu pengerjaan" aria-label="Edit waktu pengerjaan">✎</button>`; }); }
-function renderSubitemCells() { document.querySelectorAll('.table-scroll tbody tr').forEach(row => { const control = row.querySelector('[data-id]'); const item = control && findItem(control.dataset.id); const title = row.querySelector('.title-cell'); if (!item || !title) return; item.subitems = Array.isArray(item.subitems) ? item.subitems : []; let badge = title.querySelector('.subitem-count'); if (!badge) { badge = document.createElement('small'); badge.className = 'subitem-count'; title.append(' ', badge); } const count = item.subitems.length; const done = item.subitems.filter(subitem => subitem.done).length; badge.textContent = count ? `${done}/${count} subitems` : 'Subitems'; title.classList.add('has-subitems'); title.tabIndex = 0; title.dataset.subitemId = item.id; title.setAttribute('role', 'button'); }); }
 function normalizeDailyProgressCells() { document.querySelectorAll('#dailyTable tr').forEach(row => { const item = findItem(row.querySelector('[data-id]')?.dataset.id); const title = row.querySelector('.title-cell'); const requestor = row.querySelector('td:nth-child(2)'); const status = row.querySelector('.status-select')?.closest('td'); const priority = row.querySelector('.priority-select')?.closest('td'); if (!item || !title || !requestor || !status || !priority) return; [...row.children].forEach(cell => { if (![title, requestor, status, priority].includes(cell)) cell.remove(); }); const progress = document.createElement('td'); progress.className = 'daily-progress-cell-wrap'; const done = isDailyDone(item); progress.innerHTML = `<span class="daily-progress-cell"><small>${escapeHtml(displayDate(today(), false))}</small><button class="action-button complete-action daily-check ${done ? 'daily-done' : ''}" data-row-action="daily-done" data-id="${item.id}" title="${done ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-label="${done ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-pressed="${done}">${done ? '☑' : '☐'}</button></span>`; priority.after(progress); }); }
 function renderInlineSubitems() { document.querySelectorAll('.subitem-inline').forEach(row => row.remove()); Object.entries(tableMap).forEach(([status, tableBody]) => { if (!tableBody) return; tableBody.querySelectorAll('tr:not(.subitem-inline)').forEach(row => { const control = row.querySelector('[data-id]'); const item = control && findItem(control.dataset.id); if (!item || item.type !== 'project' || item.status !== status) return; item.subitems = Array.isArray(item.subitems) ? item.subitems : []; if (!item.subitems.length) return; const table = row.closest('table'); const inlineRow = document.createElement('tr'); inlineRow.className = 'subitem-inline'; inlineRow.dataset.parentId = item.id; const cell = document.createElement('td'); cell.colSpan = table?.tHead?.rows[0]?.cells.length || 6; cell.innerHTML = `<div class="subitem-inline-list">${item.subitems.map(subitem => `<label class="subitem-inline-item"><input type="checkbox" data-inline-subitem-parent="${item.id}" data-inline-subitem-id="${subitem.id}" ${subitem.done ? 'checked' : ''}><span>${escapeHtml(subitem.title)}</span></label>`).join('')}</div>`; inlineRow.append(cell); row.after(inlineRow); }); }); }
 function removeActionCells() { document.querySelectorAll('.table-scroll tbody tr .row-actions').forEach(actions => actions.remove()); }
@@ -97,10 +85,6 @@ function normalizeStatusSelects() { document.querySelectorAll('.status-select').
 function reorderTableColumns() { document.querySelectorAll('.table-scroll tbody tr').forEach(row => { const cells = row.children; if (cells.length > 4) row.insertBefore(cells[4], cells[3]); }); }
 function makeRowsEditable() { if (!isAdmin) return; document.querySelectorAll('.table-scroll tbody tr').forEach(row => { const control = row.querySelector('[data-id]'); if (!control) return; const id = control.dataset.id; const item = findItem(id); const title = row.querySelector('.title-cell'); const requestor = row.querySelector('td:nth-child(2)'); if (title) { title.removeAttribute('contenteditable'); title.removeAttribute('data-action'); title.removeAttribute('data-id'); title.classList.add('has-subitems'); title.dataset.subitemId = id; title.tabIndex = 0; title.setAttribute('role', 'button'); title.setAttribute('aria-label', `Tambah subitem untuk ${item?.title || 'work order'}`); } if (requestor) { requestor.removeAttribute('contenteditable'); requestor.removeAttribute('data-action'); requestor.removeAttribute('data-id'); } const actions = row.querySelector('.row-actions'); const status = row.querySelector('.status-select')?.value; if (actions && !actions.querySelector('[data-row-action="edit"]')) actions.insertAdjacentHTML('afterbegin', `<button class="action-button edit-action" data-row-action="edit" data-id="${id}" title="Edit work order" aria-label="Edit work order">✎</button>`); if (actions && status === 'done') { if (!actions.querySelector('[data-row-action="revision"]')) actions.insertAdjacentHTML('beforeend', `<button class="action-button revision-action" data-row-action="revision" data-id="${id}" title="Kembalikan untuk revisi" aria-label="Kembalikan untuk revisi">↻</button>`); if (!actions.querySelector('[data-row-action="delete"]')) actions.insertAdjacentHTML('beforeend', `<button class="action-button delete-action" data-row-action="delete" data-id="${id}" title="Hapus" aria-label="Hapus">⌫</button>`); } if (status === 'list') actions.querySelector('[data-row-action="complete"]')?.remove(); row.querySelector('.estimate-cell')?.remove(); row.querySelector('.target-cell')?.remove(); row.querySelector('.duration-cell')?.remove(); if (item && status === 'done') { const durationCell = document.createElement('td'); durationCell.className = 'duration-cell'; durationCell.textContent = completionDuration(item); const requestDateCell = row.querySelector('td:nth-child(5)'); if (requestDateCell) requestDateCell.after(durationCell); } }); }
 function renderActiveFile() { const label = document.querySelector('#activeFileName'); const state = document.querySelector('#saveState'); const name = openedFileName || 'Siap'; const fileIsDirty = Boolean(openedFileName && hasUnsavedChanges); if (label) { label.innerHTML = `<i class="sync-dot"></i>${escapeHtml(name)}`; label.classList.toggle('is-dirty', fileIsDirty); } if (state) { state.textContent = hasUnsavedChanges ? 'Unsaved changes' : 'Tersimpan ke cloud'; state.className = `save-state ${hasUnsavedChanges ? 'is-dirty' : ''}`; } }
-function importReportMessage() { const { loaded, skippedEmpty, skippedInvalid } = lastImportReport; return `Loaded ${loaded} row${loaded === 1 ? '' : 's'}${skippedEmpty ? ` · ${skippedEmpty} empty skipped` : ''}${skippedInvalid ? ` · ${skippedInvalid} invalid skipped` : ''}`; }
-function loadActivities(workbook) { const activitySheet = workbook.SheetNames.find(name => /^activity$/i.test(name)); activities = activitySheet ? XLSX.utils.sheet_to_json(workbook.Sheets[activitySheet]).map(row => ({ date: row.Date || '', action: row.Action || '', title: row.Title || '', requestor: row.Requestor || '', details: row.Details || '' })).filter(activity => activity.action || activity.title || activity.details).reverse() : []; renderActivities(); }
-async function loadActivitiesFromFile(file) { const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const validSheet = workbook.SheetNames.some(name => /request list|ongoing requests|done requests|project list|ongoing projects|done projects|daily tasks|activity|read me/i.test(name)); if (!validSheet) throw new Error('Workbook tidak memiliki sheet reqord yang dikenali'); loadActivities(workbook); }
-async function mergeNotesFromWorkbook(file) { const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const sheets = workbook.SheetNames.filter(name => /request list|ongoing requests|done requests|daily tasks|project list|ongoing projects|done projects/i.test(name)); sheets.forEach(name => XLSX.utils.sheet_to_json(workbook.Sheets[name]).forEach(row => { const title = String(row.Title || row.Task || '').trim(); const requestor = String(row.Requestor || '').trim(); const item = items.find(candidate => candidate.title === title && (!requestor || candidate.requestor === requestor)); if (item) item.note = String(row.Note || row.Catatan || '').trim(); })); render(); }
 function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
 let _itemSeq = 0;
 function generateItemId() { return `${Date.now().toString(36)}-${(++_itemSeq).toString(36)}-${Math.random().toString(36).slice(2, 8)}`; }
@@ -112,7 +96,7 @@ function completionDuration(item) { if (!item.completedAt || !item.requestDate) 
 function durationMinutes(item) { if (!item.completedAt || !item.requestDate) return ''; const start = new Date(item.requestDate.includes('T') ? item.requestDate : `${item.requestDate}T00:00:00`); const end = new Date(item.completedAt); if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return ''; return Math.max(0, Math.round((end - start) / 60000)); }
 function isCompletedRequest(item) { return item?.type === 'project' && (item.status === 'done' || item.done === true || Boolean(item.completedAt)); }
 function setCompletedAtFromDuration(item, value, unit) { const amount = Number(value); if (!Number.isFinite(amount) || amount < 0 || !item.requestDate) return ''; const start = new Date(item.requestDate.includes('T') ? item.requestDate : `${item.requestDate}T00:00:00`); const minutes = Math.round(amount * (unit === 'jam' ? 60 : 1)); return new Date(start.getTime() + minutes * 60000).toISOString(); }
-function normalizeDateValue(value) { if (!value) return ''; if (value instanceof Date) return `${localDate(value)}T${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`; if (typeof value === 'number' && window.XLSX?.SSF) { const parsed = XLSX.SSF.parse_date_code(value); if (parsed) return `${parsed.y}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}${parsed.H || parsed.M ? `T${String(parsed.H).padStart(2, '0')}:${String(parsed.M).padStart(2, '0')}` : ''}`; } return String(value).trim().replace(' ', 'T').slice(0, 16); }
+function normalizeDateValue(value) { if (!value) return ''; if (value instanceof Date) return `${localDate(value)}T${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`; return String(value).trim().replace(' ', 'T').slice(0, 16); }
 function nowDateTime() { const date = new Date(); return `${localDate(date)}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`; }
 function today() { return localDate(new Date()); }
 function isDailyDone(item) { return item.type === 'daily' && item.dailyDoneDate === today(); }
@@ -291,6 +275,38 @@ document.querySelector('#bulkClear').addEventListener('click', () => {
   document.querySelectorAll('.check-all').forEach(input => { input.checked = false; });
   updateBulkBar();
 });
+
+// === Add work order ===
+const addDialog = document.querySelector('#addDialog');
+document.querySelector('#addWorkOrderButton').addEventListener('click', () => { addDialog.showModal(); setTimeout(() => document.querySelector('#titleInput').focus(), 50); });
+document.querySelector('#closeAddDialog').addEventListener('click', () => addDialog.close());
+document.querySelector('#cancelAddDialog').addEventListener('click', () => addDialog.close());
+addDialog.addEventListener('click', event => { if (event.target === addDialog) addDialog.close(); });
+document.querySelector('#submitAddDialog').addEventListener('click', () => {
+  const title = document.querySelector('#titleInput').value.trim();
+  const requestor = document.querySelector('#requestorInput').value.trim();
+  const priority = document.querySelector('#addPriority').value;
+  if (!title || !requestor) { showToast('Title dan requestor wajib diisi'); return; }
+  const item = normalizeItem({ id: generateItemId(), title, requestor, priority, status: 'list', type: 'project', requestDate: nowDateTime() });
+  items = [...items, item];
+  addActivity('Work order ditambahkan', item);
+  saveItems();
+  addDialog.close();
+  document.querySelector('#titleInput').value = '';
+  document.querySelector('#requestorInput').value = '';
+  document.querySelector('#addPriority').value = 'normal';
+  render();
+  showToast('Work order ditambahkan');
+});
+document.querySelector('#requestorInput').addEventListener('input', renderRequestorSuggestions);
+document.querySelector('#titleInput').addEventListener('input', renderTitleSuggestions);
+document.querySelector('#requestorSuggestions').addEventListener('click', event => { const btn = event.target.closest('[data-requestor]'); if (btn) chooseRequestor(btn.dataset.requestor); });
+document.querySelector('#titleSuggestions').addEventListener('click', event => {
+  const btn = event.target.closest('[data-title-id]');
+  if (!btn) return;
+  document.querySelector('#titleInput').value = btn.querySelector('.suggestion-name')?.textContent || '';
+  closeTitleSuggestions();
+});
 let editTargetId = null;
 const editDialog = document.querySelector('#editDialog');
 const noteDialog = document.querySelector('#noteDialog');
@@ -313,9 +329,9 @@ document.querySelector('#makerButton').addEventListener('click', () => profileDi
 document.querySelector('#closeProfileButton').addEventListener('click', () => profileDialog.close());
 profileDialog.addEventListener('click', event => { if (event.target === profileDialog) profileDialog.close(); });
 document.querySelectorAll('[data-maker-tab]').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('[data-maker-tab]').forEach(button => button.classList.toggle('active', button === tab)); document.querySelectorAll('[data-maker-content]').forEach(content => { content.hidden = content.dataset.makerContent !== tab.dataset.makerTab; }); }));
-document.querySelector('.profile-footer span').innerHTML = '<i class="sync-dot"></i> reqord v0.4.0';
+document.querySelector('.profile-footer span').innerHTML = '<i class="sync-dot"></i> reqord v0.5.0';
 const fallbackReleaseNotes = [
-  { version: 'v0.4.0', date: '2026-09-25', dateLabel: '25 Sep 2026', title: 'Work order details + konfirmasi modal', highlights: ['Klik Title membuka satu modal Work order details gabungan (edit + subitems)', 'Semua prompt browser diganti modal konfirmasi gaya reqord', 'Subitem bisa dihapus via tombol × + konfirmasi, ukuran baris dinormalisasi', 'Tab Recent changes jadi manusiawi: dropdown tanggal + ringkasan per versi'] },
+  { version: 'v0.5.0', date: '2026-11-12', dateLabel: '12 Nov 2026', title: 'Scan folder, sync cloud & public board', highlights: ['Scan Folder: pilih folder Google Drive, work order langsung terisi dari nama folder', 'Login username + kode, sync otomatis ke Supabase, dan Public board read-only', 'Aksi massal: pilih banyak work order, ubah status atau hapus sekaligus', 'Layout mobile diperbaiki: tabel penuh, filter wrap, header rapat', 'Tombol Tambah, Export/Import JSON, dan Reset tersedia kembali'] },
   { version: 'v0.3.0', date: '2026-09-23', dateLabel: '23 Sep 2026', title: 'Subitems inline & status Preview/Revision', highlights: ['Subitems ala Monday.com: tampil inline di bawah tiap request + checklist modal', 'Tambah, centang, dan hapus subitem; tersimpan ke sheet Subitems + restore saat Load', 'Status baru Preview dan On revision, pindah full via dropdown', 'Delete pindah ke modal edit + undo; kolom Est. bisa diedit manual', 'Progress Daily = tanggal + checkbox; subitem selalu ikut tabel parentnya'] },
   { version: 'v0.3.0', date: '2026-09-22', dateLabel: '22 Sep 2026', title: 'Durasi, catatan & rapikan tabel', highlights: ['Estimasi diganti waktu pengerjaan aktual (Est.) yang dihitung saat request selesai', 'Catatan per work order: kolom Catatan, popup, dan tersimpan di Excel', 'Urutan tabel final + kolom Date/Priority diselaraskan + grid seragam tanpa scrollbar', 'Validasi baris saat import + laporan hasil Load; workbook kosong tetap bisa dibuka', 'Save as New dihapus; alur jadi Load → Edit → Save (aman buat OneDrive)', 'F5 = reset bersih; tanggal Excel tanpa huruf T; tombol/icon actions dirapikan'] },
   { version: 'v0.2.0', date: '2026-09-21', dateLabel: '21 Sep 2026', title: 'Buat satu sekarang aja, activity & tampilan baru', highlights: ['Mode draft lokal (New/Load/Save) + autosave + nama file aktif + status unsaved', 'Panel History & Activity + sheet Activity di workbook + timestamp lokal', 'Alur status lengkap + modal edit + hapus pakai konfirmasi + undo', 'Daily: label/kolom tanggal, reset tengah malam, strikethrough, checkbox jelas', 'Ikon actions dirapikan + tipografi tabel + fokus tipis + date picker matcha', 'Save anti file 0 byte + izin tulis + banner kalau library Excel gagal dimuat', 'Tab Recent changes di modal maker + judul mirip anti-duplikat + favicon RQ'] },
@@ -332,7 +348,6 @@ if (recentDateSelect) { recentDateSelect.addEventListener('change', event => ren
 const activityPanel = document.querySelector('#activityPanel');
 document.querySelector('#activityButton').addEventListener('click', () => { activityPanel.classList.add('open'); activityPanel.setAttribute('aria-hidden', 'false'); });
 document.querySelector('#closeActivityButton').addEventListener('click', () => { activityPanel.classList.remove('open'); activityPanel.setAttribute('aria-hidden', 'true'); });
-function downloadTemplate() { if (!window.XLSX) { showToast('Library XLSX belum tersedia'); return; } const workbook = XLSX.utils.book_new(); const requestHeaders = ['Title', 'Requestor', 'Status', 'Priority', 'RequestDate', 'TargetDone']; const sheets = { 'Request List': requestHeaders, 'Ongoing Requests': requestHeaders, 'Done Requests': requestHeaders, 'Daily Tasks': ['Task', 'Requestor', 'Date', 'Priority', 'Done'] }; Object.entries(sheets).forEach(([name, headers]) => { const sheet = XLSX.utils.aoa_to_sheet([headers, headers[0] === 'Title' ? ['Contoh work order (hapus baris ini)', '', 'Request list', 'Normal', '', ''] : ['Contoh daily task (hapus baris ini)', '', '', 'Normal', 'No']]); sheet['!autofilter'] = { ref: `A1:${String.fromCharCode(64 + headers.length)}1` }; sheet['!cols'] = headers.map(header => ({ wch: header === 'Title' || header === 'Task' ? 42 : header === 'Requestor' ? 22 : 16 })); XLSX.utils.book_append_sheet(workbook, sheet, name); }); const readMe = XLSX.utils.aoa_to_sheet([['reqord WORK ORDER TEMPLATE'], ['Isi data di sheet yang sesuai, hapus baris contoh, lalu buka file ini melalui Open file di reqord.'], [''], ['Sheet', 'Keterangan'], ['Request List', 'Request baru yang belum dikerjakan'], ['Ongoing Requests', 'Request yang sedang dikerjakan'], ['Done Requests', 'Request yang sudah selesai'], ['Daily Tasks', 'Pekerjaan rutin; Done diisi Yes atau No'], [''], ['Kolom request', 'Title, Requestor, Status, Priority, RequestDate, TargetDone'], ['Kolom daily task', 'Task, Requestor, Date, Priority, Done']]); readMe['!cols'] = [{ wch: 24 }, { wch: 78 }]; XLSX.utils.book_append_sheet(workbook, readMe, 'Read me'); const file = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' }); const url = URL.createObjectURL(new Blob([file], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })); const link = document.createElement('a'); link.href = url; link.download = 'reqord-table-template.xlsx'; link.click(); URL.revokeObjectURL(url); showToast('Template table berhasil diunduh'); }
 document.querySelector('.table-stack').addEventListener('change', event => { const control = event.target; const item = findItem(control.dataset.id); if (!item) return; if (control.dataset.action === 'status') { item.status = normalizeStatus(control.value); item.type = item.status === 'daily' ? 'daily' : 'project'; if (item.status === 'done') { item.done = true; item.completedAt = item.completedAt || new Date().toISOString(); } } else if (control.dataset.action === 'priority') item.priority = control.value; else return; saveItems(); addActivity(control.dataset.action === 'priority' ? 'Priority diubah' : `Status menjadi ${item.status}`, item); render(); showToast(item.type === 'daily' ? 'Dipindahkan ke Daily tasks' : item.status === 'done' ? 'Request selesai' : 'Request diperbarui'); });
 let deleteTargetId = null;
 const deleteDialog = document.querySelector('#deleteDialog');
@@ -366,13 +381,11 @@ document.querySelector('.table-stack').addEventListener('click', event => { cons
 document.querySelector('.table-stack').addEventListener('click', event => { const note = event.target.closest('.note-cell.has-note'); if (note) openNoteDialog(note.dataset.noteId); });
 document.querySelector('.table-stack').addEventListener('keydown', event => { const title = event.target.closest('.title-cell.has-note'); if (title && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openNoteDialog(title.dataset.noteId); } });
 const subitemDialog = document.querySelector('#subitemDialog'); let subitemTargetId = null;
-function openSubitemDialog(id) { const item = findItem(id); if (!item) return; subitemTargetId = item.id; document.querySelector('#subitemDialogTitle').textContent = `Subitems · ${item.title}`; subitemDialog.showModal(); document.querySelector('#subitemInput').focus(); }
 document.querySelector('#subitemInput').addEventListener('keydown', event => { if (event.key !== 'Enter') return; event.preventDefault(); const title = event.currentTarget.value.trim(); const item = findItem(subitemTargetId); if (!item || !title) return; item.subitems = Array.isArray(item.subitems) ? item.subitems : []; item.subitems.push({ id: `${item.id}-${Date.now()}`, title, done: false, order: item.subitems.length }); saveItems(); addActivity('Subitem ditambahkan', item, title); event.currentTarget.value = ''; render(); });
 document.querySelector('.table-stack').addEventListener('change', event => { const checkbox = event.target.closest('[data-inline-subitem-id]'); if (!checkbox) return; const item = findItem(checkbox.dataset.inlineSubitemParent); const subitem = item?.subitems.find(candidate => String(candidate.id) === String(checkbox.dataset.inlineSubitemId)); if (!subitem) return; subitem.done = checkbox.checked; saveItems(); addActivity(subitem.done ? 'Subitem selesai' : 'Subitem dibuka lagi', item, subitem.title); render(); });
 document.querySelector('#closeSubitemButton').addEventListener('click', () => subitemDialog.close()); subitemDialog.addEventListener('click', event => { if (event.target === subitemDialog) subitemDialog.close(); });
 document.querySelector('.table-stack').addEventListener('click', event => { const title = event.target.closest('.title-cell.has-subitems'); if (title) openEditDialog(title.dataset.subitemId); }); document.querySelector('.table-stack').addEventListener('keydown', event => { const title = event.target.closest('.title-cell.has-subitems'); if (title && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openEditDialog(title.dataset.subitemId); } });
 document.querySelector('.table-stack').addEventListener('click', event => { const button = event.target.closest('[data-row-action="complete"]'); if (button) { const item = findItem(button.dataset.id); if (item && !item.completedAt) item.completedAt = new Date().toISOString(); } }, true);
-async function loadWorkbook(file) { if (!window.XLSX) throw new Error('XLSX unavailable'); const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const sourceSheets = workbook.SheetNames.filter(name => /request list|ongoing requests|done requests|project list|ongoing projects|done projects/i.test(name)); const dailySheet = workbook.SheetNames.find(name => /daily tasks/i.test(name)); const rows = (sourceSheets.length ? sourceSheets : workbook.SheetNames.slice(0, 1)).flatMap(sheetName => XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]).map(row => ({ ...row, __sheetStatus: sheetName }))); const imported = rows.map((row, index) => { const requestDate = normalizeDateValue(row.RequestDate || row.requestDate) || today(); const sheetStatus = /ongoing/i.test(row.__sheetStatus) ? 'ongoing' : /done/i.test(row.__sheetStatus) ? 'done' : 'list'; return normalizeItem({ id: Date.now() + index, title: row.Title || row.title || row.Name || `Imported request ${index + 1}`, requestor: row.Requestor || row.requestor || row.Owner || row.owner, type: 'project', status: row.Status ? normalizeStatus(row.Status) : sheetStatus, priority: normalizePriority(row.Priority), requestDate, date: normalizeDateValue(row.TargetDone || row.targetDone || row.Deadline || row.deadline) || dateAfterDays(3, requestDate) }); }); if (dailySheet) { const dailyRows = XLSX.utils.sheet_to_json(workbook.Sheets[dailySheet]); dailyRows.forEach((row, index) => imported.push(normalizeItem({ id: Date.now() + imported.length + index, title: row.Task || row.Title, requestor: row.Requestor, type: 'daily', status: 'daily', priority: normalizePriority(row.Priority), requestDate: normalizeDateValue(row.Date || row.RequestDate) || today(), date: dateAfterDays(3, normalizeDateValue(row.Date || row.RequestDate) || today()), done: String(row.Done || '').toLowerCase() === 'yes' || String(row.Done || '').toLowerCase() === 'true' }))); } if (!imported.length) throw new Error('empty'); items = imported; saveItems(); render(); showToast(`${imported.length} item loaded`); }
 // --- Folder handle persistence ---
 let savedFolderHandle = null;
 async function saveFolderHandle(handle) {
@@ -500,23 +513,10 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
     const storedCode = localStorage.getItem('reqord-access-code');
     let code = storedCode ? atob(storedCode) : null;
     if (!code) {
-      const codeDialog = document.querySelector('#codeDialog');
-      const codeInput = document.querySelector('#codeDialogInput');
-      codeDialog.showModal();
-      code = await new Promise(resolve => {
-        document.querySelector('#submitCodeDialog').addEventListener('click', () => {
-          const val = codeInput.value.trim();
-          if (val) { codeDialog.close(); resolve(val); }
-        }, { once: true });
-        document.querySelector('#cancelCodeDialog').addEventListener('click', () => {
-          codeDialog.close(); resolve(null);
-        }, { once: true });
-        document.querySelector('#closeCodeDialog').addEventListener('click', () => {
-          codeDialog.close(); resolve(null);
-        }, { once: true });
-      });
-      if (!code) { showToast('Kode wajib diisi'); return; }
-      code = code.trim();
+      const dialog = document.querySelector('#loginDialog');
+      if (dialog) dialog.showModal();
+      showToast('Sesi berakhir. Silakan login lagi.');
+      return;
     }
     const email = userName + '@gmail.com';
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
@@ -567,23 +567,10 @@ document.querySelector('#scanFolderButton').addEventListener('click', async () =
         const storedCode = localStorage.getItem('reqord-access-code');
         let code = storedCode ? atob(storedCode) : null;
         if (!code) {
-          const codeDialog = document.querySelector('#codeDialog');
-          const codeInput = document.querySelector('#codeDialogInput');
-          codeDialog.showModal();
-          code = await new Promise(resolve => {
-            document.querySelector('#submitCodeDialog').addEventListener('click', () => {
-              const val = codeInput.value.trim();
-              if (val) { codeDialog.close(); resolve(val); }
-            }, { once: true });
-            document.querySelector('#cancelCodeDialog').addEventListener('click', () => {
-              codeDialog.close(); resolve(null);
-            }, { once: true });
-            document.querySelector('#closeCodeDialog').addEventListener('click', () => {
-              codeDialog.close(); resolve(null);
-            }, { once: true });
-          });
-          if (!code) { showToast('Kode wajib diisi'); return; }
-          code = code.trim();
+          const dialog = document.querySelector('#loginDialog');
+          if (dialog) dialog.showModal();
+          showToast('Sesi berakhir. Silakan login lagi.');
+          return;
         }
         const email = userName + '@gmail.com';
         let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
@@ -682,9 +669,9 @@ async function scanFolderHandle(root) {
       }
       showToast(`${monthName}: ${campaignFolders.length} campaign`);
         for (const { name: campaignName, handle: campaignHandle } of campaignFolders) {
-          // Parse folder name: "Requestor - Nama Campaign"
-          const parts = campaignName.split(/\s*-\s*/);
-          const requestor = parts.length > 1 ? parts[0].trim() : monthName;
+          // Parse folder name: "Requestor - Nama Campaign" (pemisah harus ada spasi di kedua sisi)
+          const parts = campaignName.split(/\s+-\s+/);
+          const requestor = parts.length > 1 ? parts[0].trim() : 'Unknown';
           const title = parts.length > 1 ? parts.slice(1).join(' - ').trim() : campaignName;
           // Get folder date: try files inside, then month folder name, then now
           let folderDate = '';
@@ -929,32 +916,6 @@ if (supabaseClient) {
 
 // === Supabase Auth & Sync ===
 function normalizeUsername(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9._-]/g, ''); }
-async function sbSignUp(email, password) {
-  if (!supabaseClient) { showToast('Supabase tidak tersedia'); return null; }
-  const { data, error } = await supabaseClient.auth.signUp({ email, password });
-  if (error) { showToast('Register gagal: ' + error.message); return null; }
-  showToast('Register berhasil. Cek email untuk konfirmasi.');
-  return data;
-}
-
-async function sbSignIn(email, password) {
-  if (!supabaseClient) { showToast('Supabase tidak tersedia'); return null; }
-  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) { showToast('Login gagal: ' + error.message); return null; }
-  showToast('Login berhasil');
-  await sbLoadItems();
-  return data;
-}
-
-async function sbSignOut() {
-  if (!supabaseClient) return;
-  await supabaseClient.auth.signOut();
-  items = [];
-  persistDraft();
-  render();
-  showToast('Logout berhasil');
-}
-
 async function sbGetUser() {
   if (!supabaseClient) return null;
   const { data } = await supabaseClient.auth.getUser();
@@ -1100,14 +1061,6 @@ if (supabaseClient) {
       render();
     }
   });
-}
-
-// === Auth UI ===
-let authMode = 'login';
-// Auth UI removed; code-based auth via scanFolderButton
-
-function updateAuthUI() {
-  // No auth button in UI anymore; code-based auth via scan
 }
 
 
