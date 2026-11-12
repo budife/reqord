@@ -17,6 +17,8 @@ let openedFileName = '';
 let hasUnsavedChanges = false;
 let lastSyncTime = null;
 let isLoadingFromCloud = false;
+let syncState = 'idle'; // idle | pending | syncing | error
+let syncProgress = { done: 0, total: 0 };
 let activities = loadStoredActivities();
 let storageDatabase = null;
 let isLoadingWorkbook = false;
@@ -55,6 +57,8 @@ function loadItems() {
 let _syncTimer = null;
 function debouncedSync() {
   if (!isAdmin || !supabaseClient) return;
+  syncState = 'pending';
+  updateSyncStatus();
   if (_syncTimer) clearTimeout(_syncTimer);
   _syncTimer = setTimeout(() => { sbSyncAll(); _syncTimer = null; }, 5000);
 }
@@ -84,7 +88,7 @@ function removeActionCells() { document.querySelectorAll('.table-scroll tbody tr
 function normalizeStatusSelects() { document.querySelectorAll('.status-select').forEach(select => { const item = findItem(select.dataset.id); const current = item?.status || select.value; select.innerHTML = '<option value="list">Request list</option><option value="ongoing">Ongoing request</option><option value="preview">Preview</option><option value="revision">On revision</option><option value="done">Done request</option><option value="daily">Daily tasks</option>'; select.value = current; if (!isAdmin) select.disabled = true; }); }
 function reorderTableColumns() { document.querySelectorAll('.table-scroll tbody tr').forEach(row => { const cells = row.children; if (cells.length > 4) row.insertBefore(cells[4], cells[3]); }); }
 function makeRowsEditable() { if (!isAdmin) return; document.querySelectorAll('.table-scroll tbody tr').forEach(row => { const control = row.querySelector('[data-id]'); if (!control) return; const id = control.dataset.id; const item = findItem(id); const title = row.querySelector('.title-cell'); const requestor = row.querySelector('td:nth-child(2)'); if (title) { title.removeAttribute('contenteditable'); title.removeAttribute('data-action'); title.removeAttribute('data-id'); title.classList.add('has-subitems'); title.dataset.subitemId = id; title.tabIndex = 0; title.setAttribute('role', 'button'); title.setAttribute('aria-label', `Tambah subitem untuk ${item?.title || 'work order'}`); } if (requestor) { requestor.removeAttribute('contenteditable'); requestor.removeAttribute('data-action'); requestor.removeAttribute('data-id'); } const actions = row.querySelector('.row-actions'); const status = row.querySelector('.status-select')?.value; if (actions && !actions.querySelector('[data-row-action="edit"]')) actions.insertAdjacentHTML('afterbegin', `<button class="action-button edit-action" data-row-action="edit" data-id="${id}" title="Edit work order" aria-label="Edit work order">✎</button>`); if (actions && status === 'done') { if (!actions.querySelector('[data-row-action="revision"]')) actions.insertAdjacentHTML('beforeend', `<button class="action-button revision-action" data-row-action="revision" data-id="${id}" title="Kembalikan untuk revisi" aria-label="Kembalikan untuk revisi">↻</button>`); if (!actions.querySelector('[data-row-action="delete"]')) actions.insertAdjacentHTML('beforeend', `<button class="action-button delete-action" data-row-action="delete" data-id="${id}" title="Hapus" aria-label="Hapus">⌫</button>`); } if (status === 'list') actions.querySelector('[data-row-action="complete"]')?.remove(); row.querySelector('.estimate-cell')?.remove(); row.querySelector('.target-cell')?.remove(); row.querySelector('.duration-cell')?.remove(); if (item && status === 'done') { const durationCell = document.createElement('td'); durationCell.className = 'duration-cell'; durationCell.textContent = completionDuration(item); const requestDateCell = row.querySelector('td:nth-child(5)'); if (requestDateCell) requestDateCell.after(durationCell); } }); }
-function renderActiveFile() { const label = document.querySelector('#activeFileName'); const state = document.querySelector('#saveState'); const name = openedFileName || 'Siap'; const fileIsDirty = Boolean(openedFileName && hasUnsavedChanges); if (label) { label.innerHTML = `<i class="sync-dot"></i>${escapeHtml(name)}`; label.classList.toggle('is-dirty', fileIsDirty); } if (state) { state.textContent = hasUnsavedChanges ? 'Unsaved changes' : 'Tersimpan ke cloud'; state.className = `save-state ${hasUnsavedChanges ? 'is-dirty' : ''}`; } }
+function renderActiveFile() { const label = document.querySelector('#activeFileName'); const name = openedFileName || 'Siap'; const fileIsDirty = Boolean(openedFileName && hasUnsavedChanges); if (label) { label.innerHTML = `<i class="sync-dot"></i>${escapeHtml(name)}`; label.classList.toggle('is-dirty', fileIsDirty); } }
 function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
 let _itemSeq = 0;
 function generateItemId() { return `${Date.now().toString(36)}-${(++_itemSeq).toString(36)}-${Math.random().toString(36).slice(2, 8)}`; }
@@ -133,24 +137,27 @@ function renderDailyTasks(tasks) { refreshDailyDates(); const dailyItems = items
 function renderDailyRow(item) { const doneToday = isDailyDone(item); const completeButton = `<button class="action-button complete-action daily-check ${doneToday ? 'daily-done' : ''}" data-row-action="daily-done" data-id="${item.id}" title="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-label="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-pressed="${doneToday}">${doneToday ? '☑' : '☐'}</button>`; const dailyStatus = `<span class="daily-status-label ${doneToday ? 'is-done' : ''}">${doneToday ? 'Selesai' : 'Belum selesai'}<small>${escapeHtml(displayDate(today(), false))}</small></span>`; return `<tr class="${doneToday ? 'daily-row-done' : ''}"><td class="title-cell ${doneToday ? 'daily-title-done' : ''}">${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><select class="status-select status-daily" data-action="status" data-id="${item.id}" aria-label="Status"><option value="daily" selected>Daily task</option><option value="list">Request list</option><option value="ongoing">Ongoing request</option><option value="done">Done request</option></select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority"><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td class="daily-status-cell">${dailyStatus}</td><td class="row-actions">${completeButton}<button class="action-button delete-action" data-row-action="delete" data-id="${item.id}" title="Hapus daily task" aria-label="Hapus daily task">⌫</button></td></tr>`; }
 function updateSyncStatus() {
   const el = document.querySelector('#saveState');
+  const dot = document.querySelector('#activeFileName .sync-dot');
   if (!el) return;
-  if (isLoadingFromCloud) {
-    el.textContent = 'Memuat dari cloud...';
-    el.classList.add('syncing');
-    return;
-  }
-  el.classList.remove('syncing');
-  if (!supabaseClient) {
-    el.textContent = 'Offline (localStorage)';
-    return;
-  }
-  if (lastSyncTime) {
-    const mins = Math.round((Date.now() - lastSyncTime.getTime()) / 60000);
-    el.textContent = mins < 1 ? 'Synced baru saja' : `Synced ${mins} menit lalu`;
+  el.classList.remove('syncing', 'is-dirty', 'is-pending', 'is-error');
+  if (dot) dot.classList.remove('syncing', 'is-pending', 'is-error');
+  if (!supabaseClient) { el.textContent = 'Offline (localStorage)'; return; }
+  if (isLoadingFromCloud) { el.textContent = 'Memuat dari cloud…'; el.classList.add('syncing'); if (dot) dot.classList.add('syncing'); return; }
+  if (syncState === 'syncing') {
+    el.textContent = syncProgress.total > 1 ? `Menyinkron… ${syncProgress.done}/${syncProgress.total}` : 'Menyinkron…';
+    el.classList.add('syncing'); if (dot) dot.classList.add('syncing');
+  } else if (syncState === 'pending') {
+    el.textContent = 'Ada perubahan…'; el.classList.add('is-pending'); if (dot) dot.classList.add('is-pending');
+  } else if (syncState === 'error') {
+    el.textContent = 'Gagal sinkron'; el.classList.add('is-error'); if (dot) dot.classList.add('is-error');
+  } else if (lastSyncTime) {
+    const mins = Math.max(0, Math.round((Date.now() - lastSyncTime.getTime()) / 60000));
+    el.textContent = mins < 1 ? 'Tersinkron · baru saja' : `Tersinkron · ${mins} mnt lalu`;
   } else {
-    el.textContent = 'Belum sync';
+    el.textContent = 'Belum sinkron';
   }
 }
+setInterval(() => { if (document.visibilityState === 'visible') updateSyncStatus(); }, 30000);
 function showToast(message) { const toast = document.querySelector('#toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2400); }
 function findItem(id) { return items.find(item => String(item.id) === String(id)); }
 
@@ -898,9 +905,9 @@ if (hasCode && userName) {
   if (userStatus) userStatus.textContent = '';
 }
 document.body.classList.toggle('is-admin', isAdmin);
-openDraftDatabase(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
+openDraftDatabase(); updateSyncStatus(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
 if (supabaseClient) {
-  sbLoadItems().then(() => {
+  sbLoadItems(true).then(() => {
     console.log('[reqord] init: loaded from Supabase');
   }).catch(e => {
     console.log('[reqord] init: Supabase load failed, using localStorage', e);
@@ -922,10 +929,9 @@ async function sbGetUser() {
   return data?.user || null;
 }
 
-async function sbLoadItems() {
+async function sbLoadItems(showLoading = false) {
   if (!supabaseClient) return;
-  isLoadingFromCloud = true;
-  updateSyncStatus();
+  if (showLoading) { isLoadingFromCloud = true; updateSyncStatus(); }
   const { data, error } = await supabaseClient
     .from('work_orders')
     .select('*')
@@ -933,7 +939,7 @@ async function sbLoadItems() {
   if (error) { 
     showToast('Load gagal: ' + error.message); 
     console.error('[reqord] sbLoadItems error:', error); 
-    isLoadingFromCloud = false;
+    if (showLoading) isLoadingFromCloud = false;
     updateSyncStatus();
     return; 
   }
@@ -949,9 +955,10 @@ async function sbLoadItems() {
   }
   items = [...byId.values()];
   lastSyncTime = new Date();
+  if (showLoading) syncState = 'idle';
   persistDraft();
   render();
-  isLoadingFromCloud = false;
+  if (showLoading) isLoadingFromCloud = false;
   updateSyncStatus();
   console.log('[reqord] sbLoadItems: merged', remote.length, 'remote items, total', items.length);
 }
@@ -997,13 +1004,14 @@ function itemToSb(item, userId) {
 }
 
 async function sbUpsertItem(item) {
-  if (!supabaseClient) return;
+  if (!supabaseClient) return true;
   const user = await sbGetUser();
   const userId = user ? user.id : null;
   const { error } = await supabaseClient
     .from('work_orders')
     .upsert(itemToSb(item, userId));
-  if (error) { showToast('Sync gagal: ' + error.message); console.error('[reqord] sbUpsertItem error:', error); }
+  if (error) { showToast('Sync gagal: ' + error.message); console.error('[reqord] sbUpsertItem error:', error); return false; }
+  return true;
 }
 
 async function sbDeleteItem(id) {
@@ -1018,13 +1026,21 @@ async function sbDeleteItem(id) {
 async function sbSyncAll() {
   if (!supabaseClient) return;
   const user = await sbGetUser();
-  if (!user) return;
+  if (!user) { syncState = 'idle'; updateSyncStatus(); return; }
+  syncState = 'syncing';
+  syncProgress = { done: 0, total: items.length };
+  updateSyncStatus();
+  let failed = false;
   for (const item of items) {
-    await sbUpsertItem(item);
+    const ok = await sbUpsertItem(item);
+    if (!ok) failed = true;
+    syncProgress.done++;
+    updateSyncStatus();
   }
+  syncState = failed ? 'error' : 'idle';
   lastSyncTime = new Date();
   updateSyncStatus();
-  console.log('[reqord] sbSyncAll: synced', items.length, 'items');
+  console.log('[reqord] sbSyncAll: synced', items.length, 'items', failed ? '(ada yang gagal)' : '');
 }
 
 // === Activity sync (reqord_meta) ===
