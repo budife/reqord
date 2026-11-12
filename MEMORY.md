@@ -44,6 +44,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-12 (Bulk status change)
+
+- Agent/model: Hermes Agent.
+- Permintaan: user ingin pilih banyak work order lalu ganti status sekaligus.
+- Perubahan: checkbox `.row-check` di dalam `.title-cell` (khusus admin), tombol "Pilih semua" di toolbar, dan `.bulk-bar` mengambang (pilih status → Terapkan / Batal). Status mengikuti logika inline (done mengisi `completedAt`).
+- Validasi: `node --check app.js`, smoke test, uji browser — pilih 3 item → bulk bar muncul (count 3), Batal → bersih, Pilih semua → 152 item, apply "Ongoing request" → item pindah tabel, apply "Request list" → kembali.
+- Catatan: checkbox ditaruh di dalam sel Title agar layout kolom tabel (fixed + label mobile) tidak berubah.
+
 ### 2026-11-12 (Scan item loss / duplicate IDs)
 
 - Agent/model: Hermes Agent.

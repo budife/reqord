@@ -8,6 +8,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 - Papan publik read-only di `public.html` (requestor, judul, status) dengan search, filter bulan, dan realtime.
 - Link "Public board" di app.
+- Pilih banyak work order (checkbox di kolom Title) lalu ubah status sekaligus lewat "Pilih semua" dan bulk bar.
 
 ### Changed
 

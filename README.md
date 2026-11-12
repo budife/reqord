@@ -44,6 +44,12 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 - Search + filter bulan + realtime (berubah otomatis saat data di-update).
 - Isi brief/working file dan catatan (`note`) tidak ditampilkan.
 
+### Ubah Status Banyak Sekali
+
+- Centang work order di kolom Title (bisa dari tabel mana pun).
+- Klik "Pilih semua" untuk memilih semua yang tampil.
+- Pilih status di bulk bar yang muncul, lalu klik "Terapkan".
+
 ### Debug
 
 - Console logging di DevTools (F12) untuk diagnosis persistence.
