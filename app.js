@@ -96,7 +96,7 @@ function isCompletedRequest(item) { return item?.type === 'project' && (item.sta
 function setCompletedAtFromDuration(item, value, unit) { const amount = Number(value); if (!Number.isFinite(amount) || amount < 0 || !item.requestDate) return ''; const start = new Date(item.requestDate.includes('T') ? item.requestDate : `${item.requestDate}T00:00:00`); const minutes = Math.round(amount * (unit === 'jam' ? 60 : 1)); return new Date(start.getTime() + minutes * 60000).toISOString(); }
 function normalizeDateValue(value) { if (!value) return ''; if (value instanceof Date) return `${localDate(value)}T${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`; return String(value).trim().replace(' ', 'T').slice(0, 16); }
 function nowDateTime() { const date = new Date(); return `${localDate(date)}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`; }
-function itemSignature(item) { const compact = {}; Object.entries(normalizeItem(item)).forEach(([key, value]) => { if (key === 'updatedAt' || value === undefined || value === null || value === '') return; compact[key] = value; }); return JSON.stringify(compact); }
+function itemSignature(item) { const compact = {}; Object.entries(normalizeItem(item)).forEach(([key, value]) => { if (key === 'updatedAt' || key === 'folderKey' || value === undefined || value === null || value === '') return; compact[key] = value; }); return JSON.stringify(compact); }
 function today() { return localDate(new Date()); }
 function isDailyDone(item) { return item.type === 'daily' && item.dailyDoneDate === today(); }
 function refreshDailyDates() { items.filter(item => item.type === 'daily').forEach(item => { item.requestDate = today(); item.date = today(); item.done = isDailyDone(item); }); }
@@ -645,13 +645,13 @@ async function scanFolderHandle(root) {
     const monthLikeFolders = topFolders.filter(f => isMonthName(f.name));
     
     if (monthLikeFolders.length === topFolders.length && topFolders.length > 0 && topFolders.length > 0 && monthLikeFolders.length > 0) {
-      allMonthFolders = topFolders.map(f => ({ monthName: f.name, monthHandle: f.handle }));
+      allMonthFolders = topFolders.map(f => ({ monthName: f.name, monthHandle: f.handle, prefix: '' }));
     } else if (monthLikeFolders.length > 0) {
-      allMonthFolders = monthLikeFolders.map(f => ({ monthName: f.name, monthHandle: f.handle }));
+      allMonthFolders = monthLikeFolders.map(f => ({ monthName: f.name, monthHandle: f.handle, prefix: '' }));
       for (const { name: yearName, handle: yearHandle } of topFolders.filter(f => isYearName(f.name))) {
         for await (const [name, handle] of yearHandle.entries()) {
           if (handle.kind === 'directory' && isMonthName(name)) {
-            allMonthFolders.push({ monthName: name, monthHandle: handle });
+            allMonthFolders.push({ monthName: name, monthHandle: handle, prefix: yearName });
           }
         }
       }
@@ -659,13 +659,13 @@ async function scanFolderHandle(root) {
       for (const { name: yearName, handle: yearHandle } of topFolders) {
         for await (const [name, handle] of yearHandle.entries()) {
           if (handle.kind === 'directory' && isMonthName(name)) {
-            allMonthFolders.push({ monthName: name, monthHandle: handle });
+            allMonthFolders.push({ monthName: name, monthHandle: handle, prefix: yearName });
           }
         }
       }
     }
     
-    for (const { monthName, monthHandle } of allMonthFolders) {
+    for (const { monthName, monthHandle, prefix } of allMonthFolders) {
       const campaignFolders = [];
       for await (const [name, handle] of monthHandle.entries()) {
         if (handle.kind === 'directory') campaignFolders.push({ name, handle });
@@ -697,10 +697,15 @@ async function scanFolderHandle(root) {
           }
           // Fallback: now
           if (!folderDate) folderDate = new Date().toISOString().slice(0, 16).replace('T', ' ');
-          // Dedup: check if already exists (exact title + requestor, case-insensitive)
-          const exists = items.some(item => item.title.toLowerCase().trim() === title.toLowerCase().trim() && item.requestor.toLowerCase().trim() === requestor.toLowerCase().trim());
-          if (exists) { duplicates.push(`${title} (${requestor})`); continue; }
-          scanned.push({ title, requestor, month: monthName, priority: 'normal', status: 'list', type: 'project', date: '', requestDate: folderDate || '' });
+          // Identitas folder = kunci dedup utama (title bisa di-edit user)
+          const folderKey = `${prefix ? `${prefix}/` : ''}${monthName}/${campaignName}`;
+          const match = items.find(item => (item.folderKey && item.folderKey === folderKey) || (!item.folderKey && item.title.toLowerCase().trim() === title.toLowerCase().trim() && item.requestor.toLowerCase().trim() === requestor.toLowerCase().trim()));
+          if (match) {
+            duplicates.push(`${title} (${requestor})`);
+            if (!match.folderKey) { match.folderKey = folderKey; persistDraft(); }
+            continue;
+          }
+          scanned.push({ title, requestor, month: monthName, priority: 'normal', status: 'list', type: 'project', date: '', requestDate: folderDate || '', folderKey });
         }
         }
     if (scanned.length === 0 && duplicates.length === 0) { showToast('Tidak ada folder baru ditemukan'); return 0; }
