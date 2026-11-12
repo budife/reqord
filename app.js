@@ -16,6 +16,7 @@ let openedFileHandle = null;
 let openedFileName = '';
 let hasUnsavedChanges = false;
 let hasUnsyncedChanges = false;
+let syncSnapshot = new Map(); // id -> signature terakhir yang ada di cloud
 let lastSyncTime = null;
 let isLoadingFromCloud = false;
 let syncState = 'idle'; // idle | syncing | error
@@ -95,6 +96,7 @@ function isCompletedRequest(item) { return item?.type === 'project' && (item.sta
 function setCompletedAtFromDuration(item, value, unit) { const amount = Number(value); if (!Number.isFinite(amount) || amount < 0 || !item.requestDate) return ''; const start = new Date(item.requestDate.includes('T') ? item.requestDate : `${item.requestDate}T00:00:00`); const minutes = Math.round(amount * (unit === 'jam' ? 60 : 1)); return new Date(start.getTime() + minutes * 60000).toISOString(); }
 function normalizeDateValue(value) { if (!value) return ''; if (value instanceof Date) return `${localDate(value)}T${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`; return String(value).trim().replace(' ', 'T').slice(0, 16); }
 function nowDateTime() { const date = new Date(); return `${localDate(date)}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`; }
+function itemSignature(item) { const compact = {}; Object.entries(normalizeItem(item)).forEach(([key, value]) => { if (key === 'updatedAt' || value === undefined || value === null || value === '') return; compact[key] = value; }); return JSON.stringify(compact); }
 function today() { return localDate(new Date()); }
 function isDailyDone(item) { return item.type === 'daily' && item.dailyDoneDate === today(); }
 function refreshDailyDates() { items.filter(item => item.type === 'daily').forEach(item => { item.requestDate = today(); item.date = today(); item.done = isDailyDone(item); }); }
@@ -955,6 +957,7 @@ async function sbLoadItems(showLoading = false) {
   if (showLoading) { lastSyncTime = new Date(); syncState = 'idle'; }
   // Jangan re-render bila isinya sama saja — re-render akan menutup dropdown status yang sedang dibuka.
   if (!unchanged) { persistDraft(); render(); }
+  syncSnapshot = new Map(remote.map(r => [String(r.id), itemSignature(r)]));
   if (showLoading) isLoadingFromCloud = false;
   updateSyncStatus();
   console.log('[reqord] sbLoadItems: merged', remote.length, 'remote items, total', items.length, unchanged ? '(tanpa perubahan)' : '');
@@ -1001,6 +1004,7 @@ function itemToSb(item, userId) {
 }
 
 async function sbDeleteItem(id) {
+  syncSnapshot.delete(String(id));
   if (!supabaseClient) return;
   const { error } = await supabaseClient
     .from('work_orders')
@@ -1013,12 +1017,22 @@ async function sbSyncAll() {
   if (!supabaseClient) return;
   const user = await sbGetUser();
   if (!user) { syncState = 'idle'; updateSyncStatus(); return; }
-  const rows = items.map(item => itemToSb(item, user.id));
+  // Hanya kirim item yang berubah sejak sync terakhir; hapus yang sudah tidak ada di lokal.
+  const dirty = items.filter(item => syncSnapshot.get(String(item.id)) !== itemSignature(item));
+  const staleIds = [...syncSnapshot.keys()].filter(id => !items.some(item => String(item.id) === id));
+  if (!dirty.length && !staleIds.length) {
+    hasUnsyncedChanges = false;
+    lastSyncTime = new Date();
+    updateSyncStatus();
+    showToast('Tidak ada perubahan yang perlu disinkronkan');
+    return;
+  }
   syncState = 'syncing';
-  syncProgress = { done: 0, total: rows.length };
+  syncProgress = { done: 0, total: dirty.length + staleIds.length };
   updateSyncStatus();
   const CHUNK = 50;
   let failed = false;
+  const rows = dirty.map(item => itemToSb(item, user.id));
   for (let start = 0; start < rows.length; start += CHUNK) {
     const chunk = rows.slice(start, start + CHUNK);
     const { error } = await supabaseClient.from('work_orders').upsert(chunk);
@@ -1026,11 +1040,21 @@ async function sbSyncAll() {
     syncProgress.done = Math.min(start + CHUNK, rows.length);
     updateSyncStatus();
   }
+  if (staleIds.length) {
+    const { error } = await supabaseClient.from('work_orders').delete().in('id', staleIds);
+    if (error) { failed = true; console.error('[reqord] sbSyncAll delete error:', error); showToast('Hapus sync gagal: ' + error.message); }
+    syncProgress.done = dirty.length + staleIds.length;
+    updateSyncStatus();
+  }
   if (!failed && !(await sbSaveActivities())) failed = true;
   syncState = failed ? 'error' : 'idle';
-  if (!failed) { hasUnsyncedChanges = false; lastSyncTime = new Date(); }
+  if (!failed) {
+    hasUnsyncedChanges = false;
+    lastSyncTime = new Date();
+    syncSnapshot = new Map(items.map(item => [String(item.id), itemSignature(item)]));
+  }
   updateSyncStatus();
-  console.log('[reqord] sbSyncAll: synced', rows.length, 'items dalam', Math.ceil(rows.length / CHUNK) || 1, 'request', failed ? '(ada yang gagal)' : '');
+  console.log('[reqord] sbSyncAll: changed', dirty.length, 'deleted', staleIds.length, failed ? '(ada yang gagal)' : '');
 }
 
 // === Activity sync (reqord_meta) ===
