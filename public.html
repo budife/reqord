@@ -32,11 +32,39 @@
 
     <section class="toolbar">
       <div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Cari requestor atau judul..."></div>
+      <select id="statusFilter" aria-label="Filter status">
+        <option value="all">Semua status</option>
+        <option value="new_request">New Request</option>
+        <option value="waiting_brief">Waiting Brief</option>
+        <option value="working">Working</option>
+        <option value="draft_preview">1st Draft</option>
+        <option value="revision">In Revision</option>
+        <option value="preview">Preview</option>
+        <option value="on_hold">On Hold</option>
+        <option value="approved">Approved</option>
+        <option value="done">Done</option>
+        <option value="daily">Daily</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
       <select id="monthFilter" aria-label="Filter bulan"><option value="all">Semua bulan</option></select>
       <span class="result-count" id="resultCount">0 work orders</span>
     </section>
 
-    <div class="table-stack" id="board"></div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Requestor</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Request Date</th>
+            <th>Deadline</th>
+          </tr>
+        </thead>
+        <tbody id="boardBody"></tbody>
+      </table>
+    </div>
 
     <footer>
       <span><i class="sync-dot"></i> Data read-only dari reqord</span>

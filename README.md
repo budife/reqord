@@ -11,18 +11,20 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 - Scan folder menggunakan File System Access API (Chromium: Chrome/Edge).
 - Struktur 2-level (`MMYY/campaign`) dan 3-level (`YYYY/MMYY/campaign`).
 - Nama folder format `Requestor - Campaign` → Title = campaign, Requestor = requestor.
-- Dedup berdasarkan exact Title + Requestor (case-insensitive); duplikat ditampilkan via modal.
+- Dedup berdasarkan `folderKey` (path seperti `1026/Budi - Campaign` atau `2026/1026/Budi - Campaign`) — bukan Title+Requestor; edit title lalu scan ulang tidak membuat duplikat.
 - Folder handle disimpan di IndexedDB; work order data di localStorage.
 - Auto-refresh on page load jika folder handle tersimpan.
 - Status diubah manual (dropdown di tabel).
 - Month filter dropdown dari scanned items.
 
-### Tabel Work Order
+### Tabel Work Order (Single Table)
 
-- Request list, Ongoing requests, Done requests.
-- Ubah status langsung di tabel; item otomatis berpindah tabel.
+- Satu tabel terpadu "Work orders" berisi semua work order + daily task.
+- Filter status di toolbar (11 pilihan: New Request, Waiting Brief, Working, 1st Draft, In Revision, Preview, On Hold, Approved, Done, Daily, Cancelled).
 - Cari berdasarkan title atau requestor.
-- Filter priority, sort, dan month filter.
+- Filter priority, sort, month filter, requestor filter.
+- Kolom: Title, Requestor, Status, Priority, Request date, Deadline, Actions.
+- Daily task: checkbox "Selesai hari ini" di kolom Actions, counter di header tabel.
 
 ### Persistence
 
@@ -35,6 +37,7 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 - Perubahan tersimpan lokal dulu (localStorage); tekan "Sync to Cloud" untuk mengirim semua ke Supabase.
 - Status di toolbar: `Ada perubahan · belum disinkron` → `Menyinkron… n/N` → `Tersinkron · baru saja`.
 - Tombol "Sync to Cloud" menyala (kuning) bila ada perubahan yang belum disinkron.
+- Bulk upsert chunk 50 + snapshot diff: hanya item yang berubah dikirim, item yang hilang dihapus dari cloud.
 
 ### Login & Sync
 
@@ -45,8 +48,8 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 ### Papan Publik (read-only)
 
 - URL: `public.html` — bisa dibagikan ke siapa saja, tanpa login.
-- Menampilkan requestor, judul, dan status per tabel.
-- Search + filter bulan + realtime (berubah otomatis saat data di-update).
+- Single list + filter status (search, status filter, month filter).
+- Realtime (berubah otomatis saat data di-update).
 - Isi brief/working file dan catatan (`note`) tidak ditampilkan.
 
 ### Ubah Status Banyak Sekali
@@ -86,10 +89,10 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 
 ## Status
 
-- Versi: v0.5.0.
-- Fase: prototype folder-scan work order tracker.
+- Versi: v0.6.0.
+- Fase: prototype folder-scan work order tracker (single-table, 11-status workflow).
 - Stack: vanilla JS + HTML + CSS (no build step).
 - Storage: localStorage (items) + IndexedDB (folder handle).
 - Backend: Supabase (Postgres + Auth + Realtime).
-- Publik: `public.html` read-only (requestor, judul, status).
+- Publik: `public.html` read-only (single list + filter status).
 - Browser: Chromium only (File System Access API).

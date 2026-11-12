@@ -15,29 +15,43 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Current State
 
-- Produk: reqord adalah work order tracker berbasis folder scan (Google Drive) dengan tiga tabel: Request list, Ongoing requests, dan Done requests, plus tabel Daily tasks.
-- Input: scan folder `YYYY/MMYY/Requestor - Campaign` atau `MMYY/Requestor - Campaign`; nama folder dipakai sebagai Title + Requestor. Folder tanpa pemisah ` - ` → Requestor `Unknown`.
-- Tambah manual lewat tombol `+ Tambah` (modal Title + Requestor + Priority) → masuk Request list.
-- Status: dropdown di tabel; item berpindah tabel otomatis. Ada status `Daily task`.
+- Produk: reqord adalah work order tracker berbasis folder scan (Google Drive) dengan **satu tabel tunggal "Work orders"** berisi semua work order + daily task, filter status di toolbar (11 pilihan).
+- Input: scan folder `YYYY/MMYY/Requestor - Campaign` atau `MMYY/Requestor - Campaign`; nama folder dipakai sebagai Title + Requestor. Folder tanpa pemisah ` - ` → Requestor `Unknown`. Dedup berdasarkan `folderKey` (path seperti `1026/Budi - Campaign`), bukan Title+Requestor.
+- Tambah manual lewat tombol `+ Tambah` (modal Title + Requestor + Priority) → masuk dengan status `new_request`.
+- Status: dropdown di tabel dengan 11 nilai: `new_request` (New Request), `waiting_brief` (Waiting Brief), `working` (Working), `draft_preview` (1st Draft), `revision` (In Revision), `preview` (Preview), `on_hold` (On Hold), `approved` (Approved), `done` (Done), `daily` (Daily), `cancelled` (Cancelled). Item tidak berpindah tabel — filter status di toolbar.
 - Edit: klik Title membuka modal Work order details (edit + subitems). Subitem inline + checklist.
-- Search title/requestor, filter priority/sort/bulan/requestor.
+- Search title/requestor, filter priority/sort/bulan/requestor/status.
 - Deadline: default 3 hari dari tanggal request, bisa diedit di modal Work order details. Estimasi durasi (`Est.`) dihapus.
-- Persist: localStorage (`reqord-request-work-orders`) + IndexedDB (folder handle); sync ke Supabase **manual** lewat tombol "Sync to Cloud" (status: Ada perubahan · belum disinkron → Menyinkron… n/N → Tersinkron).
+- Persist: localStorage (`reqord-request-work-orders`) + IndexedDB (folder handle); sync ke Supabase **manual** lewat tombol "Sync to Cloud" (status: Ada perubahan · belum disinkron → Menyinkron… n/N → Tersinkron). Bulk upsert chunk 50 + snapshot diff.
 - Auth: login username + kode (Supabase Auth, email `<username>@gmail.com`); tombol Logout/Ganti Password di header.
-- Public board: `public.html` read-only (requestor, judul, status), realtime.
+- Public board: `public.html` read-only (single list + filter status), realtime.
 - Aksi massal: centang di kolom Title atau "Pilih semua" → bulk bar (ubah status / hapus).
 - Export/Import JSON tersedia di toolbar intro.
-- Versi: v0.5.0.
+- Versi: v0.6.0.
 - Stack: vanilla JS + HTML + CSS (no build), CDN Supabase JS. XLSX/Excel sudah tidak dipakai.
 - Browser: Chromium (File System Access API).
 
 ## Handoff Log
 
+### 2026-11-13 (Single-table + 11-status workflow v0.6.0)
+
+- Agent/model: Hermes Agent.
+- Permintaan: gabungkan semua tabel jadi satu (Request/Ongoing/Done → single Work orders), redesign status workflow jadi 11 tahap, public board ikut single list + filter status.
+- Perubahan:
+  - index.html: toolbar ditambah statusFilter dropdown (11 opsi), 6 table panels diganti 1 panel "Work orders".
+  - app.js: groups object → 11-status map; tableMap → single tableBody; statusFilter state; normalizeStatus updated untuk 11 nilai; render() filter by statusFilter; renderRow tanpa tombol legacy (take/complete/revision untuk status lama); daily counter + checkbox di Actions; statusFilter change listener; bulkDialog options 11 nilai; default status `new_request` (bukan `list`); scan pakai `new_request`; table-stack change/click handlers untuk status baru; renderInlineSubitems single-table; makeRowsEditable check `new_request`.
+  - public.html + public.js: ditulis ulang untuk single list + filter status (search, status filter, month filter), read-only board.
+  - styles.css: status pills 11 warna, priority pills, kolom lebar 7 kolom, mobile label Deadline.
+  - CHANGELOG.md, release-notes.json, README.md, MEMORY.md diperbarui ke v0.6.0.
+  - SQL migration script siap (DROP/CREATE constraint untuk 11 status + update legacy status).
+- Blocker: DB check constraint `work_orders_status_check` tolak status baru (error 23514). Perlu jalankan SQL migration setelah deploy app.
+- Validasi: server lokal http://localhost:8099 OK, HTML/JS syntax OK.
+
 ### 2026-11-12 (Cleanup: fallback auth, tombol hilang, kode mati, versi)
 
 - Agent/model: Hermes Agent.
 - Permintaan: user minta lakukan semua temuan audit ("lakukan semuanya").
-- Perbaikan: fallback `#codeDialog` diganti login dialog (tidak lagi error); tombol Tambah/Export/Import/Reset dikembalikan; modal Tambah work order (Title + Requestor + Priority + suggestion) ditambahkan; pemisah nama folder disepatatkan ke ` - ` dan requestor fallback jadi `Unknown`; kode mati (applyRoleUI, loadDraftItems, centerActionGroups, renderSubitemCells, importReportMessage, loadActivities*, mergeNotesFromWorkbook, downloadTemplate, openSubitemDialog, loadWorkbook, sbSignUp/In/Out, updateAuthUI) dan CDN SheetJS dihapus; versi naik ke v0.5.0; README/MEMORY diperbarui.
+- Perbaikan: fallback `#codeDialog` diganti login dialog (tidak lagi error); tombol Tambah/Export/Import/Reset dikembalikan; modal Tambah work order (Title + Requestor + Priority + suggestion) ditambahkan; pemisah nama folder disepatkan ke ` - ` dan requestor fallback jadi `Unknown`; kode mati (applyRoleUI, loadDraftItems, centerActionGroups, renderSubitemCells, importReportMessage, loadActivities*, mergeNotesFromWorkbook, downloadTemplate, openSubitemDialog, loadWorkbook, sbSignUp/In/Out, updateAuthUI) dan CDN SheetJS dihapus; versi naik ke v0.5.0; README/MEMORY diperbarui.
 - Validasi: `node --check` OK, smoke test OK, sweep responsif 320–1440 tanpa overflow.
 
 ### 2026-11-12 (Responsive audit & fixes)

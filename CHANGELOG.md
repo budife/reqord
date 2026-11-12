@@ -2,6 +2,34 @@
 
 Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti kategori sederhana agar mudah dibaca oleh manusia dan AI agent.
 
+## [v0.6.0] — 2026-11-13
+
+### Added
+
+- Tabel tunggal terpadu: semua work order + daily task dalam satu list dengan filter status di toolbar (11 pilihan).
+- Workflow status 11-tahap: New Request → Waiting Brief → Working → 1st Draft → In Revision → Preview → On Hold → Approved → Done / Daily / Cancelled.
+- Status `daily` masuk ke tabel yang sama (bukan tabel terpisah) dengan checkbox \"Selesai hari ini\" di kolom Actions dan counter di header tabel.
+- Public board diubah: single list + filter status (read-only).
+- Deadline pengganti Est.: default request date + 3 hari, editable di modal, tampil di semua tabel dengan countdown.
+
+### Changed
+
+- Arsitektur dari multi-tabel (Request/Ongoing/Done) → single tabel \"Work orders\" dengan kolom Status sebagai dropdown.
+- Migrasi status lama: List→New Request, Ongoing→Working, Preview→1st Draft (DB constraint perlu di-update via SQL migration).
+- Default status saat buat item baru: `new_request` (bukan `list`).
+- Scan folder menggunakan `new_request` sebagai status awal.
+- Bulk dialog status options diperbarui ke 11 nilai final.
+- `folderKey` (path seperti `1026/Budi - Campaign`) sebagai identity canonical untuk scan dedup; disimpan di DB kolom `folder_key`.
+
+### Removed
+
+- Tombol Save (redundan) dan tombol Reset (menyesatkan — hanya clear lokal, data cloud kembali).
+- 6 panel tabel terpisah (Request, Ongoing, Done, Daily, dll) diganti 1 panel \"Work orders\".
+
+### Fixed
+
+- Dropdown status tidak lagi tertutup saat sync realtime selesai (snapshot diff mengabaikan `updatedAt`, debounce 1.5s).
+
 ## [v0.5.0] — 2026-11-12
 
 ### Added

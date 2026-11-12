@@ -1,5 +1,21 @@
 [
   {
+    "version": "v0.6.0",
+    "date": "2026-11-13",
+    "dateLabel": "13 Nov 2026",
+    "title": "Single-table work orders + 11-status workflow",
+    "highlights": [
+      "Single unified table: semua work order + daily task dalam satu list dengan filter status",
+      "11-status workflow: New Request → Waiting Brief → Working → 1st Draft → In Revision → Preview → On Hold → Approved → Done / Daily / Cancelled",
+      "Legacy status migrated: List→New Request, Ongoing→Working, Preview→1st Draft",
+      "Status filter di toolbar (11 pilihan), public board ikut: single list + filter",
+      "Deadline menggantikan Est.: default request date + 3 hari, editable di modal, tampil di semua tabel dengan countdown",
+      "folderKey sebagai identity canonical untuk scan dedup (survives title edit, persisten di DB)",
+      "Tombol Save & Reset dihapus (redundan/menyesatkan), sync manual button-only",
+      "Bulk sync optimized: chunk 50 items, snapshot diff hanya kirim yang berubah + hapus stale"
+    ]
+  },
+  {
     "version": "v0.5.0",
     "date": "2026-11-12",
     "dateLabel": "12 Nov 2026",
