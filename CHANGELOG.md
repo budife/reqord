@@ -6,31 +6,15 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 ### Added
 
-- Tombol `+ Tambah` dengan modal Tambah work order (Title, Requestor, Priority, suggestion).
-- Tombol Export / Import JSON dan Reset kembali tersedia di toolbar intro.
-- Riwayat versi v0.5.0 (release-notes.json + Recent changes).
-
-### Fixed
-
-- Fallback auth saat sesi Supabase tidak valid: dulu bisa error karena `#codeDialog` sudah tidak ada, sekarang membuka login dialog.
-- Scan folder: pemisah ` - ` disepatatkan (tidak lagi memotong nama bertanda hubung), dan folder tanpa pemisah pakai requestor `Unknown` (dulu nama bulan).
-- Layout mobile: tabel penuh, label kolom benar, filter wrap, header rapat, tanpa overflow 320–1440px.
-
-### Removed
-
-- Kode mati: fitur Excel/XLSX (loadWorkbook, downloadTemplate, loadActivities*, mergeNotesFromWorkbook), suggestion lama yang tidak terpakai, dan helper auth yang tidak dipanggil. CDN SheetJS dihapus.
-- Elemen UI yang sudah tidak dirender (banner Excel).
-
-## [Unreleased]
-
-### Added
-
 - Papan publik read-only di `public.html` (requestor, judul, status) dengan search, filter bulan, dan realtime.
 - Link "Public board" di app.
 - Pilih banyak work order (checkbox di kolom Title, select-all di header Title) lalu ubah status sekaligus lewat modal "Ubah Status".
 - Hapus banyak work order sekaligus (tombol "Hapus" di bulk bar, dengan konfirmasi).
 - Filter requestor di toolbar.
 - History & Activity kini tersimpan (localStorage) dan disinkronkan ke Supabase (`reqord_meta`).
+- Tombol `+ Tambah` dengan modal Tambah work order (Title, Requestor, Priority, suggestion).
+- Tombol Export / Import JSON dan Reset kembali tersedia di toolbar intro.
+- Riwayat versi v0.5.0 (release-notes.json + Recent changes).
 
 ### Changed
 
@@ -43,7 +27,15 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Login/register: username dinormalisasi (huruf kecil, tanpa spasi/karakter khusus) supaya email `<username>@gmail.com` selalu valid.
 - Scan/sync: fallback auth memakai username (bukan password) sebagai bagian email.
 - Scan: ID item kini unik. Sebelumnya `Date.now()` bisa bentrok untuk ratusan item, sehingga item saling menimpa di Supabase dan list memadat.
-- Mobile: sel tabel kini penuh (aturan lebar kolom base sebelumnya menimpa layout mobile), label kolom diperbaiki (Date/Priority/Target), filter toolbar wrap, dan header diperkecil. Tidak ada horizontal overflow dari 320px ke atas.
+- Fallback auth saat sesi Supabase tidak valid: dulu bisa error karena `#codeDialog` sudah tidak ada, sekarang membuka login dialog.
+- Scan folder: pemisah ` - ` disepatatkan (tidak lagi memotong nama bertanda hubung), dan folder tanpa pemisah pakai requestor `Unknown` (dulu nama bulan).
+- Layout mobile: tabel penuh, label kolom benar, filter wrap, header rapat, tanpa overflow 320–1440px.
+- Klik centang di kolom Title tidak lagi membuka modal detail — centang hanya toggle pilihan (klik judul yang membuka modal).
+
+### Removed
+
+- Kode mati: fitur Excel/XLSX (loadWorkbook, downloadTemplate, loadActivities*, mergeNotesFromWorkbook), suggestion lama yang tidak terpakai, dan helper auth yang tidak dipanggil. CDN SheetJS dihapus.
+- Elemen UI yang sudah tidak dirender (banner Excel).
 
 ## [0.4.0] - 2026-09-25
 
