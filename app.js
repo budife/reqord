@@ -984,6 +984,7 @@ function sbToItem(row) {
     dailyDoneDate: row.daily_done_date,
     subitems: row.subitems || [],
     note: row.note,
+    folderKey: row.folder_key || '',
     updatedAt: row.updated_at
   });
 }
@@ -1004,7 +1005,8 @@ function itemToSb(item, userId) {
     completed_at: item.completedAt ? item.completedAt.replace(' ', 'T') : null,
     daily_done_date: item.dailyDoneDate,
     subitems: item.subitems || [],
-    note: item.note
+    note: item.note,
+    folder_key: item.folderKey || null
   };
 }
 
@@ -1040,7 +1042,11 @@ async function sbSyncAll() {
   const rows = dirty.map(item => itemToSb(item, user.id));
   for (let start = 0; start < rows.length; start += CHUNK) {
     const chunk = rows.slice(start, start + CHUNK);
-    const { error } = await supabaseClient.from('work_orders').upsert(chunk);
+    let { error } = await supabaseClient.from('work_orders').upsert(chunk);
+    if (error && /folder_key/i.test(error.message)) {
+      const stripped = chunk.map(({ folder_key, ...rest }) => rest);
+      ({ error } = await supabaseClient.from('work_orders').upsert(stripped));
+    }
     if (error) { failed = true; console.error('[reqord] sbSyncAll chunk error:', error); showToast('Sync gagal: ' + error.message); }
     syncProgress.done = Math.min(start + CHUNK, rows.length);
     updateSyncStatus();

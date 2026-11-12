@@ -25,6 +25,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Sync sekarang **bulk**: 163 item dikirim dalam 4 request (chunk 50) alih-alih 326 request berurutan (tiap item ambil user dulu). Sinkron 163 item turun dari puluhan detik jadi ~1 detik.
 - Sync sekarang **hanya mengirim yang berubah** sejak sync terakhir (dibandingkan snapshot), dan menghapus item yang sudah hilang di lokal. Ubah 1 item → 1 request; sync ulang tanpa perubahan → 0 request.
 - Scan menyimpan identitas folder (`folderKey`, mis. `1026/Budi - Campaign` atau `2026/1026/Budi - Campaign`) dan dedup berdasarkan itu — bukan lagi title+requestor. Jadi edit title lalu scan ulang tidak lagi membuat duplikat; item lama tanpa `folderKey` otomatis di-backfill saat scan berikutnya.
+- `folderKey` sekarang juga disimpan di database (kolom `folder_key`), bukan cuma localStorage — jadi aman kalau data browser dibersihkan. Selama kolomnya belum dibuat, sync otomatis mencoba ulang tanpa field itu.
 
 ### Fixed
 

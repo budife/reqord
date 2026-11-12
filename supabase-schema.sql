@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS work_orders (
   daily_done_date TEXT,
   subitems JSONB DEFAULT '[]'::jsonb,
   note TEXT,
+  folder_key TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
