@@ -28,7 +28,6 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 
 - Data persist di localStorage (key: `reqord-request-work-orders`).
 - Folder handle persist di IndexedDB.
-- Save button untuk simpan manual (toast konfirmasi).
 - Export JSON / Import JSON.
 - Reset button (hapus semua data + folder handle).
 
@@ -67,18 +66,16 @@ reqord adalah aplikasi work order tracker berbasis folder scan. Pengguna membuat
 
 1. Buka https://budife.github.io/reqord/ di Chrome/Edge.
 2. Klik "Scan Folder" → pilih folder root (berisi folder bulan).
-3. Work order otomatis masuk ke tabel.
-4. Klik "Save" untuk simpan manual (opsional, auto-save aktif).
-5. Refresh halaman → data tetap ada (auto-refresh dari folder handle).
+3. Work order otomatis masuk ke tabel (langsung tersimpan lokal).
+4. Refresh halaman → data tetap ada (auto-refresh dari folder handle).
 
 ## Troubleshooting: Data Hilang di Refresh
 
 1. Pastikan bukan mode incognito/private.
-2. Klik "Save" setelah scan folder.
-3. Buka DevTools (F12) → Console → cek log `[reqord] loadItems` dan `[reqord] persistDraft`.
-4. Cek Application → Local Storage → `reqord-request-work-orders` harus ada isinya.
-5. Jika `raw = null` → localStorage kosong (browser clear storage).
-6. Jika `persistDraft: saved 0 items` → save tidak jalan.
+2. Buka DevTools (F12) → Console → cek log `[reqord] loadItems` dan `[reqord] persistDraft`.
+3. Cek Application → Local Storage → `reqord-request-work-orders` harus ada isinya.
+4. Jika `raw = null` → localStorage kosong (browser clear storage).
+5. Jika `persistDraft: saved 0 items` → save tidak jalan.
 
 ## Dokumen
 

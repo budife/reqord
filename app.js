@@ -96,7 +96,7 @@ function isCompletedRequest(item) { return item?.type === 'project' && (item.sta
 function setCompletedAtFromDuration(item, value, unit) { const amount = Number(value); if (!Number.isFinite(amount) || amount < 0 || !item.requestDate) return ''; const start = new Date(item.requestDate.includes('T') ? item.requestDate : `${item.requestDate}T00:00:00`); const minutes = Math.round(amount * (unit === 'jam' ? 60 : 1)); return new Date(start.getTime() + minutes * 60000).toISOString(); }
 function normalizeDateValue(value) { if (!value) return ''; if (value instanceof Date) return `${localDate(value)}T${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`; return String(value).trim().replace(' ', 'T').slice(0, 16); }
 function nowDateTime() { const date = new Date(); return `${localDate(date)}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`; }
-function itemSignature(item) { const compact = {}; Object.entries(normalizeItem(item)).forEach(([key, value]) => { if (key === 'updatedAt' || key === 'folderKey' || value === undefined || value === null || value === '') return; compact[key] = value; }); return JSON.stringify(compact); }
+function itemSignature(item) { const compact = {}; Object.entries(normalizeItem(item)).forEach(([key, value]) => { if (key === 'updatedAt' || value === undefined || value === null || value === '') return; compact[key] = value; }); return JSON.stringify(compact); }
 function today() { return localDate(new Date()); }
 function isDailyDone(item) { return item.type === 'daily' && item.dailyDoneDate === today(); }
 function refreshDailyDates() { items.filter(item => item.type === 'daily').forEach(item => { item.requestDate = today(); item.date = today(); item.done = isDailyDone(item); }); }
@@ -437,12 +437,6 @@ document.querySelector('#refreshFolderButton').addEventListener('click', async (
   } catch (e) { showToast(`Refresh gagal: ${e.message}`); addActivity('Refresh gagal', {}, e.message); }
 });
 
-document.querySelector('#saveButton').addEventListener('click', () => {
-  const ok = persistDraft();
-  hasUnsavedChanges = false;
-  renderActiveFile();
-  showToast(ok ? 'Data disimpan' : 'Gagal simpan');
-});
 const resetBtn = document.querySelector('#resetButton');
 if (resetBtn) resetBtn.addEventListener('click', async () => {
   const ok = await confirmModal('Hapus semua item dan reset draft?', { title: 'Reset?', confirmLabel: 'Reset' });
