@@ -22,6 +22,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Item contoh (seed) dihapus — app mulai dari tabel kosong.
 - Teks UI era Excel ("Open file...", "Saved to workbook", "tiga tabel") diganti.
 - Sync ke cloud sekarang **manual**: otomatis (debounced 5 detik) dihapus, cukup tekan tombol "Sync to Cloud". Status menampilkan `Ada perubahan · belum disinkron` dan tombol menyala saat ada yang pending.
+- Sync sekarang **bulk**: 163 item dikirim dalam 4 request (chunk 50) alih-alih 326 request berurutan (tiap item ambil user dulu). Sinkron 163 item turun dari puluhan detik jadi ~1 detik.
 
 ### Fixed
 

@@ -1000,17 +1000,6 @@ function itemToSb(item, userId) {
   };
 }
 
-async function sbUpsertItem(item) {
-  if (!supabaseClient) return true;
-  const user = await sbGetUser();
-  const userId = user ? user.id : null;
-  const { error } = await supabaseClient
-    .from('work_orders')
-    .upsert(itemToSb(item, userId));
-  if (error) { showToast('Sync gagal: ' + error.message); console.error('[reqord] sbUpsertItem error:', error); return false; }
-  return true;
-}
-
 async function sbDeleteItem(id) {
   if (!supabaseClient) return;
   const { error } = await supabaseClient
@@ -1024,21 +1013,24 @@ async function sbSyncAll() {
   if (!supabaseClient) return;
   const user = await sbGetUser();
   if (!user) { syncState = 'idle'; updateSyncStatus(); return; }
+  const rows = items.map(item => itemToSb(item, user.id));
   syncState = 'syncing';
-  syncProgress = { done: 0, total: items.length };
+  syncProgress = { done: 0, total: rows.length };
   updateSyncStatus();
+  const CHUNK = 50;
   let failed = false;
-  for (const item of items) {
-    const ok = await sbUpsertItem(item);
-    if (!ok) failed = true;
-    syncProgress.done++;
+  for (let start = 0; start < rows.length; start += CHUNK) {
+    const chunk = rows.slice(start, start + CHUNK);
+    const { error } = await supabaseClient.from('work_orders').upsert(chunk);
+    if (error) { failed = true; console.error('[reqord] sbSyncAll chunk error:', error); showToast('Sync gagal: ' + error.message); }
+    syncProgress.done = Math.min(start + CHUNK, rows.length);
     updateSyncStatus();
   }
   if (!failed && !(await sbSaveActivities())) failed = true;
   syncState = failed ? 'error' : 'idle';
   if (!failed) { hasUnsyncedChanges = false; lastSyncTime = new Date(); }
   updateSyncStatus();
-  console.log('[reqord] sbSyncAll: synced', items.length, 'items', failed ? '(ada yang gagal)' : '');
+  console.log('[reqord] sbSyncAll: synced', rows.length, 'items dalam', Math.ceil(rows.length / CHUNK) || 1, 'request', failed ? '(ada yang gagal)' : '');
 }
 
 // === Activity sync (reqord_meta) ===
