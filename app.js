@@ -953,14 +953,17 @@ async function sbLoadItems(showLoading = false) {
       byId.set(String(r.id), r);
     }
   }
-  items = [...byId.values()];
+  const next = [...byId.values()];
+  const signature = list => JSON.stringify([...list].sort((a, b) => String(a.id).localeCompare(String(b.id))).map(normalizeItem));
+  const unchanged = signature(next) === signature(items);
+  items = next;
   lastSyncTime = new Date();
   if (showLoading) syncState = 'idle';
-  persistDraft();
-  render();
+  // Jangan re-render bila isinya sama saja — re-render akan menutup dropdown status yang sedang dibuka.
+  if (!unchanged) { persistDraft(); render(); }
   if (showLoading) isLoadingFromCloud = false;
   updateSyncStatus();
-  console.log('[reqord] sbLoadItems: merged', remote.length, 'remote items, total', items.length);
+  console.log('[reqord] sbLoadItems: merged', remote.length, 'remote items, total', items.length, unchanged ? '(tanpa perubahan)' : '');
 }
 
 function sbToItem(row) {
