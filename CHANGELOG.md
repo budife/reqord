@@ -24,6 +24,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Login/register: username dinormalisasi (huruf kecil, tanpa spasi/karakter khusus) supaya email `<username>@gmail.com` selalu valid.
 - Scan/sync: fallback auth memakai username (bukan password) sebagai bagian email.
 - Scan: ID item kini unik. Sebelumnya `Date.now()` bisa bentrok untuk ratusan item, sehingga item saling menimpa di Supabase dan list memadat.
+- Mobile: sel tabel kini penuh (aturan lebar kolom base sebelumnya menimpa layout mobile), label kolom diperbaiki (Date/Priority/Target), filter toolbar wrap, dan header diperkecil. Tidak ada horizontal overflow dari 320px ke atas.
 
 ## [0.4.0] - 2026-09-25
 
