@@ -32,6 +32,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Layout mobile: tabel penuh, label kolom benar, filter wrap, header rapat, tanpa overflow 320–1440px.
 - Klik centang di kolom Title tidak lagi membuka modal detail — centang hanya toggle pilihan (klik judul yang membuka modal).
 - Status sinkron kini satu indikator yang stabil: `Ada perubahan…` → `Menyinkron… n/N` → `Tersinkron · baru saja` (atau `Gagal sinkron` / `Offline`). Dulu teksnya bolak-balik antara "Unsaved changes" dan "Synced" karena dua fungsi saling menimpa elemen yang sama.
+- Load dari cloud (termasuk realtime) tidak lagi me-render tabel kalau isinya sama — dropdown status yang sedang dibuka tidak tertutup saat sync selesai.
 
 ### Removed
 
