@@ -6,8 +6,8 @@ function formatExcelDateTime(value) {
   return String(value || '').trim().replace('T', ' ');
 }
 
-function validateWorkbookRow(row, type = 'project') {
-  const title = String(type === 'daily' ? row.Task || row.Title || '' : row.Title || row.title || row.Name || '').trim();
+function validateWorkbookRow(row) {
+  const title = String(row.Title || row.title || row.Name || '').trim();
   if (!title) return { valid: false, reason: 'empty-title' };
   return { valid: true, title };
 }

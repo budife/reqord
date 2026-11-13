@@ -3,11 +3,11 @@ const fs = require('node:fs');
 
 const source = fs.readFileSync('app.js', 'utf8');
 const markup = fs.readFileSync('index.html', 'utf8');
-const styles = fs.readFileSync('styles.css', 'utf8');
+const styles = fs.readFileSync('styles.css', 'utf8') + fs.readFileSync('public.css', 'utf8');
 
 assert.match(source, /function normalizeStatus/);
 assert.match(source, /function normalizePriority/);
-assert.match(source, /function isDailyDone/);
+assert.doesNotMatch(source, /function isDailyDone/);
 assert.match(source, /priorityFilter/);
 assert.match(source, /sortFilter/);
 assert.match(source, /hasUnsavedChanges/);
@@ -21,7 +21,7 @@ assert.match(source, /openNoteDialog/);
 assert.match(source, /subitemDialog/);
 assert.match(source, /Subitem ditambahkan/);
 assert.doesNotMatch(markup, /subitemList/);
-assert.match(source, /normalizeDailyProgressCells/);
+assert.doesNotMatch(source, /normalizeDailyProgressCells/);
 assert.match(source, /renderInlineSubitems/);
 assert.match(source, /subitem-inline/);
 assert.match(source, /item\.subitems = Array\.isArray/);
@@ -64,6 +64,7 @@ assert.match(markup, /1st Draft/);
 assert.match(markup, /In Revision/);
 assert.match(markup, /On Hold/);
 assert.match(markup, /Approved/);
+assert.match(markup, /Done/);
 assert.match(markup, /Daily/);
 assert.match(markup, /Cancelled/);
 // 11 separate table bodies
@@ -93,10 +94,11 @@ assert.match(styles, /pill-waiting_brief/);
 assert.match(styles, /pill-draft_preview/);
 assert.match(styles, /pill-on_hold/);
 assert.match(styles, /pill-approved/);
+assert.match(styles, /pill-done/);
 assert.match(styles, /pill-daily/);
 assert.match(styles, /pill-cancelled/);
 assert.match(styles, /priority-pill/);
-assert.match(source, /bulkDialogStatus/);
+assert.doesNotMatch(source, /bulkDialogStatus/);
 assert.match(source, /folderKey/);
 // Scan folder removed — manual entry only
 assert.doesNotMatch(markup, /scanFolderButton/);
