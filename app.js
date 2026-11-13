@@ -931,15 +931,18 @@ if (changePassBtn) {
 window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
 const _logoutBtn = document.querySelector('#logoutBtn');
 const _changePassBtn = document.querySelector('#changePassBtn');
+const _loginLink = document.querySelector('#loginLink');
 const hasCode = !!localStorage.getItem('reqord-access-code');
 isAdmin = localStorage.getItem('reqord-is-admin') === '1';
 if (hasCode && userName) {
   if (_logoutBtn) _logoutBtn.style.display = '';
   if (_changePassBtn) _changePassBtn.style.display = isAdmin ? '' : 'none';
+  if (_loginLink) _loginLink.style.display = 'none';
   if (userMenuText) userMenuText.textContent = userName + (isAdmin ? ' (admin)' : '');
 } else {
   if (_logoutBtn) _logoutBtn.style.display = 'none';
   if (_changePassBtn) _changePassBtn.style.display = 'none';
+  if (_loginLink) _loginLink.style.display = '';
   if (userMenuText) userMenuText.textContent = 'Login';
 }
 document.body.classList.toggle('is-admin', isAdmin);
