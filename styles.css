@@ -208,6 +208,9 @@ th .check-all { margin-right: 6px; vertical-align: -1px; accent-color: var(--gre
 /* 11-panel layout */
 .table-panel { margin-bottom: 16px; }
 .table-panel.is-empty { display: none; }
+.load-more-button { display: block; width: calc(100% - 28px); margin: 14px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 8px; background: rgba(120, 214, 156, .08); color: var(--green); font: 600 13px Manrope, system-ui, sans-serif; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+.load-more-button:hover { background: var(--green-soft); border-color: var(--green); }
+.load-more-button[hidden] { display: none; }
 
 /* User menu dropdown */
 .user-menu { position: relative; }

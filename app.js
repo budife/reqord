@@ -31,6 +31,9 @@ let sortFilter = 'newest';
 let monthFilter = 'all';
 let requestorFilter = 'all';
 const selectedIds = new Set();
+const PANEL_PAGE_SIZE = 20;
+const panelLimits = {};
+function resetPanelLimits() { Object.keys(panelLimits).forEach(key => delete panelLimits[key]); }
 
 function loadItems() {
   try {
@@ -142,10 +145,18 @@ function render() {
     const countEl = document.querySelector(`#${status}Count`);
     const emptyEl = document.querySelector(`#${status}Empty`);
     const panelEl = document.querySelector(`.table-panel[data-status="${status}"]`);
-    if (tbody) tbody.innerHTML = statusItems.map(renderRow).join('');
+    const limit = panelLimits[status] || PANEL_PAGE_SIZE;
+    const shownItems = statusItems.slice(0, limit);
+    if (tbody) tbody.innerHTML = shownItems.map(renderRow).join('');
     if (countEl) countEl.textContent = statusItems.length;
     if (emptyEl) emptyEl.hidden = statusItems.length !== 0;
     if (panelEl) panelEl.classList.toggle('is-empty', statusItems.length === 0);
+    const loadMoreBtn = document.querySelector(`#${status}LoadMore`);
+    if (loadMoreBtn) {
+      const remaining = statusItems.length - shownItems.length;
+      loadMoreBtn.hidden = remaining <= 0;
+      loadMoreBtn.textContent = `Show more (${remaining} lagi)`;
+    }
   });
 
   const totalItems = items.filter(item => item.type === 'project' || item.type === 'daily').length;
@@ -204,11 +215,28 @@ setInterval(() => { if (document.visibilityState === 'visible') updateSyncStatus
 function showToast(message) { const toast = document.querySelector('#toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2400); }
 function findItem(id) { return items.find(item => String(item.id) === String(id)); }
 
-document.querySelector('#searchInput').addEventListener('input', render);
-document.querySelector('#priorityFilter').addEventListener('change', event => { priorityFilter = event.target.value; render(); });
-document.querySelector('#sortFilter').addEventListener('change', event => { sortFilter = event.target.value; render(); });
-document.querySelector('#monthFilter').addEventListener('change', event => { monthFilter = event.target.value; render(); });
-document.querySelector('#requestorFilter').addEventListener('change', event => { requestorFilter = event.target.value; render(); });
+document.querySelector('#searchInput').addEventListener('input', () => { resetPanelLimits(); render(); });
+document.querySelector('#priorityFilter').addEventListener('change', event => { priorityFilter = event.target.value; resetPanelLimits(); render(); });
+document.querySelector('#sortFilter').addEventListener('change', event => { sortFilter = event.target.value; resetPanelLimits(); render(); });
+document.querySelector('#monthFilter').addEventListener('change', event => { monthFilter = event.target.value; resetPanelLimits(); render(); });
+document.querySelector('#requestorFilter').addEventListener('change', event => { requestorFilter = event.target.value; resetPanelLimits(); render(); });
+
+// Add "Show more" button to each status panel
+document.querySelectorAll('.table-panel').forEach(panel => {
+  const status = panel.dataset.status;
+  if (!status) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'load-more-button';
+  btn.id = `${status}LoadMore`;
+  btn.hidden = true;
+  btn.textContent = 'Show more';
+  panel.appendChild(btn);
+  btn.addEventListener('click', () => {
+    panelLimits[status] = (panelLimits[status] || PANEL_PAGE_SIZE) + PANEL_PAGE_SIZE;
+    render();
+  });
+});
 
 function refreshMonthFilter() {
   const select = document.querySelector('#monthFilter');
