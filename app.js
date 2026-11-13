@@ -15,6 +15,7 @@ let hasUnsavedChanges = false;
 let hasUnsyncedChanges = false;
 let syncSnapshot = new Map(); // id -> signature terakhir yang ada di cloud
 let lastSyncedIds = loadLastSyncedIds(); // id yang terakhir ada di cloud (untuk deteksi hapus remote)
+let pendingDeletes = loadPendingDeletes(); // id yang gagal dihapus dari cloud (akan di-retry saat sync)
 let lastSyncTime = null;
 let isLoadingFromCloud = false;
 let syncState = 'idle'; // idle | syncing | error
@@ -71,6 +72,8 @@ function persistDraft() {
 function loadStoredActivities() { try { const raw = localStorage.getItem(ACTIVITIES_KEY); const parsed = JSON.parse(raw); return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
 function loadLastSyncedIds() { try { const raw = localStorage.getItem('reqord-last-synced-ids'); const parsed = JSON.parse(raw); return new Set(Array.isArray(parsed) ? parsed : []); } catch { return new Set(); } }
 function persistLastSyncedIds() { try { localStorage.setItem('reqord-last-synced-ids', JSON.stringify([...lastSyncedIds])); } catch { /* ignore */ } }
+function loadPendingDeletes() { try { const raw = localStorage.getItem('reqord-pending-deletes'); const parsed = JSON.parse(raw); return new Set(Array.isArray(parsed) ? parsed : []); } catch { return new Set(); } }
+function persistPendingDeletes() { try { localStorage.setItem('reqord-pending-deletes', JSON.stringify([...pendingDeletes])); } catch { /* ignore */ } }
 function activityKey(activity) { return [activity.date, activity.action, activity.title, activity.details].join('|'); }
 function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details, user: userName || 'Guest' }); persistDraft(); renderActivities(); }
 function renderActivities() { const list = document.querySelector('#activityList'); if (!list) return; list.innerHTML = activities.length ? activities.map(activity => `<div class="activity-item"><strong>${escapeHtml(activity.action)}</strong><span>${escapeHtml(activity.title || activity.details || 'reqord')}</span><small>${escapeHtml(activity.user || 'Guest')}${activity.requestor ? ` · ${escapeHtml(activity.requestor)}` : ''} · ${escapeHtml(displayDate(activity.date, true))}</small></div>`).join('') : '<p class="activity-empty">Belum ada activity.</p>'; }
@@ -891,6 +894,8 @@ async function sbLoadItems(showLoading = false) {
   // Merge: keep newer by updated_at, don't overwrite local changes
   items = repairItemIds(items);
   const byId = new Map(items.map(i => [String(i.id), i]));
+  // Buang item yang ada di pending deletes (gagal dihapus sebelumnya) supaya tidak muncul lagi
+  for (const id of pendingDeletes) byId.delete(id);
   for (const r of remote) {
     const local = byId.get(String(r.id));
     if (!local || (r.updatedAt && local.updatedAt && r.updatedAt > local.updatedAt)) {
@@ -984,18 +989,20 @@ async function ensureAuth() {
 }
 
 async function sbDeleteItem(id) {
-  if (!supabaseClient) return;
+  if (!supabaseClient) { pendingDeletes.add(String(id)); persistPendingDeletes(); return; }
   const user = await ensureAuth();
-  if (!user) { showToast('Login dulu untuk menghapus data di cloud'); return; }
+  if (!user) { showToast('Login dulu untuk menghapus data di cloud'); pendingDeletes.add(String(id)); persistPendingDeletes(); return; }
   const { error } = await supabaseClient
     .from('work_orders')
     .delete()
     .eq('id', id);
-  if (error) { showToast('Hapus gagal: ' + error.message); console.error('[reqord] sbDeleteItem error:', error); return; }
-  // Hanya hapus dari snapshot setelah berhasil — supaya sync berikutnya bisa coba lagi kalau gagal
+  if (error) { showToast('Hapus gagal: ' + error.message); pendingDeletes.add(String(id)); persistPendingDeletes(); return; }
+  // Berhasil: bersihkan snapshot + tandai pending
   syncSnapshot.delete(String(id));
   lastSyncedIds.delete(String(id));
+  pendingDeletes.delete(String(id));
   persistLastSyncedIds();
+  persistPendingDeletes();
 }
 
 async function sbSyncAll() {
@@ -1031,6 +1038,21 @@ async function sbSyncAll() {
     if (orphanIds.has(String(item.id))) item.orphan = true;
     else delete item.orphan;
   });
+  
+  // 3b. Proses pending deletes (yang gagal dihapus sebelumnya)
+  if (pendingDeletes.size) {
+    const idsToDelete = [...pendingDeletes];
+    const { error } = await supabaseClient.from('work_orders').delete().in('id', idsToDelete);
+    if (!error) {
+      idsToDelete.forEach(id => { syncSnapshot.delete(id); lastSyncedIds.delete(id); });
+      pendingDeletes.clear();
+      persistPendingDeletes();
+      persistLastSyncedIds();
+      console.log('[reqord] sbSyncAll: processed', idsToDelete.length, 'pending deletes');
+    } else {
+      console.warn('[reqord] sbSyncAll: pending delete failed:', error.message);
+    }
+  }
   
   // 4. Push local changes (existing logic)
   const dirty = items.filter(item => syncSnapshot.get(String(item.id)) !== itemSignature(item));
