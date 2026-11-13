@@ -29,7 +29,7 @@ const statusSelect = document.querySelector('#statusFilter');
 const monthSelect = document.querySelector('#monthFilter');
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>'"]/g, char => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' }[char]));
+  return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 }
 
 function normalizeStatus(value) {
