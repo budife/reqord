@@ -34,10 +34,8 @@ assert.match(markup, /noteDialog/);
 assert.match(markup, /editNoteInput/);
 assert.match(markup, /deleteFromEditButton/);
 assert.match(markup, /WORK ORDER DETAILS/);
-assert.match(source, /normalizeStatusSelects/);
 assert.match(source, /text\.includes\('preview'\)/);
 assert.match(source, /text\.includes\('revision'\)/);
-assert.match(source, /reorderTableColumns/);
 assert.match(source, /removeActionCells/);
 assert.match(markup, /editDeadlineInput/);
 assert.match(styles, /Deadline/);
@@ -55,8 +53,7 @@ assert.match(source, /confirmModal/);
 assert.match(markup, /confirmDialog/);
 assert.doesNotMatch(source, /window\.confirm/);
 
-// v0.6.0 single-table + 11-status workflow
-assert.match(source, /statusFilter/);
+// v0.6.1 11-panel layout (one table per status)
 assert.match(source, /new_request/);
 assert.match(source, /waiting_brief/);
 assert.match(source, /draft_preview/);
@@ -64,8 +61,6 @@ assert.match(source, /on_hold/);
 assert.match(source, /approved/);
 assert.match(source, /cancelled/);
 assert.match(source, /groups\s*=.*new_request/);
-assert.match(markup, /statusFilter/);
-assert.match(markup, /All statuses/);
 assert.match(markup, /New Request/);
 assert.match(markup, /Waiting Brief/);
 assert.match(markup, /1st Draft/);
@@ -74,10 +69,28 @@ assert.match(markup, /On Hold/);
 assert.match(markup, /Approved/);
 assert.match(markup, /Daily/);
 assert.match(markup, /Cancelled/);
-assert.match(markup, /Work orders/);
+// 11 separate table bodies
+assert.match(markup, /id="new_requestTable"/);
+assert.match(markup, /id="waiting_briefTable"/);
+assert.match(markup, /id="workingTable"/);
+assert.match(markup, /id="draft_previewTable"/);
+assert.match(markup, /id="revisionTable"/);
+assert.match(markup, /id="previewTable"/);
+assert.match(markup, /id="on_holdTable"/);
+assert.match(markup, /id="approvedTable"/);
+assert.match(markup, /id="doneTable"/);
+assert.match(markup, /id="dailyTable"/);
+assert.match(markup, /id="cancelledTable"/);
+// No single allTable or statusFilter
+assert.doesNotMatch(markup, /id="allTable"/);
+assert.doesNotMatch(source, /statusFilter/);
+assert.doesNotMatch(markup, /statusFilter/);
+assert.doesNotMatch(source, /normalizeStatusSelects/);
+assert.doesNotMatch(source, /reorderTableColumns/);
 assert.doesNotMatch(markup, /Request list/);
 assert.doesNotMatch(markup, /Ongoing requests/);
 assert.doesNotMatch(markup, /Done requests/);
+assert.doesNotMatch(markup, /Work orders/);
 assert.match(styles, /pill-new_request/);
 assert.match(styles, /pill-waiting_brief/);
 assert.match(styles, /pill-draft_preview/);
@@ -89,4 +102,4 @@ assert.match(styles, /priority-pill/);
 assert.match(source, /bulkDialogStatus/);
 assert.match(source, /folderKey/);
 
-console.log('REQORD smoke checks passed (v0.6.0)');
+console.log('REQORD smoke checks passed (v0.6.1)');
