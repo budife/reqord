@@ -53,7 +53,18 @@ function loadItems() {
     return [];
   }
 }
-function saveItems() { hasUnsavedChanges = true; hasUnsyncedChanges = true; persistDraft(); updateSyncStatus(); return items; }
+function saveItems() { hasUnsavedChanges = true; hasUnsyncedChanges = true; persistDraft(); updateSyncStatus(); debouncedSync(); return items; }
+
+let syncTimer = null;
+function debouncedSync() {
+  if (!supabaseClient) return;
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    syncTimer = null;
+    sbSyncAll();
+  }, 5000);
+}
+
 function persistDraft() {
   try {
     const json = JSON.stringify(items);
