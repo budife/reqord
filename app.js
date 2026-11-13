@@ -815,11 +815,12 @@ async function sbLoadItems(showLoading = false) {
       byId.set(String(r.id), r);
     }
   }
-  // Hapus item lokal yang terakhir ada di cloud tapi sekarang hilang (dihapus di device lain)
-  // Guard: hanya jalankan bila fetch remote berhasil dan tidak kosong (hindari false positive saat koneksi transient)
+  // Hapus item lokal yang terakhir ada di cloud tapi sekarang hilang (dihapus di device lain).
+  // Guard: HANYA jalankan bila remote PUNYA data. Kalau cloud kosong (user baru / data cloud
+  // terhapus semua), jangan sentuh item lokal — biarkan sbSyncAll push lokal ke cloud.
   const remoteIds = new Set(remote.map(r => String(r.id)));
   let removedRemote = 0;
-  if (remote.length > 0 || lastSyncedIds.size === 0) {
+  if (remote.length > 0) {
     for (const id of [...lastSyncedIds]) {
       if (!remoteIds.has(id) && byId.has(id)) {
         byId.delete(id);
@@ -926,8 +927,10 @@ async function sbSyncAll() {
     if (!error && data) dbItems = data;
   } catch (e) { console.warn('[reqord] reconcile fetch failed:', e); }
   
-  // 1b. Reconcile: buang item lokal yang terakhir ada di cloud tapi sekarang hilang (dihapus device lain)
-  if (dbItems.length > 0 || lastSyncedIds.size === 0) {
+  // 1b. Reconcile: buang item lokal yang terakhir ada di cloud tapi sekarang hilang (dihapus device lain).
+  // HANYA jalan kalau cloud PUNYA data. Kalau cloud kosong (user baru / data cloud terhapus),
+  // jangan sentuh item lokal — biarkan langkah 4 push lokal ke cloud.
+  if (dbItems.length > 0) {
     const dbIds = new Set(dbItems.map(d => String(d.id)));
     const beforeCount = items.length;
     items = items.filter(item => !lastSyncedIds.has(String(item.id)) || dbIds.has(String(item.id)));
@@ -1028,16 +1031,37 @@ async function sbLoadActivities() {
   console.log('[reqord] sbLoadActivities: merged', data.value.length, 'remote activities');
 }
 
+function loadLastSyncedUser() { try { return localStorage.getItem('reqord-last-synced-user'); } catch { return null; } }
+function persistLastSyncedUser(name) { try { if (name) localStorage.setItem('reqord-last-synced-user', name); else localStorage.removeItem('reqord-last-synced-user'); } catch { /* ignore */ } }
+
+// Reset sync bookkeeping kalau user berganti (atau logout) supaya state user lama
+// tidak mengotori reconcile/push user baru.
+function resetSyncStateForUserChange(username) {
+  lastSyncedIds.clear();
+  syncSnapshot.clear();
+  pendingDeletes.clear();
+  persistLastSyncedIds();
+  persistPendingDeletes();
+  persistLastSyncedUser(username || null);
+}
+
 // Auth state listener
 if (supabaseClient) {
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     console.log('[reqord] auth state:', event, session?.user?.email);
     if (event === 'SIGNED_IN') {
+      const username = session?.user?.email ? String(session.user.email).replace(/@.*$/, '') : '';
+      const prevUser = loadLastSyncedUser();
+      if (prevUser !== username) {
+        console.log('[reqord] user changed:', prevUser, '->', username, '- reset sync state');
+        resetSyncStateForUserChange(username);
+      }
       await sbLoadItems();
     } else if (event === 'SIGNED_OUT') {
       items = [];
       persistDraft();
       render();
+      resetSyncStateForUserChange(null);
     }
   });
 }
