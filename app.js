@@ -500,7 +500,7 @@ if (closeInviteCodesButton) closeInviteCodesButton.addEventListener('click', () 
 
 const generateInviteCodeBtn = document.querySelector('#generateInviteCode');
 if (generateInviteCodeBtn) generateInviteCodeBtn.addEventListener('click', async () => {
-  const role = document.querySelector('#inviteCodeRole').value;
+  const role = 'admin'; // only admin now
   const code = generateInviteCode();
   inviteCodes.unshift({
     code,
@@ -548,7 +548,6 @@ function renderInviteCodesList() {
         <div class="invite-code-main">
           <span class="invite-code-code">${escapeHtml(c.code)}</span>
           <div class="invite-code-meta">
-            <span class="invite-code-role ${c.role}">${c.role}</span>
             <span>dibuat: ${escapeHtml(displayDate(c.created_at, true))}</span>
             <span>oleh: ${escapeHtml(c.created_by || '?')}${usedBy}${usedAt}</span>
           </div>
