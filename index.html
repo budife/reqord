@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=88">
+  <link rel="stylesheet" href="styles.css?v=89">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -83,7 +83,7 @@
       <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Password</label>
       <input id="registerPassInput" class="delete-confirm-input" type="password" placeholder="Password..." aria-label="Password" style="margin:0 0 12px 0;width:100%;box-sizing:border-box;">
       <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Kode Invitation (wajib)</label>
-      <input id="registerInviteInput" class="delete-confirm-input" type="text" placeholder="Kode invitation (admin)" aria-label="Kode invitation" style="margin:0;width:100%;box-sizing:border-box;">
+      <input id="registerInviteInput" class="delete-confirm-input" type="text" placeholder="Kode invitation (generate via admin)" aria-label="Kode invitation" style="margin:0;width:100%;box-sizing:border-box;">
     </div>
     <div class="delete-actions"><button class="secondary-button" id="cancelRegisterDialog">Batal</button><button class="primary-button" id="submitRegisterDialog">Daftar</button></div>
     <div style="text-align:center;padding:0 22px 16px;font-size:0.8rem;color:var(--muted,#94a3b8);">
@@ -109,6 +109,7 @@
       <button class="settings-item" id="settingsImportExcel"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import Excel</strong><small>Muat data dari file .xlsx</small></span><span class="settings-item-arrow">›</span></button>
       <button class="settings-item" id="settingsImport"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import JSON</strong><small>Muat data dari file JSON</small></span><span class="settings-item-arrow">›</span></button>
       <button class="settings-item" id="settingsRestoreBackup"><span class="settings-item-icon">↺</span><span class="settings-item-body"><strong>Pulihkan Backup</strong><small id="restoreBackupInfo">Muat data dari backup lokal terakhir</small></span><span class="settings-item-arrow">›</span></button>
+      <button class="settings-item admin-only" id="settingsInviteCodes"><span class="settings-item-icon">🔐</span><span class="settings-item-body"><strong>Kelola Kode Invite</strong><small>Generate & kelola kode undangan untuk user baru</small></span><span class="settings-item-arrow">›</span></button>
     </div>
   </dialog>
   <dialog id="deleteDialog" class="delete-dialog">
@@ -122,6 +123,31 @@
     <div class="delete-modal-head"><span class="delete-warning" aria-hidden="true">?</span><div><span class="eyebrow" id="confirmDialogEyebrow">CONFIRM</span><h2 id="confirmDialogTitle">Yakin?</h2></div><button class="modal-close" id="closeConfirmButton" aria-label="Tutup konfirmasi">×</button></div>
     <p class="delete-copy" id="confirmDialogMessage"></p>
     <div class="delete-actions"><button class="secondary-button" id="cancelConfirmButton">Batal</button><button class="delete-confirm-button" id="acceptConfirmButton">Ya, lanjutkan</button></div>
+  </dialog>
+  <dialog id="inviteCodesDialog" class="delete-dialog settings-dialog">
+    <div class="delete-modal-head"><span class="delete-warning settings-warning">🔐</span><div><span class="eyebrow">INVITE CODES</span><h2>Kelola Kode Undangan</h2></div><button class="modal-close" id="closeInviteCodesDialog" aria-label="Tutup">×</button></div>
+    <div class="dialog-content" style="max-height:60vh;overflow:auto;">
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:0.85rem;color:var(--muted,#94a3b8);margin-bottom:8px;">Generate Kode Baru</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <select id="inviteCodeRole" style="flex:1;min-width:140px;padding:8px 12px;border:1px solid var(--line,#e2e8f0);border-radius:6px;background:var(--surface,#fff);font-size:0.9rem;">
+            <option value="viewer">Viewer (biasa)</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button class="primary-button" id="generateInviteCode" style="padding:8px 16px;white-space:nowrap;">Generate</button>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--line-soft,#e2e8f0);padding-top:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <strong>Daftar Kode</strong>
+          <button class="secondary-button" id="refreshInviteCodes" style="padding:6px 12px;font-size:0.8rem;">Refresh</button>
+        </div>
+        <div id="inviteCodesList" style="max-height:300px;overflow:auto;">
+          <p style="color:var(--muted,#94a3b8);font-size:0.85rem;text-align:center;padding:20px;">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <div class="delete-actions"><button class="secondary-button" id="closeInviteCodesButton">Tutup</button></div>
   </dialog>
   <dialog id="editDialog" class="delete-dialog edit-dialog">
      <div class="delete-modal-head"><span class="delete-warning edit-warning">✎</span><div><span class="eyebrow">WORK ORDER DETAILS</span><h2>Edit work order</h2></div><button class="modal-close" id="closeEditButton" aria-label="Tutup work order details">×</button></div>
@@ -151,10 +177,10 @@
     <div class="profile-modal-head"><div><span class="eyebrow">BUDIFE.PSD</span><h2>Meet the maker</h2></div><button class="modal-close" id="closeProfileButton" aria-label="Tutup maker panel">×</button></div>
     <nav class="maker-tabs" aria-label="Maker menu"><button class="maker-tab active" data-maker-tab="profile">Profile</button><button class="maker-tab" data-maker-tab="recent">Recent changes</button></nav>
     <section class="maker-content" data-maker-content="profile"><div class="profile-identity"><span class="profile-avatar profile-avatar-large">BI</span><div><h3>Budi Indra Ilham</h3><a href="https://www.linkedin.com/in/budife/" target="_blank" rel="noreferrer">linkedin.com/in/budife/ ↗</a></div></div><div class="profile-workspace"><span class="workspace-dot"></span><div><small>WORKSPACE</small><strong>reqord / Work order manager</strong></div></div><p class="maker-bio">Building thoughtful tools for turning everyday work into a clearer system.</p></section>
-    <section class="maker-content" data-maker-content="recent" hidden><div class="maker-changelog"><span class="eyebrow">WHAT'S NEW</span><h3>Recent changes</h3><div class="changelog-meta"><strong>v0.6.2</strong><span>Updated · 13 Nov 2026</span></div><div class="changelog-group"><label class="recent-date-label" for="recentDateSelect">Tanggal update</label><select id="recentDateSelect" class="recent-date-select" aria-label="Pilih tanggal update"></select><div id="recentReleaseDetail" class="recent-release-detail"><p>Memuat update terbaru…</p></div></div><small>Riwayat lengkap tersedia di <code>CHANGELOG.md</code> pada repository GitHub.</small></div></section>
-    <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.2</span><span>Made thoughtfully</span></div>
+    <section class="maker-content" data-maker-content="recent" hidden><div class="maker-changelog"><span class="eyebrow">WHAT'S NEW</span><h3>Recent changes</h3><div class="changelog-meta"><strong>v0.6.3</strong><span>Updated · 13 Nov 2026</span></div><div class="changelog-group"><label class="recent-date-label" for="recentDateSelect">Tanggal update</label><select id="recentDateSelect" class="recent-date-select" aria-label="Pilih tanggal update"></select><div id="recentReleaseDetail" class="recent-release-detail"><p>Memuat update terbaru…</p></div></div><small>Riwayat lengkap tersedia di <code>CHANGELOG.md</code> pada repository GitHub.</small></div></section>
+    <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.3</span><span>Made thoughtfully</span></div>
   </dialog>
     <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="true"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History & Activity</h2></div><button class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=87" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=88" defer></script>
 </body>
 </html>

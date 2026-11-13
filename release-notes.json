@@ -1,5 +1,19 @@
 [
   {
+    "version": "v0.6.3",
+    "date": "2026-11-13",
+    "dateLabel": "13 Nov 2026",
+    "title": "Invite codes: admin generate random codes untuk user baru",
+    "highlights": [
+      "Settings → Kelola Kode Invite (hanya admin): generate kode acak format RQ-XXXXXXXX",
+      "Role pilihan: Admin atau Viewer, ditentukan saat generate",
+      "Kode invite disimpan di Supabase (reqord_meta), sinkron lintas device",
+      "Register sekarang validasi ke kode yang di-generate + legacy 'budd-reqord'",
+      "Kode otomatis ditandai used setelah dipakai, tidak bisa dipakai ulang",
+      "Salin/hapus kode dari dialog management, kode used dimark visual"
+    ]
+  },
+  {
     "version": "v0.6.2",
     "date": "2026-11-13",
     "dateLabel": "13 Nov 2026",

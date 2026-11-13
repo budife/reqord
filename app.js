@@ -483,6 +483,109 @@ if (settingsChangePass) settingsChangePass.addEventListener('click', () => {
   document.querySelector('#changePassDialog').showModal();
 });
 
+const settingsInviteCodes = document.querySelector('#settingsInviteCodes');
+if (settingsInviteCodes) settingsInviteCodes.addEventListener('click', async () => {
+  document.querySelector('#settingsDialog').close();
+  await loadAndShowInviteCodes();
+});
+
+const closeInviteCodesDialog = document.querySelector('#closeInviteCodesDialog');
+if (closeInviteCodesDialog) closeInviteCodesDialog.addEventListener('click', () => {
+  document.querySelector('#inviteCodesDialog').close();
+});
+const closeInviteCodesButton = document.querySelector('#closeInviteCodesButton');
+if (closeInviteCodesButton) closeInviteCodesButton.addEventListener('click', () => {
+  document.querySelector('#inviteCodesDialog').close();
+});
+
+const generateInviteCodeBtn = document.querySelector('#generateInviteCode');
+if (generateInviteCodeBtn) generateInviteCodeBtn.addEventListener('click', async () => {
+  const role = document.querySelector('#inviteCodeRole').value;
+  const code = generateInviteCode();
+  inviteCodes.unshift({
+    code,
+    role,
+    created_by: userName,
+    created_at: new Date().toISOString(),
+    used_by: null,
+    used_at: null
+  });
+  await sbSaveInviteCodes(inviteCodes);
+  renderInviteCodesList();
+  showToast(`Kode invite dibuat: ${code}`);
+});
+
+const refreshInviteCodesBtn = document.querySelector('#refreshInviteCodes');
+if (refreshInviteCodesBtn) refreshInviteCodesBtn.addEventListener('click', async () => {
+  await loadAndShowInviteCodes();
+});
+
+async function loadAndShowInviteCodes() {
+  if (!supabaseClient) {
+    showToast('Supabase tidak tersedia');
+    return;
+  }
+  const listEl = document.querySelector('#inviteCodesList');
+  if (listEl) listEl.innerHTML = '<p style="color:var(--muted,#94a3b8);font-size:0.85rem;text-align:center;padding:20px;">Memuat...</p>';
+  document.querySelector('#inviteCodesDialog').showModal();
+  inviteCodes = await sbLoadInviteCodes();
+  renderInviteCodesList();
+}
+
+function renderInviteCodesList() {
+  const listEl = document.querySelector('#inviteCodesList');
+  if (!listEl) return;
+  if (!inviteCodes.length) {
+    listEl.innerHTML = '<p style="color:var(--muted,#94a3b8);font-size:0.85rem;text-align:center;padding:20px;">Belum ada kode invite. Klik Generate untuk membuat.</p>';
+    return;
+  }
+  listEl.innerHTML = inviteCodes.map(c => {
+    const used = !!c.used_by;
+    const usedBy = used ? ` · dipakai oleh ${escapeHtml(c.used_by)}` : '';
+    const usedAt = used && c.used_at ? ` · ${escapeHtml(displayDate(c.used_at, true))}` : '';
+    return `
+      <div class="invite-code-item${used ? ' used' : ''}" data-code="${escapeHtml(c.code)}">
+        <div class="invite-code-main">
+          <span class="invite-code-code">${escapeHtml(c.code)}</span>
+          <div class="invite-code-meta">
+            <span class="invite-code-role ${c.role}">${c.role}</span>
+            <span>dibuat: ${escapeHtml(displayDate(c.created_at, true))}</span>
+            <span>oleh: ${escapeHtml(c.created_by || '?')}${usedBy}${usedAt}</span>
+          </div>
+        </div>
+        <div class="invite-code-actions">
+          <button class="secondary-button invite-code-copy" data-code="${escapeHtml(c.code)}" title="Salin kode">Salin</button>
+          ${!used ? `<button class="secondary-button invite-code-delete" data-code="${escapeHtml(c.code)}" title="Hapus kode">Hapus</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // attach copy/delete handlers
+  listEl.querySelectorAll('.invite-code-copy').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const code = btn.dataset.code;
+      try {
+        await navigator.clipboard.writeText(code);
+        showToast(`Disalin: ${code}`);
+      } catch {
+        showToast('Gagal menyalin');
+      }
+    });
+  });
+  listEl.querySelectorAll('.invite-code-delete').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const code = btn.dataset.code;
+      const ok = await confirmModal(`Hapus kode invite ${code}?`, { title: 'Hapus Kode Invite?', eyebrow: 'DELETE', confirmLabel: 'Ya, hapus' });
+      if (!ok) return;
+      inviteCodes = inviteCodes.filter(c => c.code !== code);
+      await sbSaveInviteCodes(inviteCodes);
+      renderInviteCodesList();
+      showToast('Kode invite dihapus');
+    });
+  });
+}
+
 const jsonInput = document.querySelector('#jsonFileInput');
 if (jsonInput) jsonInput.addEventListener('change', async (event) => {
   const file = event.target.files[0];
@@ -753,10 +856,28 @@ if (submitRegisterDialog) {
     const invite = document.querySelector('#registerInviteInput').value.trim();
     if (!username) { showToast('Username wajib diisi'); return; }
     if (!password || password.length < 4) { showToast('Password minimal 4 karakter'); return; }
-    if (invite !== 'budd-reqord') { showToast('Kode invitation wajib diisi dan valid'); return; }
+    if (!invite) { showToast('Kode invitation wajib diisi'); return; }
+
+    // Load invite codes from cloud if not loaded
+    if (!inviteCodes.length && supabaseClient) {
+      inviteCodes = await sbLoadInviteCodes();
+    }
+
+    // Check invite code: support generated codes + legacy 'budd-reqord'
+    let inviteCodeData = findInviteCode(invite);
+    const isLegacyAdmin = invite === 'budd-reqord';
+    if (!inviteCodeData && !isLegacyAdmin) {
+      showToast('Kode invitation tidak valid atau sudah dipakai');
+      return;
+    }
+    if (inviteCodeData && inviteCodeData.used_by) {
+      showToast('Kode invitation sudah dipakai');
+      return;
+    }
+
     if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
     const email = username + '@gmail.com';
-    const isAdminUser = invite === 'budd-reqord';
+    const isAdminUser = isLegacyAdmin || (inviteCodeData && inviteCodeData.role === 'admin');
     const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
@@ -771,6 +892,11 @@ if (submitRegisterDialog) {
         showToast('Register gagal: ' + error.message);
       }
       return;
+    }
+    // Mark invite code as used
+    if (inviteCodeData) {
+      markInviteCodeUsed(inviteCodeData.code, username);
+      await sbSaveInviteCodes(inviteCodes);
     }
     localStorage.setItem('reqord-username', btoa(username.toLowerCase()));
     localStorage.setItem('reqord-access-code', btoa(password));
@@ -851,6 +977,7 @@ if (supabaseClient) {
     console.log('[reqord] init: Supabase load failed, using localStorage', e);
   });
   sbLoadActivities();
+  sbLoadInviteCodes().then(codes => { inviteCodes = codes; console.log('[reqord] init: loaded', codes.length, 'invite codes'); });
   let _realtimeTimer = null;
   supabaseClient.channel('work_orders_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'work_orders' }, (payload) => {
@@ -1110,6 +1237,39 @@ async function sbLoadActivities() {
   renderActivities();
   console.log('[reqord] sbLoadActivities: merged', data.value.length, 'remote activities');
 }
+
+// === Invite codes sync (reqord_meta) ===
+async function sbSaveInviteCodes(codes) {
+  if (!supabaseClient) return true;
+  const { error } = await supabaseClient.from('reqord_meta').upsert({ key: 'invite_codes', value: codes, updated_at: new Date().toISOString() });
+  if (error) { console.error('[reqord] invite codes sync error:', error); return false; }
+  return true;
+}
+async function sbLoadInviteCodes() {
+  if (!supabaseClient) return [];
+  const { data, error } = await supabaseClient.from('reqord_meta').select('value').eq('key', 'invite_codes').maybeSingle();
+  if (error || !data || !Array.isArray(data.value)) return [];
+  return data.value;
+}
+function generateInviteCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I, O, 0, 1
+  let code = '';
+  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return `RQ-${code}`;
+}
+function findInviteCode(code) {
+  return inviteCodes.find(c => c.code === code);
+}
+function markInviteCodeUsed(code, username) {
+  const idx = inviteCodes.findIndex(c => c.code === code);
+  if (idx >= 0) {
+    inviteCodes[idx].used_by = username;
+    inviteCodes[idx].used_at = new Date().toISOString();
+    return true;
+  }
+  return false;
+}
+let inviteCodes = []; // loaded from cloud
 
 function loadLastSyncedUser() { try { return localStorage.getItem('reqord-last-synced-user'); } catch { return null; } }
 function persistLastSyncedUser(name) { try { if (name) localStorage.setItem('reqord-last-synced-user', name); else localStorage.removeItem('reqord-last-synced-user'); } catch { /* ignore */ } }
