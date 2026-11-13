@@ -92,6 +92,10 @@ tbody tr:hover { background: #f7faf2; }
 
 .empty { padding: 22px 18px; color: var(--faint); font-size: 13px; }
 
+.load-more-button { display: block; width: 100%; margin: 18px auto 0; padding: 12px 20px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--green-dark); font: 600 13px Manrope, system-ui, sans-serif; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+.load-more-button:hover { background: var(--green-soft); border-color: var(--green-dark); }
+.load-more-button[hidden] { display: none; }
+
 footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 34px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .mono { font-family: "DM Mono", monospace; letter-spacing: .04em; }
 
