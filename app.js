@@ -542,6 +542,79 @@ if (jsonInput) jsonInput.addEventListener('change', async (event) => {
   event.target.value = '';
 });
 
+function doExportExcel() {
+  if (!window.XLSX) { showToast('Library Excel belum tersedia'); return; }
+  if (!items.length) { showToast('Tidak ada data untuk diexport'); return; }
+  const rows = items.map(item => ({
+    Title: item.title,
+    Requestor: item.requestor,
+    Type: item.type === 'daily' ? 'Daily' : 'Project',
+    Status: groups[item.status] || item.status,
+    Priority: item.priority,
+    RequestDate: item.requestDate,
+    Deadline: item.date || ''
+  }));
+  const sheet = XLSX.utils.json_to_sheet(rows);
+  sheet['!cols'] = [{ wch: 42 }, { wch: 22 }, { wch: 10 }, { wch: 16 }, { wch: 10 }, { wch: 20 }, { wch: 20 }];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, sheet, 'Work Orders');
+  const file = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const url = URL.createObjectURL(new Blob([file], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `reqord-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Excel diexport');
+}
+
+function doImportExcel() {
+  document.querySelector('#excelFileInput').click();
+}
+
+const settingsExportExcel = document.querySelector('#settingsExportExcel');
+if (settingsExportExcel) settingsExportExcel.addEventListener('click', () => {
+  doExportExcel();
+  document.querySelector('#settingsDialog').close();
+});
+
+const settingsImportExcel = document.querySelector('#settingsImportExcel');
+if (settingsImportExcel) settingsImportExcel.addEventListener('click', () => {
+  doImportExcel();
+  document.querySelector('#settingsDialog').close();
+});
+
+const excelInput = document.querySelector('#excelFileInput');
+if (excelInput) excelInput.addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    if (!window.XLSX) throw new Error('Library Excel belum tersedia');
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const sheetName = workbook.SheetNames.find(name => /work order/i.test(name)) || workbook.SheetNames[0];
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    if (!rows.length) throw new Error('Tidak ada data di sheet');
+    const imported = rows.map((row, index) => normalizeItem({
+      id: Date.now() + index,
+      title: row.Title || row.title || row.Name || '',
+      requestor: row.Requestor || row.requestor || '',
+      type: /daily/i.test(row.Type || '') ? 'daily' : 'project',
+      status: row.Status || '',
+      priority: row.Priority || 'normal',
+      requestDate: normalizeDateValue(row.RequestDate || row.requestDate) || today(),
+      date: normalizeDateValue(row.Deadline || row.TargetDone || row.date) || ''
+    })).filter(item => item.title);
+    if (!imported.length) throw new Error('Tidak ada baris valid');
+    items = imported;
+    saveItems();
+    render();
+    showToast(`${imported.length} item diimport dari Excel`);
+  } catch (error) {
+    showToast(`Import Excel gagal: ${error.message}`);
+  }
+  event.target.value = '';
+});
+
 document.querySelector('#syncCloudButton').addEventListener('click', async () => {
   if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
   // Require login
