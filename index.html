@@ -17,7 +17,20 @@
     <header class="topbar">
       <a class="brand" href="#"><span class="brand-mark">R</span><span>reqord</span></a>
       <div class="workspace"><span class="workspace-dot"></span> reqord <b>/</b> <strong>Work order manager</strong></div>
-       <div class="top-actions"><button class="profile-trigger activity-trigger" id="activityButton" aria-label="Buka history dan activity"><span class="settings-icon" aria-hidden="true">◷</span><span class="profile-trigger-text"><strong>History & Activity</strong><small>reqord</small></span></button><span id="userStatus" style="font-size:0.85rem;color:var(--muted,#94a3b8);margin-right:0.5rem;"></span><a href="#" class="secondary-button" style="text-decoration:none;display:inline-flex;align-items:center;" id="loginLink">Login</a><button class="secondary-button" id="changePassBtn" style="display:none;">Ganti Password</button><button class="secondary-button" id="logoutBtn" style="display:none;">Logout</button></div>
+       <div class="top-actions">
+  <button class="profile-trigger activity-trigger" id="activityButton" aria-label="Buka history dan activity"><span class="settings-icon" aria-hidden="true">◷</span><span class="profile-trigger-text"><strong>History & Activity</strong><small>reqord</small></span></button>
+  <div class="user-menu" id="userMenu">
+    <button class="user-menu-trigger" id="userMenuTrigger" aria-label="Menu pengguna" aria-expanded="false" aria-haspopup="true">
+      <span id="userMenuText">Login</span>
+      <span class="user-menu-arrow" aria-hidden="true">▾</span>
+    </button>
+    <div class="user-menu-dropdown" id="userMenuDropdown" hidden>
+      <a href="#" class="user-menu-item" id="loginLink">Login</a>
+      <button class="user-menu-item" id="changePassBtn" style="display:none;">Ganti Password</button>
+      <button class="user-menu-item" id="logoutBtn" style="display:none;">Logout</button>
+    </div>
+  </div>
+</div>
     </header>
 
      <section class="intro"><div><div class="eyebrow">WORK ORDER MANAGER</div><h1>Request work orders</h1><p>Work order dikelompokkan per status.</p></div><div class="intro-actions"><span class="active-file" id="activeFileName"><i class="sync-dot"></i>Tidak ada file aktif</span><button class="secondary-button" id="addWorkOrderButton" type="button">+ Tambah</button><button class="secondary-button" id="scanFolderButton">Scan Folder</button><button class="secondary-button" id="refreshFolderButton">Refresh</button><button class="secondary-button" id="syncCloudButton">Sync to Cloud</button><a class="secondary-button" href="public.html" style="text-decoration:none;">Public board</a><button class="secondary-button" id="exportJsonButton" type="button">Export</button><button class="secondary-button" id="importJsonButton" type="button">Import</button><input id="jsonFileInput" type="file" accept=".json" hidden></div></section>

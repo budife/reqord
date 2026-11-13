@@ -763,6 +763,25 @@ if (logoutBtn) {
     window.location.reload();
   });
 }
+
+// User menu dropdown toggle
+const userMenuTrigger = document.querySelector('#userMenuTrigger');
+const userMenuDropdown = document.querySelector('#userMenuDropdown');
+const userMenuText = document.querySelector('#userMenuText');
+if (userMenuTrigger && userMenuDropdown) {
+  userMenuTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const expanded = userMenuTrigger.getAttribute('aria-expanded') === 'true';
+    userMenuTrigger.setAttribute('aria-expanded', !expanded);
+    userMenuDropdown.hidden = expanded;
+  });
+  document.addEventListener('click', (e) => {
+    if (!userMenuTrigger.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+      userMenuTrigger.setAttribute('aria-expanded', 'false');
+      userMenuDropdown.hidden = true;
+    }
+  });
+}
 // Login modal handler
 const loginLink = document.querySelector('#loginLink');
 if (loginLink) {
@@ -910,22 +929,18 @@ if (changePassBtn) {
   });
 }
 window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
-const _loginLink = document.querySelector('#loginLink');
 const _logoutBtn = document.querySelector('#logoutBtn');
-const userStatus = document.querySelector('#userStatus');
+const _changePassBtn = document.querySelector('#changePassBtn');
 const hasCode = !!localStorage.getItem('reqord-access-code');
 isAdmin = localStorage.getItem('reqord-is-admin') === '1';
-const _changePassBtn = document.querySelector('#changePassBtn');
 if (hasCode && userName) {
-  if (_loginLink) _loginLink.style.display = 'none';
   if (_logoutBtn) _logoutBtn.style.display = '';
   if (_changePassBtn) _changePassBtn.style.display = isAdmin ? '' : 'none';
-  if (userStatus) userStatus.textContent = userName + (isAdmin ? ' (admin)' : '');
+  if (userMenuText) userMenuText.textContent = userName + (isAdmin ? ' (admin)' : '');
 } else {
-  if (_loginLink) _loginLink.style.display = '';
   if (_logoutBtn) _logoutBtn.style.display = 'none';
   if (_changePassBtn) _changePassBtn.style.display = 'none';
-  if (userStatus) userStatus.textContent = '';
+  if (userMenuText) userMenuText.textContent = 'Login';
 }
 document.body.classList.toggle('is-admin', isAdmin);
 openDraftDatabase(); updateSyncStatus(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
