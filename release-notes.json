@@ -1,5 +1,20 @@
 [
   {
+    "version": "v0.6.2",
+    "date": "2026-11-13",
+    "dateLabel": "13 Nov 2026",
+    "title": "Anti data-loss: backup lokal, park per user & sync aman",
+    "highlights": [
+      "Auto-sync: perubahan lokal otomatis disinkronkan ke cloud setelah 5 detik idle (batch 50 item/req), indikator status menunjukkan 'belum disinkron'",
+      "Sync reconciliation tidak lagi menghapus item lokal saat cloud kosong — cloud kosong kini memicu push ulang, bukan hapus",
+      "Backup lokal rolling (maks 5 titik): setiap penyimpanan menulis backup sebelumnya; storage corrupt otomatis dipulihkan dari backup",
+      "Settings → Pulihkan Backup: kembalikan data dari titik backup terakhir dengan konfirmasi",
+      "Logout menyimpan items per-user (parked) dan login mengembalikannya — ganti user tidak lagi berisiko menghapus atau membocorkan data",
+      "Import JSON & Excel wajib konfirmasi karena menimpa semua data",
+      "Perbaikan: status Daily di-normalisasi benar sehingga pindah ke tabel Daily"
+    ]
+  },
+  {
     "version": "v0.6.1",
     "date": "2026-11-13",
     "dateLabel": "13 Nov 2026",

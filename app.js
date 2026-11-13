@@ -1,10 +1,14 @@
-console.log('[reqord] v0.6.1');
+console.log('[reqord] v0.6.2');
 const SUPABASE_URL = 'https://htyfykkurammflwefxgw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_iUul7iVeH-ReFlSxVT-ulQ_qhkgzPAz';
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 const STORAGE_KEY = 'reqord-request-work-orders';
 const ACTIVITIES_KEY = 'reqord-activities';
 const LEGACY_STORAGE_KEY = 'synaps-project-work-orders';
+// Backup constants WAJIB di atas pemanggilan loadItems() di bawah — loadItems memakainya
+// saat fallback, dan `const` yang belum tereksekusi (TDZ) akan melempar ReferenceError.
+const BACKUP_PREFIX = 'reqord-backup-';
+const BACKUP_LIMIT = 5;
 const groups = { new_request: 'New Request', waiting_brief: 'Waiting Brief', working: 'Working', draft_preview: '1st Draft', revision: 'In Revision', preview: 'Preview', on_hold: 'On Hold', approved: 'Approved', done: 'Done', daily: 'Daily', cancelled: 'Cancelled' };
 let userName = '';
 try { const stored = localStorage.getItem('reqord-username'); if (stored) userName = atob(stored); } catch(e) {}
@@ -31,6 +35,31 @@ const PANEL_PAGE_SIZE = 20;
 const panelLimits = {};
 function resetPanelLimits() { Object.keys(panelLimits).forEach(key => delete panelLimits[key]); }
 
+function listBackupKeys() { try { return Object.keys(localStorage).filter(key => key.startsWith(BACKUP_PREFIX)).sort(); } catch { return []; } }
+function rotateBackup(json) {
+  if (!json) return;
+  try {
+    // Suffix anti-tabrakan kalau dua write terjadi di milidetik yang sama.
+    const keys = listBackupKeys();
+    const stamp = `${Date.now()}-${String(keys.length).padStart(4, '0')}`;
+    localStorage.setItem(BACKUP_PREFIX + stamp, json);
+    const all = listBackupKeys();
+    while (all.length > BACKUP_LIMIT) localStorage.removeItem(all.shift());
+  } catch { /* storage penuh / tidak tersedia */ }
+}
+function latestBackup() {
+  const keys = listBackupKeys();
+  if (!keys.length) return null;
+  const key = keys[keys.length - 1];
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    const when = Number(String(key).replace(BACKUP_PREFIX, '').split('-')[0]);
+    return { key, items: parsed, when: Number.isFinite(when) ? when : 0 };
+  } catch { return null; }
+}
+
 function loadItems() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -50,8 +79,15 @@ function loadItems() {
     return [];
   } catch (e) {
     console.error('[reqord] loadItems error:', e);
-    return [];
   }
+  // Fallback: storage utama corrupt/kosong tanpa array → coba backup terakhir
+  const backup = latestBackup();
+  if (backup && backup.items.length) {
+    console.warn('[reqord] loadItems: main storage gagal, restore dari backup', backup.key, backup.items.length, 'items');
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(backup.items)); } catch { /* ignore */ }
+    return backup.items.map(normalizeItem);
+  }
+  return [];
 }
 function saveItems() { hasUnsavedChanges = true; hasUnsyncedChanges = true; persistDraft(); updateSyncStatus(); debouncedSync(); return items; }
 
@@ -68,8 +104,12 @@ function debouncedSync() {
 function persistDraft() {
   try {
     const json = JSON.stringify(items);
+    // Backup konten LAMA sebelum ditimpa, supaya ada titik pemulihan terakhir.
+    const previous = localStorage.getItem(STORAGE_KEY);
+    rotateBackup(previous);
     localStorage.setItem(STORAGE_KEY, json);
     try { localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(activities)); } catch { /* ignore */ }
+    hasUnsavedChanges = false;
     console.log('[reqord] persistDraft: saved', items.length, 'items');
     return true;
   } catch (e) {
@@ -316,7 +356,7 @@ document.querySelector('#makerButton').addEventListener('click', () => profileDi
 document.querySelector('#closeProfileButton').addEventListener('click', () => profileDialog.close());
 profileDialog.addEventListener('click', event => { if (isBackdropClick(profileDialog, event)) profileDialog.close(); });
 document.querySelectorAll('[data-maker-tab]').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('[data-maker-tab]').forEach(button => button.classList.toggle('active', button === tab)); document.querySelectorAll('[data-maker-content]').forEach(content => { content.hidden = content.dataset.makerContent !== tab.dataset.makerTab; }); }));
-document.querySelector('.profile-footer span').innerHTML = '<i class="sync-dot"></i> reqord v0.6.1';
+document.querySelector('.profile-footer span').innerHTML = '<i class="sync-dot"></i> reqord v0.6.2';
 const fallbackReleaseNotes = [
   { version: 'v0.5.0', date: '2026-11-12', dateLabel: '12 Nov 2026', title: 'Scan folder, sync cloud & public board', highlights: ['Scan Folder: pilih folder Google Drive, work order langsung terisi dari nama folder', 'Login username + kode, sync otomatis ke Supabase, dan Public board read-only', 'Aksi massal: pilih banyak work order, ubah status atau hapus sekaligus', 'Layout mobile diperbaiki: tabel penuh, filter wrap, header rapat', 'Tombol Tambah dan Export/Import JSON tersedia kembali'] },
   { version: 'v0.3.0', date: '2026-09-23', dateLabel: '23 Sep 2026', title: 'Subitems inline & status Preview/Revision', highlights: ['Subitems ala Monday.com: tampil inline di bawah tiap request + checklist modal', 'Tambah, centang, dan hapus subitem; tersimpan ke sheet Subitems + restore saat Load', 'Status baru Preview dan On revision, pindah full via dropdown', 'Delete pindah ke modal edit + undo; kolom Est. bisa diedit manual', 'Subitem selalu ikut tabel parentnya'] },
@@ -402,6 +442,32 @@ if (settingsImport) settingsImport.addEventListener('click', () => {
   document.querySelector('#settingsDialog').close();
 });
 
+// Pulihkan dari backup lokal terakhir (rolling backup, maks 5 titik).
+function refreshBackupInfo() {
+  const info = document.querySelector('#restoreBackupInfo');
+  if (!info) return;
+  const backup = latestBackup();
+  if (!backup || !backup.items.length) { info.textContent = 'Belum ada backup tersedia'; return; }
+  const when = Number(backup.when);
+  const label = Number.isFinite(when) ? new Date(when).toLocaleString('id-ID') : backup.key;
+  info.textContent = `Backup terakhir: ${backup.items.length} item · ${label}`;
+}
+const settingsRestoreBackup = document.querySelector('#settingsRestoreBackup');
+if (settingsRestoreBackup) settingsRestoreBackup.addEventListener('click', async () => {
+  const backup = latestBackup();
+  if (!backup || !backup.items.length) { showToast('Tidak ada backup tersedia'); return; }
+  const when = Number(backup.when);
+  const label = Number.isFinite(when) ? new Date(when).toLocaleString('id-ID') : backup.key;
+  const okRestore = await confirmModal(`Pulihkan ${backup.items.length} item dari backup (${label})?\nData saat ini akan diganti, dan otomatis dibackup dulu.`, { title: 'Pulihkan backup?', eyebrow: 'RESTORE FROM BACKUP', confirmLabel: 'Ya, pulihkan' });
+  if (!okRestore) return;
+  rotateBackup(localStorage.getItem(STORAGE_KEY)); // simpan kondisi sekarang sebagai titik pemulihan
+  items = repairItemIds(backup.items.map(normalizeItem));
+  saveItems();
+  renderActivities();
+  render();
+  showToast(`${items.length} item dipulihkan dari backup`);
+});
+
 const settingsChangePass = document.querySelector('#settingsChangePass');
 if (settingsChangePass) settingsChangePass.addEventListener('click', () => {
   document.querySelector('#settingsDialog').close();
@@ -415,14 +481,15 @@ if (jsonInput) jsonInput.addEventListener('change', async (event) => {
   try {
     const text = await file.text();
     const data = JSON.parse(text);
-    if (Array.isArray(data)) {
-      items = data.map(normalizeItem);
-    } else if (data.items && Array.isArray(data.items)) {
-      items = data.items.map(normalizeItem);
-      if (Array.isArray(data.activities)) activities = data.activities;
-    } else {
-      throw new Error('Format JSON tidak valid');
-    }
+    let incoming = null;
+    if (Array.isArray(data)) incoming = data;
+    else if (data.items && Array.isArray(data.items)) incoming = data.items;
+    if (!incoming) throw new Error('Format JSON tidak valid');
+    // Import MENGGANTI semua item lokal + cloud (stale delete). Wajib konfirmasi.
+    const okImport = await confirmModal(`Import akan MENGGANTIKAN ${items.length} item lokal dengan ${incoming.length} item dari file.\nData cloud yang tidak ada di file ini akan dihapus. Lanjutkan?`, { title: 'Import JSON?', eyebrow: 'REPLACE ALL DATA', confirmLabel: 'Ya, ganti semua' });
+    if (!okImport) { event.target.value = ''; return; }
+    items = incoming.map(normalizeItem);
+    if (data.activities && Array.isArray(data.activities)) activities = data.activities;
     saveItems();
     renderActivities();
     render();
@@ -495,6 +562,9 @@ if (excelInput) excelInput.addEventListener('change', async (event) => {
       date: normalizeDateValue(row.Deadline || row.TargetDone || row.date) || ''
     })).filter(item => item.title);
     if (!imported.length) throw new Error('Tidak ada baris valid');
+    // Import MENGGANTI semua item lokal + cloud (stale delete). Wajib konfirmasi.
+    const okImport = await confirmModal(`Import akan MENGGANTIKAN ${items.length} item lokal dengan ${imported.length} item dari Excel.\nData cloud yang tidak ada di file ini akan dihapus. Lanjutkan?`, { title: 'Import Excel?', eyebrow: 'REPLACE ALL DATA', confirmLabel: 'Ya, ganti semua' });
+    if (!okImport) { event.target.value = ''; return; }
     items = imported;
     saveItems();
     render();
@@ -736,6 +806,7 @@ const settingsLink = document.querySelector('#settingsLink');
 if (settingsLink) {
   settingsLink.addEventListener('click', () => {
     closeUserMenu();
+    refreshBackupInfo();
     document.querySelector('#settingsDialog').showModal();
   });
 }
@@ -1045,6 +1116,32 @@ function resetSyncStateForUserChange(username) {
   persistLastSyncedUser(username || null);
 }
 
+// Simpan items lokal milik user saat logout, supaya tidak hilang permanen kalau cloud
+// sedang kosong. Ditempatkan per-username; login sebagai user sama akan mengembalikannya.
+function parkLocalItems(username) {
+  if (!username) return;
+  try {
+    localStorage.setItem(`reqord-parked-${username}`, JSON.stringify({ items, activities, parkedAt: new Date().toISOString() }));
+    console.log('[reqord] parked', items.length, 'items for user', username);
+  } catch { /* storage penuh / tidak tersedia */ }
+}
+function restoreParkedItems(username) {
+  if (!username) return false;
+  const key = `reqord-parked-${username}`;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return false;
+    const parked = JSON.parse(raw);
+    if (!Array.isArray(parked.items)) return false;
+    items = repairItemIds(parked.items.map(normalizeItem));
+    if (Array.isArray(parked.activities)) activities = parked.activities;
+    localStorage.removeItem(key);
+    persistDraft();
+    console.log('[reqord] restored', items.length, 'parked items for user', username);
+    return true;
+  } catch (e) { console.warn('[reqord] restore parked items failed:', e); return false; }
+}
+
 // Auth state listener
 if (supabaseClient) {
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -1052,14 +1149,23 @@ if (supabaseClient) {
     if (event === 'SIGNED_IN') {
       const username = session?.user?.email ? String(session.user.email).replace(/@.*$/, '') : '';
       const prevUser = loadLastSyncedUser();
-      if (prevUser !== username) {
-        console.log('[reqord] user changed:', prevUser, '->', username, '- reset sync state');
+      // Login sebagai user yang sama: kembalikan items yang di-park saat logout.
+      const restored = restoreParkedItems(username);
+      // Reset bookkeeping hanya kalau user BERBEDA (atau provenance tidak diketahui).
+      // User sama yang reload halaman: biarkan sync state utuh supaya tidak re-push semua.
+      if (!prevUser || prevUser !== username) {
+        console.log('[reqord] reset sync state (prev:', prevUser, '->', username, ')');
         resetSyncStateForUserChange(username);
       }
       await sbLoadItems();
+      if (restored) render();
     } else if (event === 'SIGNED_OUT') {
+      const username = loadLastSyncedUser() || (userName ? String(userName).trim().toLowerCase() : '');
+      parkLocalItems(username);
       items = [];
+      activities = [];
       persistDraft();
+      renderActivities();
       render();
       resetSyncStateForUserChange(null);
     }

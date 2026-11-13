@@ -106,4 +106,21 @@ assert.doesNotMatch(markup, /refreshFolderButton/);
 assert.doesNotMatch(source, /showDirectoryPicker/);
 assert.doesNotMatch(source, /saveFolderHandle/);
 
+// Data-safety layer: reconcile only when remote has data (never wipe local on empty cloud),
+// per-user parked items on logout, rolling backup + restore, confirmed destructive imports.
+assert.match(source, /if \(dbItems\.length > 0\) \{/);
+assert.match(source, /if \(remote\.length > 0\) \{/);
+assert.doesNotMatch(source, /lastSyncedIds\.size === 0\) \{/);
+assert.match(source, /function parkLocalItems/);
+assert.match(source, /function restoreParkedItems/);
+assert.match(source, /reqord-parked-/);
+assert.match(source, /function rotateBackup/);
+assert.match(source, /function latestBackup/);
+assert.match(source, /function resetSyncStateForUserChange/);
+assert.match(markup, /settingsRestoreBackup/);
+assert.match(source, /REPLACE ALL DATA/);
+assert.match(source, /RESTORE FROM BACKUP/);
+assert.match(source, /hasUnsavedChanges = false;/);
+assert.doesNotMatch(source, /window\.confirm/);
+
 console.log('REQORD smoke checks passed (v0.6.1)');

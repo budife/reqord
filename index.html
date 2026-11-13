@@ -59,7 +59,7 @@
       </div>
       <div class="delete-actions"><button class="secondary-button" id="cancelAddDialog" type="button">Batal</button><button class="primary-button" id="submitAddDialog" type="button">Tambah</button></div>
     </dialog>
-    <footer><span><i class="sync-dot"></i> Tersimpan otomatis ke cloud</span><span class="mono">reqord · REQUEST WORK ORDERS</span><span class="app-version">reqord v0.6.1</span><span class="maker-credit">crafted by <button class="maker-trigger" id="makerButton" type="button" aria-label="Meet the maker">budife.psd</button></span></footer>
+    <footer><span><i class="sync-dot"></i> Tersimpan otomatis ke cloud</span><span class="mono">reqord · REQUEST WORK ORDERS</span><span class="app-version">reqord v0.6.2</span><span class="maker-credit">crafted by <button class="maker-trigger" id="makerButton" type="button" aria-label="Meet the maker">budife.psd</button></span></footer>
   </main>
   <div id="toast" class="toast" role="status"></div>
   <dialog id="loginDialog" class="delete-dialog">
@@ -108,6 +108,7 @@
       <button class="settings-item" id="settingsExport"><span class="settings-item-icon">↥</span><span class="settings-item-body"><strong>Export JSON</strong><small>Simpan data ke file JSON</small></span><span class="settings-item-arrow">›</span></button>
       <button class="settings-item" id="settingsImportExcel"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import Excel</strong><small>Muat data dari file .xlsx</small></span><span class="settings-item-arrow">›</span></button>
       <button class="settings-item" id="settingsImport"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import JSON</strong><small>Muat data dari file JSON</small></span><span class="settings-item-arrow">›</span></button>
+      <button class="settings-item" id="settingsRestoreBackup"><span class="settings-item-icon">↺</span><span class="settings-item-body"><strong>Pulihkan Backup</strong><small id="restoreBackupInfo">Muat data dari backup lokal terakhir</small></span><span class="settings-item-arrow">›</span></button>
     </div>
   </dialog>
   <dialog id="deleteDialog" class="delete-dialog">
@@ -150,10 +151,10 @@
     <div class="profile-modal-head"><div><span class="eyebrow">BUDIFE.PSD</span><h2>Meet the maker</h2></div><button class="modal-close" id="closeProfileButton" aria-label="Tutup maker panel">×</button></div>
     <nav class="maker-tabs" aria-label="Maker menu"><button class="maker-tab active" data-maker-tab="profile">Profile</button><button class="maker-tab" data-maker-tab="recent">Recent changes</button></nav>
     <section class="maker-content" data-maker-content="profile"><div class="profile-identity"><span class="profile-avatar profile-avatar-large">BI</span><div><h3>Budi Indra Ilham</h3><a href="https://www.linkedin.com/in/budife/" target="_blank" rel="noreferrer">linkedin.com/in/budife/ ↗</a></div></div><div class="profile-workspace"><span class="workspace-dot"></span><div><small>WORKSPACE</small><strong>reqord / Work order manager</strong></div></div><p class="maker-bio">Building thoughtful tools for turning everyday work into a clearer system.</p></section>
-    <section class="maker-content" data-maker-content="recent" hidden><div class="maker-changelog"><span class="eyebrow">WHAT'S NEW</span><h3>Recent changes</h3><div class="changelog-meta"><strong>v0.6.1</strong><span>Updated · 13 Nov 2026</span></div><div class="changelog-group"><label class="recent-date-label" for="recentDateSelect">Tanggal update</label><select id="recentDateSelect" class="recent-date-select" aria-label="Pilih tanggal update"></select><div id="recentReleaseDetail" class="recent-release-detail"><p>Memuat update terbaru…</p></div></div><small>Riwayat lengkap tersedia di <code>CHANGELOG.md</code> pada repository GitHub.</small></div></section>
-    <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.1</span><span>Made thoughtfully</span></div>
+    <section class="maker-content" data-maker-content="recent" hidden><div class="maker-changelog"><span class="eyebrow">WHAT'S NEW</span><h3>Recent changes</h3><div class="changelog-meta"><strong>v0.6.2</strong><span>Updated · 13 Nov 2026</span></div><div class="changelog-group"><label class="recent-date-label" for="recentDateSelect">Tanggal update</label><select id="recentDateSelect" class="recent-date-select" aria-label="Pilih tanggal update"></select><div id="recentReleaseDetail" class="recent-release-detail"><p>Memuat update terbaru…</p></div></div><small>Riwayat lengkap tersedia di <code>CHANGELOG.md</code> pada repository GitHub.</small></div></section>
+    <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.2</span><span>Made thoughtfully</span></div>
   </dialog>
     <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="true"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History & Activity</h2></div><button class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=85" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=87" defer></script>
 </body>
 </html>
