@@ -163,6 +163,7 @@ function renderRow(item) {
   const canEdit = isAdmin;
   const isDaily = item.type === 'daily';
   const doneToday = isDaily && item.dailyDoneDate === today();
+  const orphanBadge = item.orphan ? `<span class="orphan-badge" title="Folder tidak ditemukan di Drive (orphan)">⚠</span>` : '';
   const checkBox = canEdit ? `<input type="checkbox" class="row-check" data-id="${item.id}" ${selectedIds.has(String(item.id)) ? 'checked' : ''} aria-label="Pilih ${escapeHtml(item.title)}">` : '';
   const takeButton = canEdit && item.status === 'new_request' ? `<button class="action-button take-action" data-row-action="take" data-id="${item.id}" title="Saya mau kerjain" aria-label="Saya mau kerjain">▶</button>` : '';
   const completeButton = canEdit && !isDaily && item.status !== 'done' && item.status !== 'cancelled' ? `<button class="action-button complete-action" data-row-action="complete" data-id="${item.id}" title="Tandai selesai" aria-label="Tandai selesai">✓</button>` : '';
@@ -172,7 +173,7 @@ function renderRow(item) {
   const statusOptions = `<option value="new_request" ${item.status === 'new_request' ? 'selected' : ''}>New Request</option><option value="waiting_brief" ${item.status === 'waiting_brief' ? 'selected' : ''}>Waiting Brief</option><option value="working" ${item.status === 'working' ? 'selected' : ''}>Working</option><option value="draft_preview" ${item.status === 'draft_preview' ? 'selected' : ''}>1st Draft</option><option value="revision" ${item.status === 'revision' ? 'selected' : ''}>In Revision</option><option value="preview" ${item.status === 'preview' ? 'selected' : ''}>Preview</option><option value="on_hold" ${item.status === 'on_hold' ? 'selected' : ''}>On Hold</option><option value="approved" ${item.status === 'approved' ? 'selected' : ''}>Approved</option><option value="done" ${item.status === 'done' ? 'selected' : ''}>Done</option><option value="daily" ${isDaily ? 'selected' : ''}>Daily</option><option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>`;
   const dailyStatus = isDaily ? `<span class="daily-status-label ${doneToday ? 'is-done' : ''}">${doneToday ? 'Selesai' : 'Belum selesai'}<small>${escapeHtml(displayDate(today(), false))}</small></span>` : '';
   const dailyCheck = isDaily ? `<button class="action-button complete-action daily-check ${doneToday ? 'daily-done' : ''}" data-row-action="daily-done" data-id="${item.id}" title="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai hari ini'}" aria-label="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai hari ini'}" aria-pressed="${doneToday}">${doneToday ? '☑' : '☐'}</button>` : '';
-  return `<tr class="${urgencyClass(item.date)} ${isDaily && doneToday ? 'daily-row-done' : ''}"><td class="title-cell ${isDaily && doneToday ? 'daily-title-done' : ''}">${checkBox}${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}>${statusOptions}</select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td>${escapeHtml(displayDate(item.requestDate, true))}</td><td class="target-cell deadline-cell" title="Deadline: ${escapeHtml(displayDate(item.date, true))}">${isDaily ? dailyStatus : targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${dailyCheck}${deleteButton}</td></tr>`;
+  return `<tr class="${urgencyClass(item.date)} ${isDaily && doneToday ? 'daily-row-done' : ''}"><td class="title-cell ${isDaily && doneToday ? 'daily-title-done' : ''}">${checkBox}${escapeHtml(item.title)}${orphanBadge}</td><td>${escapeHtml(item.requestor)}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}>${statusOptions}</select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td>${escapeHtml(displayDate(item.requestDate, true))}</td><td class="target-cell deadline-cell" title="Deadline: ${escapeHtml(displayDate(item.date, true))}">${isDaily ? dailyStatus : targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${dailyCheck}${deleteButton}</td></tr>`;
 }
 function renderDailyTasks(tasks) { refreshDailyDates(); const dailyItems = items.filter(item => item.type === 'daily'); document.querySelector('#dailyCount').textContent = dailyItems.length; document.querySelector('#dailyProgress').textContent = `${dailyItems.filter(isDailyDone).length} selesai hari ini`; document.querySelector('#dailyTable').innerHTML = tasks.map(renderDailyRow).join(''); document.querySelector('#dailyEmpty').hidden = tasks.length !== 0; makeRowsEditable(); }
 function renderDailyRow(item) { const doneToday = isDailyDone(item); const completeButton = `<button class="action-button complete-action daily-check ${doneToday ? 'daily-done' : ''}" data-row-action="daily-done" data-id="${item.id}" title="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-label="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-pressed="${doneToday}">${doneToday ? '☑' : '☐'}</button>`; const dailyStatus = `<span class="daily-status-label ${doneToday ? 'is-done' : ''}">${doneToday ? 'Selesai' : 'Belum selesai'}<small>${escapeHtml(displayDate(today(), false))}</small></span>`; return `<tr class="${doneToday ? 'daily-row-done' : ''}"><td class="title-cell ${doneToday ? 'daily-title-done' : ''}">${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority"><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td class="daily-status-cell">${dailyStatus}</td><td class="row-actions">${completeButton}<button class="action-button delete-action" data-row-action="delete" data-id="${item.id}" title="Hapus daily task" aria-label="Hapus daily task">⌫</button></td></tr>`; }
@@ -1046,7 +1047,25 @@ async function sbSyncAll() {
   if (!supabaseClient) return;
   const user = await sbGetUser();
   if (!user) { syncState = 'idle'; updateSyncStatus(); return; }
-  // Hanya kirim item yang berubah sejak sync terakhir; hapus yang sudah tidak ada di lokal.
+  
+  // 1. Fetch all from Supabase for reconcile
+  let dbItems = [];
+  try {
+    const { data, error } = await supabaseClient.from('work_orders').select('id, folder_key, title, requestor, status');
+    if (!error && data) dbItems = data;
+  } catch (e) { console.warn('[reqord] reconcile fetch failed:', e); }
+  
+  // 2. Get current scanned folderKeys from localStorage
+  const scannedFolderKeys = new Set(items.filter(i => i.folderKey).map(i => i.folderKey));
+  
+  // 3. Mark orphans: in DB but folderKey not in current scan
+  const orphanIds = new Set(dbItems.filter(db => db.folder_key && !scannedFolderKeys.has(db.folder_key)).map(db => db.id));
+  items.forEach(item => {
+    if (orphanIds.has(String(item.id))) item.orphan = true;
+    else delete item.orphan;
+  });
+  
+  // 4. Push local changes (existing logic)
   const dirty = items.filter(item => syncSnapshot.get(String(item.id)) !== itemSignature(item));
   const staleIds = [...syncSnapshot.keys()].filter(id => !items.some(item => String(item.id) === id));
   if (!dirty.length && !staleIds.length) {
@@ -1087,7 +1106,8 @@ async function sbSyncAll() {
     syncSnapshot = new Map(items.map(item => [String(item.id), itemSignature(item)]));
   }
   updateSyncStatus();
-  console.log('[reqord] sbSyncAll: changed', dirty.length, 'deleted', staleIds.length, failed ? '(ada yang gagal)' : '');
+  render(); // refresh badges
+  console.log('[reqord] sbSyncAll: changed', dirty.length, 'deleted', staleIds.length, 'orphans', orphanIds.size, failed ? '(ada yang gagal)' : '');
 }
 
 // === Activity sync (reqord_meta) ===
