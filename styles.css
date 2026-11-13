@@ -39,7 +39,7 @@ body{background:var(--bg);color:var(--text)}
 .intro h1{color:var(--text)}
 .primary-button{background:var(--green-dark);color:#fff;box-shadow:none}
 .primary-button:hover{background:#4f7036}
-.secondary-button{background:#fff;color:var(--green-dark);border-color:#cbd8c1}
+.secondary-button{background:#fff;color:var(--green-dark);border-color:#cbd8c1}.secondary-button:focus{outline:none;border-color:var(--green);box-shadow:none}
 .step{background:var(--green-soft);color:var(--green-dark)}
 .add-form input,.add-form select,.search-wrap{background:#fbfcf8;border-color:var(--line);color:var(--text)}
 .add-form input:focus,.add-form select:focus,.search-wrap:focus-within{border-color:var(--green)}

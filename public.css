@@ -42,7 +42,7 @@ body {
 .intro p { margin: 0; color: var(--muted); }
 .intro-actions { display: flex; align-items: center; gap: 16px; }
 .live { display: inline-flex; align-items: center; color: var(--muted); font-size: 13px; }
-.secondary-button { display: inline-flex; align-items: center; background: #fff; color: var(--green-dark); border: 1px solid #cbd8c1; border-radius: 8px; padding: 9px 15px; font: 600 13px Manrope, system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+.secondary-button { display: inline-flex; align-items: center; background: #fff; color: var(--green-dark); border: 1px solid #cbd8c1; border-radius: 8px; padding: 9px 15px; font: 600 13px Manrope, system-ui, sans-serif; text-decoration: none; cursor: pointer; }.secondary-button:focus{outline:none;border-color:var(--green);box-shadow:none}
 .secondary-button:hover { background: var(--green-soft); }
 
 /* Toolbar */
