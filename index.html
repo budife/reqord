@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=72">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -58,8 +58,8 @@
     </div>
     <dialog id="addDialog" class="delete-dialog">
       <div class="delete-modal-head"><span class="delete-warning">+</span><div><span class="eyebrow">NEW WORK ORDER</span><h2>Tambah work order</h2></div><button class="modal-close" id="closeAddDialog" aria-label="Tutup">×</button></div>
-      <label class="edit-field">Title<input id="titleInput" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="requestor-suggestions" hidden></div></label>
-      <label class="edit-field">Requestor<input id="requestorInput" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></label>
+      <label class="edit-field">Title<div class="field-input-wrap"><input id="titleInput" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="requestor-suggestions" hidden></div></div></label>
+      <label class="edit-field">Requestor<div class="field-input-wrap"><input id="requestorInput" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></div></label>
       <label class="edit-field">Priority<select id="addPriority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
       <div class="delete-actions"><button class="secondary-button" id="cancelAddDialog" type="button">Batal</button><button class="primary-button" id="submitAddDialog" type="button">Tambah</button></div>
     </dialog>
@@ -149,7 +149,7 @@
   </dialog>
   <dialog id="editDialog" class="delete-dialog edit-dialog">
      <div class="delete-modal-head"><span class="delete-warning edit-warning">✎</span><div><span class="eyebrow">WORK ORDER DETAILS</span><h2>Edit work order</h2></div><button class="modal-close" id="closeEditButton" aria-label="Tutup work order details">×</button></div>
-     <form id="editForm"><label class="edit-field">Title<input id="editTitleInput" required></label><label class="edit-field">Requestor<input id="editRequestorInput" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></label><label class="edit-field">Request date<input id="editRequestDateInput" type="datetime-local" aria-label="Request date"></label><label class="edit-field">Deadline<input id="editDeadlineInput" type="date" aria-label="Deadline"></label><label class="edit-field">Catatan<textarea id="editNoteInput" rows="4" placeholder="Contoh: Revisi karena menunggu feedback client..."></textarea></label><label class="edit-field">Subitems<div id="editSubitemList" class="edit-subitem-list"></div><input id="editSubitemInput" placeholder="Add subitem... lalu tekan Enter" autocomplete="off" aria-label="Tambah subitem"></label><div class="delete-actions"><button class="secondary-button" id="cancelEditButton" type="button">Cancel</button><button class="primary-button" type="submit">Save changes</button></div><button class="modal-delete-link" id="deleteFromEditButton" type="button">Delete request</button></form>
+     <form id="editForm"><label class="edit-field">Title<input id="editTitleInput" required></label><label class="edit-field">Requestor<div class="field-input-wrap"><input id="editRequestorInput" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></div></label><label class="edit-field">Request date<input id="editRequestDateInput" type="datetime-local" aria-label="Request date"></label><label class="edit-field">Deadline<input id="editDeadlineInput" type="date" aria-label="Deadline"></label><label class="edit-field">Catatan<textarea id="editNoteInput" rows="4" placeholder="Contoh: Revisi karena menunggu feedback client..."></textarea></label><label class="edit-field">Subitems<div id="editSubitemList" class="edit-subitem-list"></div><input id="editSubitemInput" placeholder="Add subitem... lalu tekan Enter" autocomplete="off" aria-label="Tambah subitem"></label><div class="delete-actions"><button class="secondary-button" id="cancelEditButton" type="button">Cancel</button><button class="primary-button" type="submit">Save changes</button></div><button class="modal-delete-link" id="deleteFromEditButton" type="button">Delete request</button></form>
   </dialog>
   <dialog id="noteDialog" class="delete-dialog note-dialog">
     <div class="delete-modal-head"><span class="delete-warning note-warning">✎</span><div><span class="eyebrow">WORK ORDER NOTE</span><h2 id="noteDialogTitle">Catatan</h2></div><button class="modal-close" id="closeNoteButton" aria-label="Tutup catatan">×</button></div>
