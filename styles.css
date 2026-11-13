@@ -210,6 +210,8 @@ th .check-all { margin-right: 6px; vertical-align: -1px; accent-color: var(--gre
 .panel-head h3 { margin: 0; font-size: 13px; font-weight: 700; color: var(--text); }
 .panel-count { background: var(--green-soft); color: var(--green-dark); padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
 .table-panel .table-scroll { border-radius: 0 0 4px 4px; }
+.status-pill-wrap { display: inline-block; margin-left: 8px; vertical-align: middle; }
+@media(max-width:600px){ .status-pill-wrap { display: block; margin: 4px 0 0; } }
 
 /* Priority pills */
 .priority-pill { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
