@@ -15,23 +15,34 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Current State
 
-- Produk: reqord adalah work order tracker berbasis folder scan (Google Drive) dengan **satu tabel tunggal "Work orders"** berisi semua work order + daily task, filter status di toolbar (11 pilihan).
-- Input: scan folder `YYYY/MMYY/Requestor - Campaign` atau `MMYY/Requestor - Campaign`; nama folder dipakai sebagai Title + Requestor. Folder tanpa pemisah ` - ` → Requestor `Unknown`. Dedup berdasarkan `folderKey` (path seperti `1026/Budi - Campaign`), bukan Title+Requestor.
-- Tambah manual lewat tombol `+ Tambah` (modal Title + Requestor + Priority) → masuk dengan status `new_request`.
-- Status: dropdown di tabel dengan 11 nilai: `new_request` (New Request), `waiting_brief` (Waiting Brief), `working` (Working), `draft_preview` (1st Draft), `revision` (In Revision), `preview` (Preview), `on_hold` (On Hold), `approved` (Approved), `done` (Done), `daily` (Daily), `cancelled` (Cancelled). Item tidak berpindah tabel — filter status di toolbar.
+- Produk: reqord adalah work order tracker **manual** (tanpa scan folder) dengan **11 panel status** ( satu tabel per status) berisi semua work order + daily task.
+- Input: manual lewat tombol `+ Tambah` (modal Title + Requestor + Priority) → masuk dengan status `new_request`. Fitur Scan Folder & Refresh sudah dihapus (2026-11-13) supaya data benar-benar tertrack.
+- Status: dropdown di tabel dengan 11 nilai: `new_request` (New Request), `waiting_brief` (Waiting Brief), `working` (Working), `draft_preview` (1st Draft), `revision` (In Revision), `preview` (Preview), `on_hold` (On Hold), `approved` (Approved), `done` (Done), `daily` (Daily), `cancelled` (Cancelled). Item pindah panel sesuai status.
 - Edit: klik Title membuka modal Work order details (edit + subitems). Subitem inline + checklist.
-- Search title/requestor, filter priority/sort/bulan/requestor/status.
+- Search title/requestor, filter priority/sort/bulan/requestor.
 - Deadline: default 3 hari dari tanggal request, bisa diedit di modal Work order details. Estimasi durasi (`Est.`) dihapus.
-- Persist: localStorage (`reqord-request-work-orders`) + IndexedDB (folder handle); sync ke Supabase **manual** lewat tombol "Sync to Cloud" (status: Ada perubahan · belum disinkron → Menyinkron… n/N → Tersinkron). Bulk upsert chunk 50 + snapshot diff.
-- Auth: login username + kode (Supabase Auth, email `<username>@gmail.com`); tombol Logout/Ganti Password di header.
-- Public board: `public.html` read-only (single list + filter status), realtime.
+- Persist: localStorage (`reqord-request-work-orders`) + sync ke Supabase **manual** lewat tombol "Sync to Cloud" (status: Ada perubahan · belum disinkron → Menyinkron… n/N → Tersinkron). Bulk upsert chunk 50 + snapshot diff. IndexedDB folder handle dihapus.
+- Auth: login username + kode (Supabase Auth, email `<username>@gmail.com`); tombol Logout/Ganti Password/Settings di header.
+- Public board: `public.html` read-only (single list + filter status + show more 20/halaman), realtime.
 - Aksi massal: centang di kolom Title atau "Pilih semua" → bulk bar (ubah status / hapus).
-- Export/Import JSON tersedia di toolbar intro.
-- Versi: v0.6.0.
-- Stack: vanilla JS + HTML + CSS (no build), CDN Supabase JS. XLSX/Excel sudah tidak dipakai.
-- Browser: Chromium (File System Access API).
+- Export/Import JSON + Excel (XLSX) di Settings dialog.
+- Activity: catat username (`user`) + requestor + date.
+- Show more: tiap panel status tampil 20 item dulu, tombol "Show more (N lagi)".
+- Versi: v0.6.1.
+- Stack: vanilla JS + HTML + CSS (no build), CDN Supabase JS + SheetJS (XLSX).
+- Browser: Chromium.
 
 ## Handoff Log
+
+### 2026-11-13 (Hapus Scan Folder — manual entry only)
+
+- Agent/model: Hermes Agent.
+- Permintaan: hapus Scan Folder & Refresh, takut ada apa-apa; biar manual (Add Work Order) saja supaya benar-benar ter-track. Rework & refactor.
+- Perubahan:
+  - index.html: tombol `Scan Folder` & `Refresh` dihapus; intro jadi `+ Tambah`, `Sync to Cloud`, `Public board`.
+  - app.js: hapus `scanFolderHandle`, `saveFolderHandle`, `restoreFolderHandle`, handler `refreshFolderButton` & `scanFolderButton`, `openDraftDatabase`, `storageDatabase`, `isLoadingWorkbook`; `saveItems()` disederhanakan.
+  - test/app-smoke.test.js: assertion `requestPermission` & `'Unknown'` dihapus; tambah assertion `doesNotMatch` untuk scan.
+- Validasi: `node --check app.js` OK, smoke test OK, browser — 164 item load, tombol Tambah berfungsi, tidak ada JS error.
 
 ### 2026-11-13 (Single-table + 11-status workflow v0.6.0)
 
