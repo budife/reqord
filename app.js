@@ -36,13 +36,22 @@ const panelLimits = {};
 function resetPanelLimits() { Object.keys(panelLimits).forEach(key => delete panelLimits[key]); }
 
 function listBackupKeys() { try { return Object.keys(localStorage).filter(key => key.startsWith(BACKUP_PREFIX)).sort(); } catch { return []; } }
+let lastBackupAt = 0;
+let lastBackupJson = null;
 function rotateBackup(json) {
   if (!json) return;
+  // Dedupe: konten sama dengan backup terakhir → lewati (hindari write sia-sia).
+  if (json === lastBackupJson) return;
+  // Throttle: maks 1 backup per 1,5 detik supaya edit cepat tidak memicu write beruntun.
+  const now = Date.now();
+  if (now - lastBackupAt < 1500) return;
   try {
     // Suffix anti-tabrakan kalau dua write terjadi di milidetik yang sama.
     const keys = listBackupKeys();
     const stamp = `${Date.now()}-${String(keys.length).padStart(4, '0')}`;
     localStorage.setItem(BACKUP_PREFIX + stamp, json);
+    lastBackupAt = now;
+    lastBackupJson = json;
     const all = listBackupKeys();
     while (all.length > BACKUP_LIMIT) localStorage.removeItem(all.shift());
   } catch { /* storage penuh / tidak tersedia */ }

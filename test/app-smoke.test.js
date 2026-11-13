@@ -123,4 +123,4 @@ assert.match(source, /RESTORE FROM BACKUP/);
 assert.match(source, /hasUnsavedChanges = false;/);
 assert.doesNotMatch(source, /window\.confirm/);
 
-console.log('REQORD smoke checks passed (v0.6.1)');
+console.log('REQORD smoke checks passed (v0.6.2)');

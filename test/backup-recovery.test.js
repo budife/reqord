@@ -51,6 +51,10 @@ const sandbox = {
   BACKUP_PREFIX: 'reqord-backup-',
   BACKUP_LIMIT: 5,
 };
+// Jam palsu supaya throttle rotateBackup bisa diuji deterministik.
+let clock = 1700000000000;
+const RealDate = Date;
+sandbox.Date = Object.assign(function () { return new RealDate(clock); }, { now: () => clock });
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 
@@ -64,6 +68,7 @@ vm.runInContext(`
   var items = []; var activities = []; var lastSyncedIds = new Set();
   var syncSnapshot = new Map(); var pendingDeletes = new Set();
   var hasUnsavedChanges = false;
+  var lastBackupAt = 0; var lastBackupJson = null;
 `, sandbox);
 
 const run = code => vm.runInContext(code, sandbox);
@@ -71,14 +76,24 @@ const run = code => vm.runInContext(code, sandbox);
 // --- Test 1: rolling backup keeps at most BACKUP_LIMIT entries ---
 storage.setItem('reqord-request-work-orders', JSON.stringify([{ id: 'a', title: 'A' }]));
 run(`rotateBackup(localStorage.getItem(STORAGE_KEY));`);
+clock += 2000;
 storage.setItem('reqord-request-work-orders', JSON.stringify([{ id: 'b' }]));
 run(`rotateBackup(localStorage.getItem(STORAGE_KEY));`);
 assert.equal(run(`listBackupKeys().length`), 2, 'two backups expected');
 for (let i = 3; i <= 7; i++) {
+  clock += 2000;
   storage.setItem('reqord-request-work-orders', JSON.stringify([{ id: 'x' + i }]));
   run(`rotateBackup(localStorage.getItem(STORAGE_KEY));`);
 }
 assert.equal(run(`listBackupKeys().length`), 5, 'backup count capped at 5');
+
+// --- Test 1b: throttle & dedupe — write identik / beruntun tidak menambah backup ---
+const before = run(`listBackupKeys().length`);
+run(`rotateBackup(localStorage.getItem(STORAGE_KEY));`);          // konten sama persis -> dedupe
+clock += 100;                                                       // < 1,5s -> throttle
+storage.setItem('reqord-request-work-orders', JSON.stringify([{ id: 'burst' }]));
+run(`rotateBackup(localStorage.getItem(STORAGE_KEY));`);          // throttle aktif -> dilewati
+assert.equal(run(`listBackupKeys().length`), before, 'no extra backup under throttle/dedupe');
 
 // --- Test 2: loadItems falls back to the latest backup when main storage is corrupt ---
 storage.setItem('reqord-request-work-orders', '{ this is not valid json !!');
