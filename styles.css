@@ -244,5 +244,5 @@ body:not(.is-admin) .admin-only { display: none !important; }
 .priority-pill.priority-low { background: #edf4e5; color: var(--green-dark); }
 
 /* Focus styles - must come after all theme passes to win cascade */
-html .secondary-button:focus{outline:none;border-color:#789b58!important;border-width:1px!important;border-style:solid!important;box-shadow:none}
-html .primary-button:focus{outline:none;border-color:#789b58!important;border-width:1px!important;border-style:solid!important;box-shadow:none}
+html .secondary-button:focus{outline:none;border:1px solid #789b58!important;box-shadow:none}
+html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-shadow:none}

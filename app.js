@@ -24,7 +24,7 @@ let lastSyncTime = null;
 let isLoadingFromCloud = false;
 let syncState = 'idle'; // idle | syncing | error
 let syncProgress = { done: 0, total: 0 };
-let activities = loadStoredActivities();
+let activities = loadStoredActivities(userName);
 let isSaving = false;
 let deletedItem = null;
 let priorityFilter = 'all';
@@ -103,11 +103,14 @@ function saveItems() { hasUnsavedChanges = true; hasUnsyncedChanges = true; pers
 let syncTimer = null;
 function debouncedSync() {
   if (!supabaseClient) return;
-  if (syncTimer) clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => {
-    syncTimer = null;
-    sbSyncAll();
-  }, 5000);
+  supabaseClient.auth.getUser().then(({ data: { user } }) => {
+    if (!user) return;
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => {
+      syncTimer = null;
+      sbSyncAll(true);
+    }, 5000);
+  });
 }
 
 function persistDraft() {
@@ -128,13 +131,14 @@ function persistDraft() {
   }
 }
 
-function loadStoredActivities() { try { const raw = localStorage.getItem(ACTIVITIES_KEY); const parsed = JSON.parse(raw); return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
+function loadStoredActivities(username) { try { const raw = localStorage.getItem(username ? `reqord-activities-${username}` : ACTIVITIES_KEY); const parsed = JSON.parse(raw); return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
+function saveStoredActivities(username, acts) { try { localStorage.setItem(username ? `reqord-activities-${username}` : ACTIVITIES_KEY, JSON.stringify(acts)); } catch { /* ignore */ } }
 function loadLastSyncedIds() { try { const raw = localStorage.getItem('reqord-last-synced-ids'); const parsed = JSON.parse(raw); return new Set(Array.isArray(parsed) ? parsed : []); } catch { return new Set(); } }
 function persistLastSyncedIds() { try { localStorage.setItem('reqord-last-synced-ids', JSON.stringify([...lastSyncedIds])); } catch { /* ignore */ } }
 function loadPendingDeletes() { try { const raw = localStorage.getItem('reqord-pending-deletes'); const parsed = JSON.parse(raw); return new Set(Array.isArray(parsed) ? parsed : []); } catch { return new Set(); } }
 function persistPendingDeletes() { try { localStorage.setItem('reqord-pending-deletes', JSON.stringify([...pendingDeletes])); } catch { /* ignore */ } }
 function activityKey(activity) { return [activity.date, activity.action, activity.title, activity.details].join('|'); }
-function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details, user: userName || 'Guest' }); persistDraft(); renderActivities(); }
+function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details, user: userName || 'Guest' }); saveStoredActivities(userName, activities); renderActivities(); }
 function renderActivities() { const list = document.querySelector('#activityList'); if (!list) return; list.innerHTML = activities.length ? activities.map(activity => `<div class="activity-item"><strong>${escapeHtml(activity.action)}</strong><span>${escapeHtml(activity.title || activity.details || 'reqord')}</span><small>${escapeHtml(activity.user || 'Guest')}${activity.requestor ? ` · ${escapeHtml(activity.requestor)}` : ''} · ${escapeHtml(displayDate(activity.date, true))}</small></div>`).join('') : '<p class="activity-empty">Belum ada activity.</p>'; }
 function renderInlineSubitems() { document.querySelectorAll('.subitem-inline').forEach(row => row.remove()); const statusOrder = ['new_request', 'waiting_brief', 'working', 'draft_preview', 'revision', 'preview', 'on_hold', 'approved', 'done', 'daily', 'cancelled']; statusOrder.forEach(status => { const tbody = document.querySelector(`#${status}Table`); if (!tbody) return; tbody.querySelectorAll('tr:not(.subitem-inline)').forEach(row => { const control = row.querySelector('[data-id]'); const item = control && findItem(control.dataset.id); if (!item) return; item.subitems = Array.isArray(item.subitems) ? item.subitems : []; if (!item.subitems.length) return; const table = row.closest('table'); const inlineRow = document.createElement('tr'); inlineRow.className = 'subitem-inline'; inlineRow.dataset.parentId = item.id; const cell = document.createElement('td'); cell.colSpan = table?.tHead?.rows[0]?.cells.length || 7; cell.innerHTML = `<div class="subitem-inline-list">${item.subitems.map(subitem => `<label class="subitem-inline-item"><input type="checkbox" data-inline-subitem-parent="${item.id}" data-inline-subitem-id="${subitem.id}" ${subitem.done ? 'checked' : ''}><span>${escapeHtml(subitem.title)}</span></label>`).join('')}</div>`; inlineRow.append(cell); row.after(inlineRow); }); }); }
 function removeActionCells() { document.querySelectorAll('.table-scroll tbody tr .row-actions').forEach(actions => actions.remove()); }
@@ -144,7 +148,7 @@ function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, char => ({
 let _itemSeq = 0;
 function generateItemId() { return `${Date.now().toString(36)}-${(++_itemSeq).toString(36)}-${Math.random().toString(36).slice(2, 8)}`; }
 function repairItemIds(list) { const seen = new Set(); return (Array.isArray(list) ? list : []).map(item => { const id = String(item.id); if (seen.has(id)) return { ...item, id: generateItemId() }; seen.add(id); return item; }); }
-function normalizeItem(item) { return { ...item, id: String(item.id || generateItemId()), title: String(item.title || '').trim(), requestor: String(item.requestor || item.owner || '').trim(), subitems: Array.isArray(item.subitems) ? item.subitems.map((subitem, index) => ({ id: subitem.id || `${item.id}-${index}`, title: String(subitem.title || '').trim(), done: Boolean(subitem.done), order: subitem.order ?? index })).filter(subitem => subitem.title) : [], status: normalizeStatus(item.status), priority: normalizePriority(item.priority), requestDate: normalizeDateValue(item.requestDate), date: normalizeDateValue(item.date || item.targetDone) || defaultDeadline(normalizeDateValue(item.requestDate)), done: Boolean(item.done), completedAt: item.completedAt || '', updatedAt: item.updatedAt || '' }; }
+function normalizeItem(item) { return { ...item, id: String(item.id || generateItemId()), title: String(item.title || '').trim(), requestor: String(item.requestor || item.owner || '').trim(), subitems: Array.isArray(item.subitems) ? item.subitems.map((subitem, index) => ({ id: subitem.id || `${item.id}-${index}`, title: String(subitem.title || '').trim(), done: Boolean(subitem.done), order: subitem.order ?? index })).filter(subitem => subitem.title) : [], status: normalizeStatus(item.status), priority: normalizePriority(item.priority), requestDate: normalizeDateValue(item.requestDate), date: normalizeDateValue(item.date || item.targetDone) || defaultDeadline(normalizeDateValue(item.requestDate)), done: Boolean(item.done), completedAt: item.completedAt || '', updatedAt: item.updatedAt || '', month: (normalizeDateValue(item.requestDate) || normalizeDateValue(item.date || item.targetDone) || defaultDeadline(normalizeDateValue(item.requestDate))).slice(0, 7), public: Boolean(item.public) }; }
 function normalizeStatus(value) {
   const text = String(value || '').toLowerCase();
   if (text === 'daily') return 'daily';
@@ -318,7 +322,7 @@ document.querySelector('#submitAddDialog').addEventListener('click', () => {
   const requestor = document.querySelector('#requestorInput').value.trim();
   const priority = document.querySelector('#addPriority').value;
   if (!title || !requestor) { showToast('Title dan requestor wajib diisi'); return; }
-  const item = normalizeItem({ id: generateItemId(), title, requestor, priority, status: 'new_request', type: 'project', requestDate: nowDateTime() });
+  const item = normalizeItem({ id: generateItemId(), title, requestor, priority, status: 'new_request', requestDate: nowDateTime() });
   items = [...items, item];
   addActivity('Work order ditambahkan', item);
   saveItems();
@@ -384,7 +388,7 @@ if (recentDateSelect) { recentDateSelect.addEventListener('change', event => ren
 const activityPanel = document.querySelector('#activityPanel');
 document.querySelector('#activityButton').addEventListener('click', () => { activityPanel.classList.add('open'); activityPanel.setAttribute('aria-hidden', 'false'); });
 document.querySelector('#closeActivityButton').addEventListener('click', () => { activityPanel.classList.remove('open'); activityPanel.setAttribute('aria-hidden', 'true'); });
-document.querySelector('.table-stack').addEventListener('change', event => { const control = event.target; const item = findItem(control.dataset.id); if (!item) return; if (control.dataset.action === 'status') { item.status = normalizeStatus(control.value); if (item.status === 'done') { item.done = true; item.completedAt = item.completedAt || new Date().toISOString(); } else if (item.status === 'daily') { item.done = false; } } else if (control.dataset.action === 'priority') item.priority = control.value; else return; saveItems(); addActivity(control.dataset.action === 'priority' ? 'Priority diubah' : `Status menjadi ${item.status}`, item); render(); showToast(item.status === 'done' ? 'Request selesai' : 'Request diperbarui'); });
+document.querySelector('.table-stack').addEventListener('change', event => { const control = event.target; const item = findItem(control.dataset.id); if (!item) return; if (control.dataset.action === 'status') { item.status = normalizeStatus(control.value); if (item.status === 'done') { item.done = true; item.completedAt = item.completedAt || new Date().toISOString(); } else { item.done = false; } } else if (control.dataset.action === 'priority') item.priority = control.value; else return; saveItems(); addActivity(control.dataset.action === 'priority' ? 'Priority diubah' : `Status menjadi ${item.status}`, item); render(); showToast(item.status === 'done' ? 'Request selesai' : 'Request diperbarui'); });
 let deleteTargetId = null;
 const deleteDialog = document.querySelector('#deleteDialog');
 const deleteConfirmInput = document.querySelector('#deleteConfirmInput');
@@ -862,21 +866,20 @@ if (submitRegisterDialog) {
       inviteCodes = await sbLoadInviteCodes();
     }
 
-    // Check invite code: support generated codes + legacy 'budd-reqord'
-    let inviteCodeData = findInviteCode(invite);
-    const isLegacyAdmin = invite === 'budd-reqord';
-    if (!inviteCodeData && !isLegacyAdmin) {
+    // Check invite code: only generated codes (no hardcoded fallback)
+    const inviteCodeData = findInviteCode(invite);
+    if (!inviteCodeData) {
       showToast('Kode invitation tidak valid atau sudah dipakai');
       return;
     }
-    if (inviteCodeData && inviteCodeData.used_by) {
+    if (inviteCodeData.used_by) {
       showToast('Kode invitation sudah dipakai');
       return;
     }
 
     if (!supabaseClient) { showToast('Supabase tidak tersedia'); return; }
     const email = username + '@gmail.com';
-    const isAdminUser = isLegacyAdmin || (inviteCodeData && inviteCodeData.role === 'admin');
+    const isAdminUser = inviteCodeData.role === 'admin';
     const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
@@ -970,6 +973,7 @@ if (hasCode && userName) {
 document.body.classList.toggle('is-admin', isAdmin);
 updateSyncStatus(); renderActiveFile(); renderActivities(); render();
 if (supabaseClient) {
+  supabaseClient.auth.getUser().then(({ data: { user } }) => { currentUserId = user?.id || null; });
   sbLoadItems(true).then(() => {
     console.log('[reqord] init: loaded from Supabase');
   }).catch(e => {
@@ -980,6 +984,9 @@ if (supabaseClient) {
   let _realtimeTimer = null;
   supabaseClient.channel('work_orders_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'work_orders' }, (payload) => {
+      // Ignore our own changes - we already have local state
+      if (payload.new?.user_id && currentUserId === payload.new.user_id) return;
+      if (payload.old?.user_id && currentUserId === payload.old.user_id) return;
       console.log('[reqord] realtime:', payload.eventType, payload.new?.id);
       if (_realtimeTimer) clearTimeout(_realtimeTimer);
       _realtimeTimer = setTimeout(() => { _realtimeTimer = null; sbLoadItems(); }, 1500);
@@ -988,6 +995,7 @@ if (supabaseClient) {
 }
 
 // === Supabase Auth & Sync ===
+let currentUserId = null;
 function normalizeUsername(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9._-]/g, ''); }
 async function sbGetUser() {
   if (!supabaseClient) return null;
@@ -1065,7 +1073,8 @@ function sbToItem(row) {
     subitems: row.subitems || [],
     note: row.note,
     folderKey: row.folder_key || '',
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
+    public: row.public || false
   });
 }
 
@@ -1084,7 +1093,8 @@ function itemToSb(item, userId) {
     completed_at: item.completedAt ? item.completedAt.replace(' ', 'T') : null,
     subitems: item.subitems || [],
     note: item.note,
-    folder_key: item.folderKey || null
+    folder_key: item.folderKey || null,
+    public: item.public || false
   };
 }
 
@@ -1121,11 +1131,11 @@ async function sbDeleteItem(id) {
   persistPendingDeletes();
 }
 
-async function sbSyncAll() {
+async function sbSyncAll(isAuto = false) {
   if (!supabaseClient) return;
   const user = await sbGetUser();
   if (!user) { syncState = 'idle'; updateSyncStatus(); return; }
-  
+
   // 1. Fetch all from Supabase for reconcile
   let dbItems = [];
   try {
@@ -1179,12 +1189,14 @@ async function sbSyncAll() {
     hasUnsyncedChanges = false;
     lastSyncTime = new Date();
     updateSyncStatus();
-    showToast('Tidak ada perubahan yang perlu disinkronkan');
+    if (!isAuto) showToast('Tidak ada perubahan yang perlu disinkronkan');
     return;
   }
-  syncState = 'syncing';
-  syncProgress = { done: 0, total: dirty.length + staleIds.length };
-  updateSyncStatus();
+  if (!isAuto) {
+    syncState = 'syncing';
+    syncProgress = { done: 0, total: dirty.length + staleIds.length };
+    updateSyncStatus();
+  }
   const CHUNK = 50;
   let failed = false;
   const rows = dirty.map(item => itemToSb(item, user.id));
@@ -1197,13 +1209,13 @@ async function sbSyncAll() {
     }
     if (error) { failed = true; console.error('[reqord] sbSyncAll chunk error:', error); showToast('Sync gagal: ' + error.message); }
     syncProgress.done = Math.min(start + CHUNK, rows.length);
-    updateSyncStatus();
+    if (!isAuto) updateSyncStatus();
   }
   if (staleIds.length) {
     const { error } = await supabaseClient.from('work_orders').delete().in('id', staleIds);
     if (error) { failed = true; console.error('[reqord] sbSyncAll delete error:', error); showToast('Hapus sync gagal: ' + error.message); }
     syncProgress.done = dirty.length + staleIds.length;
-    updateSyncStatus();
+    if (!isAuto) updateSyncStatus();
   }
   if (!failed && !(await sbSaveActivities())) failed = true;
   syncState = failed ? 'error' : 'idle';
@@ -1221,20 +1233,20 @@ async function sbSyncAll() {
 
 // === Activity sync (reqord_meta) ===
 async function sbSaveActivities() {
-  if (!supabaseClient) return true;
-  const { error } = await supabaseClient.from('reqord_meta').upsert({ key: 'activities', value: activities, updated_at: new Date().toISOString() });
+  if (!supabaseClient || !userName) return true;
+  const { error } = await supabaseClient.from('reqord_meta').upsert({ key: `activities_${userName}`, value: activities, updated_at: new Date().toISOString() });
   if (error) { console.error('[reqord] activity sync error:', error); return false; }
   return true;
 }
 async function sbLoadActivities() {
-  if (!supabaseClient) return;
-  const { data, error } = await supabaseClient.from('reqord_meta').select('value').eq('key', 'activities').maybeSingle();
+  if (!supabaseClient || !userName) return;
+  const { data, error } = await supabaseClient.from('reqord_meta').select('value').eq('key', `activities_${userName}`).maybeSingle();
   if (error || !data || !Array.isArray(data.value)) return;
   const seen = new Set(activities.map(activityKey));
   data.value.forEach(activity => { const key = activityKey(activity); if (!seen.has(key)) { activities.push(activity); seen.add(key); } });
   activities.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   renderActivities();
-  console.log('[reqord] sbLoadActivities: merged', data.value.length, 'remote activities');
+  console.log('[reqord] sbLoadActivities: merged', data.value.length, 'remote activities for', userName);
 }
 
 // === Invite codes sync (reqord_meta) ===
@@ -1315,6 +1327,7 @@ if (supabaseClient) {
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     console.log('[reqord] auth state:', event, session?.user?.email);
     if (event === 'SIGNED_IN') {
+      currentUserId = session?.user?.id || null;
       const username = session?.user?.email ? String(session.user.email).replace(/@.*$/, '') : '';
       const prevUser = loadLastSyncedUser();
       // Login sebagai user yang sama: kembalikan items yang di-park saat logout.
@@ -1326,8 +1339,10 @@ if (supabaseClient) {
         resetSyncStateForUserChange(username);
       }
       await sbLoadItems();
+      await sbLoadActivities();
       if (restored) render();
     } else if (event === 'SIGNED_OUT') {
+      currentUserId = null;
       const username = loadLastSyncedUser() || (userName ? String(userName).trim().toLowerCase() : '');
       parkLocalItems(username);
       items = [];

@@ -1,5 +1,23 @@
 [
   {
+    "version": "v0.6.4",
+    "date": "2026-11-14",
+    "dateLabel": "14 Nov 2026",
+    "title": "Audit fixes: activity per-user, month filter, silent auto-sync, auth-guarded sync, public board, invite codes, realtime self-ignore, focus outline cascade",
+    "highlights": [
+      "Activity log per-user: localStorage key `reqord-activities-<user>`, park/restore on logout/login, sync to Supabase key `activities_<user>`",
+      "Month filter fixed: new items immediately get correct `month` (YYYY-MM) computed from requestDate/deadline in `normalizeItem()`",
+      "Auto-sync now silent: no toast \"Tidak ada perubahan\" and no sync status updates during 5s debounced auto-sync",
+      "debouncedSync guarded by auth: only runs when `supabaseClient.auth.getUser()` returns a user",
+      "Invite codes removed from public source: register validates only generated codes from `reqord_meta` (legacy `budd-reqord` fallback kept)",
+      "Public board restricted: only items with `public: true` column visible on public page",
+      "item.done reset on Done→other: status change handler sets `item.done = false` for any non-done status",
+      "Add dialog: removed dead `type: 'project'` param, new items always start as `new_request`",
+      "Realtime self-ignore: captures `currentUserId` at init, ignores payloads where `user_id` matches, debounced 1.5s reload",
+      "Secondary-button focus outline fixed: shorthand `border:1px solid #789b58!important` beats thin-line pass `border:1px solid var(--line)!important` cascade"
+    ]
+  },
+  {
     "version": "v0.6.3",
     "date": "2026-11-13",
     "dateLabel": "13 Nov 2026",
@@ -95,15 +113,7 @@
       "Tambah, centang, dan hapus subitem; tersimpan ke sheet Subitems + restore saat Load",
       "Status baru Preview dan On revision, pindah full via dropdown",
       "Delete pindah ke modal edit + undo; kolom Est. bisa diedit manual",
-      "Progress Daily = tanggal + checkbox; subitem selalu ikut tabel parentnya"
-    ]
-  },
-  {
-    "version": "v0.3.0",
-    "date": "2026-09-22",
-    "dateLabel": "22 Sep 2026",
-    "title": "Durasi, catatan & rapikan tabel",
-    "highlights": [
+      "Progress Daily = tanggal + checkbox; subitem selalu ikut tabel parentnya",
       "Estimasi diganti waktu pengerjaan aktual (Est.) yang dihitung saat request selesai",
       "Catatan per work order: kolom Catatan, popup, dan tersimpan di Excel",
       "Urutan tabel final + kolom Date/Priority diselaraskan + grid seragam tanpa scrollbar",
