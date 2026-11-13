@@ -87,6 +87,7 @@ function repairItemIds(list) { const seen = new Set(); return (Array.isArray(lis
 function normalizeItem(item) { return { ...item, id: String(item.id || generateItemId()), title: String(item.title || '').trim(), requestor: String(item.requestor || item.owner || '').trim(), subitems: Array.isArray(item.subitems) ? item.subitems.map((subitem, index) => ({ id: subitem.id || `${item.id}-${index}`, title: String(subitem.title || '').trim(), done: Boolean(subitem.done), order: subitem.order ?? index })).filter(subitem => subitem.title) : [], status: normalizeStatus(item.status), priority: normalizePriority(item.priority), requestDate: normalizeDateValue(item.requestDate), date: normalizeDateValue(item.date || item.targetDone) || defaultDeadline(normalizeDateValue(item.requestDate)), done: Boolean(item.done), completedAt: item.completedAt || '', updatedAt: item.updatedAt || '' }; }
 function normalizeStatus(value) {
   const text = String(value || '').toLowerCase();
+  if (text === 'daily') return 'daily';
   if (text.includes('waiting') && (text.includes('brief') || text.includes('full'))) return 'waiting_brief';
   if (text.includes('revision') || text.includes('revisi')) return 'revision';
   if (text.includes('1st') || text.includes('first') || text.includes('draft')) return 'draft_preview';
