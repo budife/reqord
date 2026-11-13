@@ -255,5 +255,5 @@ th .check-all { margin-right: 6px; vertical-align: -1px; accent-color: var(--gre
 .priority-pill.priority-low { background: #edf4e5; color: var(--green-dark); }
 
 /* Focus styles - must come after all theme passes to win cascade */
-.secondary-button:focus{outline:none;border:1px solid var(--green)!important;box-shadow:none}
-.primary-button:focus{outline:none;border:1px solid var(--green)!important;box-shadow:none}
+.secondary-button:focus{outline:none;border:1px solid #789b58!important;box-shadow:none}
+.primary-button:focus{outline:none;border:1px solid #789b58!important;box-shadow:none}
