@@ -211,6 +211,8 @@ function updateSyncStatus() {
 }
 setInterval(() => { if (document.visibilityState === 'visible') updateSyncStatus(); }, 30000);
 function showToast(message) { const toast = document.querySelector('#toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2400); }
+// Deteksi klik di LUAR area dialog (backdrop), bukan sekadar target === dialog
+function isBackdropClick(dialog, event) { const rect = dialog.getBoundingClientRect(); return !(rect.top <= event.clientY && event.clientY <= rect.bottom && rect.left <= event.clientX && event.clientX <= rect.right); }
 function findItem(id) { return items.find(item => String(item.id) === String(id)); }
 
 document.querySelector('#searchInput').addEventListener('input', () => { resetPanelLimits(); render(); });
@@ -295,7 +297,7 @@ document.querySelector('#bulkOpen').addEventListener('click', () => {
 });
 document.querySelector('#closeBulkDialog').addEventListener('click', () => bulkDialog.close());
 document.querySelector('#cancelBulkDialog').addEventListener('click', () => bulkDialog.close());
-bulkDialog.addEventListener('click', event => { if (event.target === bulkDialog) bulkDialog.close(); });
+bulkDialog.addEventListener('click', event => { if (isBackdropClick(bulkDialog, event)) bulkDialog.close(); });
 document.querySelector('#applyBulkDialog').addEventListener('click', () => {
   const status = document.querySelector('#bulkDialogStatus').value;
   if (!selectedIds.size) { bulkDialog.close(); return; }
@@ -356,7 +358,7 @@ const addDialog = document.querySelector('#addDialog');
 document.querySelector('#addWorkOrderButton').addEventListener('click', () => { addDialog.showModal(); setTimeout(() => document.querySelector('#titleInput').focus(), 50); });
 document.querySelector('#closeAddDialog').addEventListener('click', () => addDialog.close());
 document.querySelector('#cancelAddDialog').addEventListener('click', () => addDialog.close());
-addDialog.addEventListener('click', event => { if (event.target === addDialog) addDialog.close(); });
+addDialog.addEventListener('click', event => { if (isBackdropClick(addDialog, event)) addDialog.close(); });
 document.querySelector('#submitAddDialog').addEventListener('click', () => {
   const title = document.querySelector('#titleInput').value.trim();
   const requestor = document.querySelector('#requestorInput').value.trim();
@@ -392,7 +394,7 @@ const editDialog = document.querySelector('#editDialog');
 const noteDialog = document.querySelector('#noteDialog');
 let noteTargetId = null;
 function openNoteDialog(id) { const item = findItem(id); if (!item) return; noteTargetId = item.id; document.querySelector('#noteDialogTitle').textContent = item.title; document.querySelector('#noteDialogBody').textContent = item.note || 'Belum ada catatan untuk work order ini.'; noteDialog.showModal(); }
-document.querySelector('#closeNoteButton').addEventListener('click', () => noteDialog.close()); document.querySelector('#editNoteButton').addEventListener('click', () => { noteDialog.close(); openEditDialog(noteTargetId); setTimeout(() => document.querySelector('#editNoteInput').focus(), 0); }); noteDialog.addEventListener('click', event => { if (event.target === noteDialog) noteDialog.close(); });
+document.querySelector('#closeNoteButton').addEventListener('click', () => noteDialog.close()); document.querySelector('#editNoteButton').addEventListener('click', () => { noteDialog.close(); openEditDialog(noteTargetId); setTimeout(() => document.querySelector('#editNoteInput').focus(), 0); }); noteDialog.addEventListener('click', event => { if (isBackdropClick(noteDialog, event)) noteDialog.close(); });
 const editTitleInput = document.querySelector('#editTitleInput');
 const editRequestorInput = document.querySelector('#editRequestorInput');
 function openEditDialog(id) { const item = findItem(id); if (!item) return; editTargetId = item.id; editTitleInput.value = item.title; editRequestorInput.value = item.requestor; document.querySelector('#editRequestDateInput').value = item.requestDate ? item.requestDate.slice(0, 16) : ''; document.querySelector('#editNoteInput').value = item.note || ''; document.querySelector('#editDeadlineInput').value = item.date ? item.date.slice(0, 10) : ''; renderEditSubitems(); editDialog.showModal(); editTitleInput.focus(); }
@@ -400,14 +402,14 @@ function renderEditSubitems() { const item = findItem(editTargetId); const list 
 function closeEditDialog() { editTargetId = null; editDialog.close(); }
 document.querySelector('#editForm').addEventListener('submit', event => { event.preventDefault(); const item = findItem(editTargetId); const title = editTitleInput.value.trim(); const requestor = editRequestorInput.value.trim(); const requestDate = document.querySelector('#editRequestDateInput').value; const note = document.querySelector('#editNoteInput').value.trim(); const deadline = document.querySelector('#editDeadlineInput').value; if (!item || !title || !requestor) return; const nextDate = deadline ? `${deadline}T00:00` : ''; const nextRequestDate = requestDate || ''; const changed = item.title !== title || item.requestor !== requestor || item.note !== note || nextDate !== item.date || nextRequestDate !== item.requestDate; item.title = title; item.requestor = requestor; item.requestDate = nextRequestDate; item.note = note; item.date = nextDate; if (changed) { saveItems(); addActivity('Work order diedit', item, 'Title, requestor, tanggal, deadline, atau catatan diperbarui'); } closeEditDialog(); render(); showToast(changed ? 'Work order diperbarui' : 'Tidak ada perubahan'); });
 document.querySelector('#deleteFromEditButton').addEventListener('click', async () => { const item = findItem(editTargetId); if (!item) return; const okDelete = await confirmModal(`Request "${item.title}" akan dihapus permanen.`, { title: 'Delete request?', eyebrow: 'PERMANENT ACTION', confirmLabel: 'Delete' }); if (!okDelete) return; deletedItem = { item, index: items.indexOf(item) }; items = items.filter(candidate => candidate.id !== item.id); sbDeleteItem(item.id); saveItems(); addActivity('Request dihapus', item); closeEditDialog(); render(); showToast('Request dihapus · klik Undo dalam 5 detik'); setTimeout(() => { deletedItem = null; }, 5000); });
-document.querySelector('#closeEditButton').addEventListener('click', closeEditDialog); document.querySelector('#cancelEditButton').addEventListener('click', closeEditDialog); editDialog.addEventListener('click', event => { if (event.target === editDialog) closeEditDialog(); });
+document.querySelector('#closeEditButton').addEventListener('click', closeEditDialog); document.querySelector('#cancelEditButton').addEventListener('click', closeEditDialog); editDialog.addEventListener('click', event => { if (isBackdropClick(editDialog, event)) closeEditDialog(); });
 document.querySelector('#editSubitemInput').addEventListener('keydown', event => { if (event.key !== 'Enter') return; event.preventDefault(); const title = event.currentTarget.value.trim(); const item = findItem(editTargetId); if (!item || !title) return; item.subitems = Array.isArray(item.subitems) ? item.subitems : []; item.subitems.push({ id: `${item.id}-${Date.now()}`, title, done: false, order: item.subitems.length }); saveItems(); addActivity('Subitem ditambahkan', item, title); event.currentTarget.value = ''; renderEditSubitems(); render(); });
 document.querySelector('#editSubitemList').addEventListener('change', event => { const checkbox = event.target.closest('[data-edit-subitem-id]'); const item = findItem(editTargetId); const subitem = item?.subitems.find(candidate => String(candidate.id) === String(checkbox?.dataset.editSubitemId)); if (!subitem) return; subitem.done = checkbox.checked; saveItems(); addActivity(subitem.done ? 'Subitem selesai' : 'Subitem dibuka lagi', item, subitem.title); renderEditSubitems(); render(); });
 document.querySelector('#editSubitemList').addEventListener('click', async event => { const button = event.target.closest('[data-delete-subitem-id]'); if (!button) return; const item = findItem(editTargetId); const index = item?.subitems.findIndex(candidate => String(candidate.id) === String(button.dataset.deleteSubitemId)); if (!item || index < 0) return; const okSubitem = await confirmModal(`Hapus subitem "${item.subitems[index].title}"?`, { title: 'Hapus subitem?', confirmLabel: 'Hapus' }); if (!okSubitem) return; const [removed] = item.subitems.splice(index, 1); saveItems(); addActivity('Subitem dihapus', item, removed.title); renderEditSubitems(); render(); });
 const profileDialog = document.querySelector('#profileDialog');
 document.querySelector('#makerButton').addEventListener('click', () => profileDialog.showModal());
 document.querySelector('#closeProfileButton').addEventListener('click', () => profileDialog.close());
-profileDialog.addEventListener('click', event => { if (event.target === profileDialog) profileDialog.close(); });
+profileDialog.addEventListener('click', event => { if (isBackdropClick(profileDialog, event)) profileDialog.close(); });
 document.querySelectorAll('[data-maker-tab]').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('[data-maker-tab]').forEach(button => button.classList.toggle('active', button === tab)); document.querySelectorAll('[data-maker-content]').forEach(content => { content.hidden = content.dataset.makerContent !== tab.dataset.makerTab; }); }));
 document.querySelector('.profile-footer span').innerHTML = '<i class="sync-dot"></i> reqord v0.6.1';
 const fallbackReleaseNotes = [
@@ -439,7 +441,7 @@ document.querySelector('.table-stack').addEventListener('click', event => { cons
 deleteConfirmInput.addEventListener('input', () => { confirmDeleteButton.disabled = deleteConfirmInput.value.trim().toLowerCase() !== 'saya sudah pikirin'; });
 confirmDeleteButton.addEventListener('click', () => { if (confirmDeleteButton.disabled || deleteTargetId === null) return; const item = findItem(deleteTargetId); deletedItem = { item, index: items.indexOf(item) }; items = items.filter(candidate => candidate.id !== deleteTargetId); sbDeleteItem(deleteTargetId); saveItems(); addActivity('Request dihapus', item); closeDeleteDialog(); render(); showToast('Request dihapus · klik Undo dalam 5 detik'); setTimeout(() => { deletedItem = null; }, 5000); });
 document.querySelector('#toast').addEventListener('click', () => { if (!deletedItem) return; items.splice(Math.max(0, deletedItem.index), 0, deletedItem.item); saveItems(); addActivity('Request dipulihkan', deletedItem.item); deletedItem = null; render(); showToast('Request dipulihkan'); });
-document.querySelector('#closeDeleteButton').addEventListener('click', closeDeleteDialog); document.querySelector('#cancelDeleteButton').addEventListener('click', closeDeleteDialog); deleteDialog.addEventListener('click', event => { if (event.target === deleteDialog) closeDeleteDialog(); });
+document.querySelector('#closeDeleteButton').addEventListener('click', closeDeleteDialog); document.querySelector('#cancelDeleteButton').addEventListener('click', closeDeleteDialog); deleteDialog.addEventListener('click', event => { if (isBackdropClick(deleteDialog, event)) closeDeleteDialog(); });
 const confirmDialog = document.querySelector('#confirmDialog'); let confirmResolver = null;
 function confirmModal(message, options = {}) {
   return new Promise(resolve => {
@@ -453,7 +455,7 @@ function confirmModal(message, options = {}) {
   });
 }
 function resolveConfirm(value) { confirmDialog.close(); if (confirmResolver) { confirmResolver(value); confirmResolver = null; } }
-document.querySelector('#acceptConfirmButton').addEventListener('click', () => resolveConfirm(true)); document.querySelector('#cancelConfirmButton').addEventListener('click', () => resolveConfirm(false)); document.querySelector('#closeConfirmButton').addEventListener('click', () => resolveConfirm(false)); confirmDialog.addEventListener('click', event => { if (event.target === confirmDialog) resolveConfirm(false); });
+document.querySelector('#acceptConfirmButton').addEventListener('click', () => resolveConfirm(true)); document.querySelector('#cancelConfirmButton').addEventListener('click', () => resolveConfirm(false)); document.querySelector('#closeConfirmButton').addEventListener('click', () => resolveConfirm(false)); confirmDialog.addEventListener('click', event => { if (isBackdropClick(confirmDialog, event)) resolveConfirm(false); });
 document.querySelector('.table-stack').addEventListener('click', event => { const button = event.target.closest('[data-row-action="edit"]'); if (button) { event.stopPropagation(); openEditDialog(button.dataset.id); } });
 document.querySelector('.table-stack').addEventListener('click', event => { const button = event.target.closest('[data-row-action="note"]'); if (button) { event.stopPropagation(); openNoteDialog(button.dataset.id); } });
 document.querySelector('.table-stack').addEventListener('click', event => { if (event.target.closest('.row-check')) return; const title = event.target.closest('.title-cell.has-note'); if (title) openNoteDialog(title.dataset.noteId); });
@@ -462,7 +464,7 @@ document.querySelector('.table-stack').addEventListener('keydown', event => { if
 const subitemDialog = document.querySelector('#subitemDialog'); let subitemTargetId = null;
 document.querySelector('#subitemInput').addEventListener('keydown', event => { if (event.key !== 'Enter') return; event.preventDefault(); const title = event.currentTarget.value.trim(); const item = findItem(subitemTargetId); if (!item || !title) return; item.subitems = Array.isArray(item.subitems) ? item.subitems : []; item.subitems.push({ id: `${item.id}-${Date.now()}`, title, done: false, order: item.subitems.length }); saveItems(); addActivity('Subitem ditambahkan', item, title); event.currentTarget.value = ''; render(); });
 document.querySelector('.table-stack').addEventListener('change', event => { const checkbox = event.target.closest('[data-inline-subitem-id]'); if (!checkbox) return; const item = findItem(checkbox.dataset.inlineSubitemParent); const subitem = item?.subitems.find(candidate => String(candidate.id) === String(checkbox.dataset.inlineSubitemId)); if (!subitem) return; subitem.done = checkbox.checked; saveItems(); addActivity(subitem.done ? 'Subitem selesai' : 'Subitem dibuka lagi', item, subitem.title); render(); });
-document.querySelector('#closeSubitemButton').addEventListener('click', () => subitemDialog.close()); subitemDialog.addEventListener('click', event => { if (event.target === subitemDialog) subitemDialog.close(); });
+document.querySelector('#closeSubitemButton').addEventListener('click', () => subitemDialog.close()); subitemDialog.addEventListener('click', event => { if (isBackdropClick(subitemDialog, event)) subitemDialog.close(); });
 document.querySelector('.table-stack').addEventListener('click', event => { if (event.target.closest('.row-check')) return; const title = event.target.closest('.title-cell.has-subitems'); if (title) openEditDialog(title.dataset.subitemId); }); document.querySelector('.table-stack').addEventListener('keydown', event => { if (event.target.closest('.row-check')) return; const title = event.target.closest('.title-cell.has-subitems'); if (title && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openEditDialog(title.dataset.subitemId); } });
 document.querySelector('.table-stack').addEventListener('click', event => { const button = event.target.closest('[data-row-action="complete"]'); if (button) { const item = findItem(button.dataset.id); if (item && !item.completedAt) item.completedAt = new Date().toISOString(); } }, true);
 
