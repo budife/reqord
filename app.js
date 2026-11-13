@@ -938,7 +938,7 @@ if (hasCode && userName) {
   if (_logoutBtn) _logoutBtn.style.display = '';
   if (_changePassBtn) _changePassBtn.style.display = isAdmin ? '' : 'none';
   if (_loginLink) _loginLink.style.display = 'none';
-  if (userMenuText) userMenuText.textContent = userName + (isAdmin ? ' (admin)' : '');
+  if (userMenuText) userMenuText.textContent = userName;
 } else {
   if (_logoutBtn) _logoutBtn.style.display = 'none';
   if (_changePassBtn) _changePassBtn.style.display = 'none';
