@@ -2,6 +2,20 @@ const SUPABASE_URL = 'https://htyfykkurammflwefxgw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_iUul7iVeH-ReFlSxVT-ulQ_qhkgzPAz';
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+const groups = [
+  { key: 'new_request', label: 'New Request', desc: 'Baru masuk, belum dibahas' },
+  { key: 'waiting_brief', label: 'Waiting Brief', desc: 'Menunggu brief lengkap' },
+  { key: 'working', label: 'Working', desc: 'Sedang dikerjakan' },
+  { key: 'draft_preview', label: '1st Draft', desc: 'Draft pertama, menunggu review' },
+  { key: 'revision', label: 'In Revision', desc: 'Revisi dari feedback' },
+  { key: 'preview', label: 'Preview', desc: 'Preview final, menunggu approval' },
+  { key: 'on_hold', label: 'On Hold', desc: 'Ditunda sementara' },
+  { key: 'approved', label: 'Approved', desc: 'Disetujui, siap done' },
+  { key: 'done', label: 'Done', desc: 'Selesai' },
+  { key: 'daily', label: 'Daily', desc: 'Tugas harian' },
+  { key: 'cancelled', label: 'Cancelled', desc: 'Dibatalkan' }
+];
+
 const statusLabels = {
   new_request: 'New Request',
   waiting_brief: 'Waiting Brief',
@@ -18,14 +32,12 @@ const statusLabels = {
 
 let items = [];
 let searchQuery = '';
-let statusFilter = 'all';
 let monthFilter = 'all';
 
-const boardBody = document.querySelector('#boardBody');
+const board = document.querySelector('#board');
 const liveState = document.querySelector('#liveState');
 const resultCount = document.querySelector('#resultCount');
 const searchInput = document.querySelector('#searchInput');
-const statusSelect = document.querySelector('#statusFilter');
 const monthSelect = document.querySelector('#monthFilter');
 
 function escapeHtml(value) {
@@ -73,8 +85,18 @@ function refreshMonthFilter() {
 
 function render() {
   const query = searchQuery.trim().toLowerCase();
-  const visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (statusFilter === 'all' || item.status === statusFilter) && (monthFilter === 'all' || item.month === monthFilter));
-  boardBody.innerHTML = visible.map(item => `<tr class="status-${item.status}"><td class="title-cell">${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><span class="status-pill pill-${item.status}">${escapeHtml(statusLabels[item.status] || item.status)}</span></td><td><span class="priority-pill priority-${item.priority}">${escapeHtml(item.priority)}</span></td><td>${escapeHtml(item.requestDate)}</td><td>${escapeHtml(item.date) || 'No deadline'}</td></tr>`).join('');
+  const visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (monthFilter === 'all' || item.month === monthFilter));
+  board.innerHTML = groups.map(group => {
+    const rows = visible.filter(item => item.status === group.key);
+    const body = rows.length
+      ? rows.map(item => `<tr class="status-${item.status}"><td class="title-cell">${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><span class="status-pill pill-${item.status}">${escapeHtml(statusLabels[item.status])}</span></td><td><span class="priority-pill priority-${item.priority}">${escapeHtml(item.priority)}</span></td><td>${escapeHtml(item.requestDate)}</td><td>${escapeHtml(item.date) || 'No deadline'}</td></tr>`).join('')
+      : '';
+    return `<article class="panel">
+      <div class="panel-head"><div><span class="marker marker-${group.key}"></span><h2>${group.label}</h2><span class="count">${rows.length}</span><p>${group.desc}</p></div><span class="state">${group.label.toUpperCase()}</span></div>
+      <div class="table-scroll"><table><thead><tr><th>Title</th><th>Requestor</th><th>Status</th><th>Priority</th><th>Request Date</th><th>Deadline</th></tr></thead><tbody>${body}</tbody></table></div>
+      <div class="empty" ${rows.length ? 'hidden' : ''}>Belum ada.</div>
+    </article>`;
+  }).join('');
   resultCount.textContent = `${visible.length} work orders`;
   refreshMonthFilter();
 }
@@ -92,7 +114,6 @@ async function loadItems() {
 }
 
 searchInput.addEventListener('input', event => { searchQuery = event.target.value; render(); });
-statusSelect.addEventListener('change', event => { statusFilter = event.target.value; render(); });
 monthSelect.addEventListener('change', event => { monthFilter = event.target.value; render(); });
 
 loadItems();
