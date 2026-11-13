@@ -36,14 +36,14 @@ function normalizeStatus(value) {
   const text = String(value || '').toLowerCase();
   if (text.includes('daily')) return 'daily';
   if (text.includes('waiting') && (text.includes('brief') || text.includes('full'))) return 'waiting_brief';
-  if (text.includes('preview') || text.includes('review')) return 'preview';
   if (text.includes('revision') || text.includes('revisi')) return 'revision';
-  if (text.includes('ongoing') || text.includes('progress') || text.includes('kerja')) return 'working';
+  if (text.includes('1st') || text.includes('first') || text.includes('draft')) return 'draft_preview';
+  if (text.includes('preview') || text.includes('review')) return 'preview';
+  if (text.includes('working') || text.includes('ongoing') || text.includes('progress') || text.includes('kerja')) return 'working';
   if (text.includes('done') || text.includes('selesai') || text.includes('complete')) return 'done';
   if (text.includes('cancelled') || text.includes('cancel') || text.includes('batal')) return 'cancelled';
   if (text.includes('on hold') || text.includes('on_hold') || text.includes('hold')) return 'on_hold';
   if (text.includes('approved') || text.includes('approve')) return 'approved';
-  if (text.includes('1st') || text.includes('first') || text.includes('draft')) return 'draft_preview';
   return 'new_request';
 }
 
