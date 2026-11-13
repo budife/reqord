@@ -177,6 +177,7 @@ td{border-bottom:1px solid var(--line-soft)!important}
 /* Bulk selection */
 .title-cell .row-check { margin-right: 8px; vertical-align: -1px; accent-color: var(--green-dark); cursor: pointer; }
 body:not(.is-admin) #selectAllButton { display: none !important; }
+body:not(.is-admin) .auth-only { display: none !important; }
 .bulk-bar { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 12px; background: #33492a; color: #fff; border: 1px solid #4e6b3d; border-radius: 12px; padding: 11px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.28); font-size: 13px; }
 .bulk-bar[hidden] { display: none; }
 .bulk-bar .bulk-count { font-weight: 600; }
