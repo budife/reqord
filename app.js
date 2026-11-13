@@ -21,8 +21,6 @@ let isLoadingFromCloud = false;
 let syncState = 'idle'; // idle | syncing | error
 let syncProgress = { done: 0, total: 0 };
 let activities = loadStoredActivities();
-let storageDatabase = null;
-let isLoadingWorkbook = false;
 let isSaving = false;
 const saveAsRequested = false;
 let deletedItem = null;
@@ -57,7 +55,7 @@ function loadItems() {
     return [];
   }
 }
-function saveItems() { if (!isLoadingWorkbook) hasUnsavedChanges = true; hasUnsyncedChanges = true; persistDraft(); updateSyncStatus(); return items; }
+function saveItems() { hasUnsavedChanges = true; hasUnsyncedChanges = true; persistDraft(); updateSyncStatus(); return items; }
 function persistDraft() {
   try {
     const json = JSON.stringify(items);
@@ -71,7 +69,7 @@ function persistDraft() {
     return false;
   }
 }
-function openDraftDatabase() { if (!window.indexedDB) return; const request = indexedDB.open('reqord-storage', 1); request.onupgradeneeded = () => { const db = request.result; db.createObjectStore('draft', { keyPath: 'id' }); db.createObjectStore('folderHandle', { keyPath: 'id' }); }; request.onsuccess = () => { storageDatabase = request.result; restoreFolderHandle(); }; }
+
 function loadStoredActivities() { try { const raw = localStorage.getItem(ACTIVITIES_KEY); const parsed = JSON.parse(raw); return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
 function activityKey(activity) { return [activity.date, activity.action, activity.title, activity.details].join('|'); }
 function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details, user: userName || 'Guest' }); persistDraft(); renderActivities(); }
@@ -462,53 +460,6 @@ document.querySelector('.table-stack').addEventListener('change', event => { con
 document.querySelector('#closeSubitemButton').addEventListener('click', () => subitemDialog.close()); subitemDialog.addEventListener('click', event => { if (event.target === subitemDialog) subitemDialog.close(); });
 document.querySelector('.table-stack').addEventListener('click', event => { if (event.target.closest('.row-check')) return; const title = event.target.closest('.title-cell.has-subitems'); if (title) openEditDialog(title.dataset.subitemId); }); document.querySelector('.table-stack').addEventListener('keydown', event => { if (event.target.closest('.row-check')) return; const title = event.target.closest('.title-cell.has-subitems'); if (title && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openEditDialog(title.dataset.subitemId); } });
 document.querySelector('.table-stack').addEventListener('click', event => { const button = event.target.closest('[data-row-action="complete"]'); if (button) { const item = findItem(button.dataset.id); if (item && !item.completedAt) item.completedAt = new Date().toISOString(); } }, true);
-// --- Folder handle persistence ---
-let savedFolderHandle = null;
-async function saveFolderHandle(handle) {
-  savedFolderHandle = handle;
-  localStorage.setItem('reqord-folder-name', handle.name || '');
-  if (!storageDatabase) return;
-  try {
-    const tx = storageDatabase.transaction('folderHandle', 'readwrite');
-    const store = tx.objectStore('folderHandle');
-    store.put({ id: 'current', handle });
-    await new Promise((resolve, reject) => {
-      tx.oncomplete = resolve;
-      tx.onerror = reject;
-    });
-  } catch { /* ignore */ }
-}
-async function restoreFolderHandle() {
-  if (!storageDatabase) return;
-  return new Promise((resolve) => {
-    try {
-      const tx = storageDatabase.transaction('folderHandle', 'readonly');
-      const req = tx.objectStore('folderHandle').get('current');
-      req.onsuccess = () => {
-        if (req.result?.handle) {
-          savedFolderHandle = req.result.handle;
-          localStorage.setItem('reqord-folder-name', savedFolderHandle.name || '');
-        }
-        resolve();
-      };
-      req.onerror = () => resolve();
-    } catch { resolve(); }
-  });
-}
-document.querySelector('#refreshFolderButton').addEventListener('click', async () => {
-  if (!savedFolderHandle) { showToast('Belum ada folder yang disimpan. Gunakan Scan Folder dulu.'); return; }
-  try {
-    addActivity('Refresh folder dimulai', {}, localStorage.getItem('reqord-folder-name') || '');
-    const perm = await savedFolderHandle.requestPermission({ mode: 'read' });
-    if (perm !== 'granted') { showToast('Izin folder ditolak'); addActivity('Refresh gagal', {}, 'Izin ditolak'); return; }
-    const found = await scanFolderHandle(savedFolderHandle);
-    if (found === 0) {
-      // Already handled by scanFolderHandle (duplicate modal or toast)
-    } else {
-      addActivity('Refresh selesai', {}, `${found} campaign ditemukan`);
-    }
-  } catch (e) { showToast(`Refresh gagal: ${e.message}`); addActivity('Refresh gagal', {}, e.message); }
-});
 
 function doExportJson() {
   if (!items.length) { showToast('Tidak ada data untuk diexport'); return; }
@@ -694,179 +645,6 @@ document.querySelector('#syncCloudButton').addEventListener('click', async () =>
     console.error('[reqord] sync error:', e);
   }
 });
-document.querySelector('#scanFolderButton').addEventListener('click', async () => {
-  if (!window.showDirectoryPicker) { showToast('Browser tidak mendukung folder scan. Gunakan Chrome/Edge.'); return; }
-  // Require login
-  if (!localStorage.getItem('reqord-access-code') || !localStorage.getItem('reqord-username')) {
-    const dialog = document.querySelector('#loginDialog');
-    if (dialog) dialog.showModal();
-    return;
-  }
-  if (supabaseClient) {
-    try {
-      const user = await sbGetUser();
-      if (!user) {
-        // Try auto-login with stored code
-        const storedCode = localStorage.getItem('reqord-access-code');
-        let code = storedCode ? atob(storedCode) : null;
-        if (!code) {
-          const dialog = document.querySelector('#loginDialog');
-          if (dialog) dialog.showModal();
-          showToast('Sesi berakhir. Silakan login lagi.');
-          return;
-        }
-        const email = userName + '@gmail.com';
-        let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
-        if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            localStorage.removeItem('reqord-access-code');
-          }
-          const res = await supabaseClient.auth.signUp({ email, password: code });
-          if (res.error) { 
-            if (res.error.message.includes('rate limit') || res.error.message.includes('after') || res.error.message.includes('security')) {
-              showToast('Terlalu banyak percobaan. Tunggu 1 menit lalu coba lagi.');
-            } else {
-              showToast('Auth gagal: ' + res.error.message);
-              localStorage.removeItem('reqord-access-code');
-            }
-            console.error('[reqord] auth error:', res.error); 
-            return; 
-          }
-          showToast('Kode baru terdaftar');
-        } else {
-          showToast('Kode valid');
-        }
-        localStorage.setItem('reqord-access-code', code);
-        await sbLoadItems();
-      }
-    } catch (e) {
-      console.error('[reqord] auth error:', e);
-      showToast('Auth error: ' + (e.message || 'unknown'));
-    }
-  }
-  try {
-    addActivity('Folder scan dimulai', {}, 'Memilih folder...');
-    const root = await window.showDirectoryPicker({ mode: 'read' });
-    await root.requestPermission({ mode: 'read' });
-    await new Promise(r => setTimeout(r, 300));
-    await saveFolderHandle(root);
-    let found = await scanFolderHandle(root);
-    if (found === 0) {
-      // Already handled by scanFolderHandle (duplicate modal or toast)
-    } else {
-      addActivity('Folder scan selesai', {}, `${found} campaign ditemukan`);
-    }
-  } catch (error) {
-    if (error.name !== 'AbortError') {
-      showToast(`Scan gagal: ${error.message || 'periksa akses folder'}`);
-      addActivity('Folder scan gagal', {}, error.message || 'periksa akses folder');
-    }
-  }
-});
-
-async function scanFolderHandle(root) {
-  console.log('[reqord] scanFolderHandle started');
-    const scanned = [];
-    const duplicates = [];
-    showToast('Memulai scan...');
-    // Collect top-level folders
-    const topFolders = [];
-    for await (const [name, handle] of root.entries()) {
-      if (handle.kind === 'directory') topFolders.push({ name, handle });
-    }
-    showToast(`Ditemukan ${topFolders.length} folder top-level`);
-    
-    // Build monthFolders list from both possible structures
-    let allMonthFolders = [];
-    
-    // Month folder: MMYY where MM is 01-12. Year folder: YYYY (20xx or 19xx)
-    const isMonthName = (name) => /^\d{4}$/.test(name) && Number(name.slice(0,2)) >= 1 && Number(name.slice(0,2)) <= 12;
-    const isYearName = (name) => /^\d{4}$/.test(name) && (name.startsWith('19') || name.startsWith('20')) && Number(name.slice(0,2)) > 12;
-    const monthLikeFolders = topFolders.filter(f => isMonthName(f.name));
-    
-    if (monthLikeFolders.length === topFolders.length && topFolders.length > 0 && topFolders.length > 0 && monthLikeFolders.length > 0) {
-      allMonthFolders = topFolders.map(f => ({ monthName: f.name, monthHandle: f.handle, prefix: '' }));
-    } else if (monthLikeFolders.length > 0) {
-      allMonthFolders = monthLikeFolders.map(f => ({ monthName: f.name, monthHandle: f.handle, prefix: '' }));
-      for (const { name: yearName, handle: yearHandle } of topFolders.filter(f => isYearName(f.name))) {
-        for await (const [name, handle] of yearHandle.entries()) {
-          if (handle.kind === 'directory' && isMonthName(name)) {
-            allMonthFolders.push({ monthName: name, monthHandle: handle, prefix: yearName });
-          }
-        }
-      }
-    } else {
-      for (const { name: yearName, handle: yearHandle } of topFolders) {
-        for await (const [name, handle] of yearHandle.entries()) {
-          if (handle.kind === 'directory' && isMonthName(name)) {
-            allMonthFolders.push({ monthName: name, monthHandle: handle, prefix: yearName });
-          }
-        }
-      }
-    }
-    
-    for (const { monthName, monthHandle, prefix } of allMonthFolders) {
-      const campaignFolders = [];
-      for await (const [name, handle] of monthHandle.entries()) {
-        if (handle.kind === 'directory') campaignFolders.push({ name, handle });
-      }
-      showToast(`${monthName}: ${campaignFolders.length} campaign`);
-        for (const { name: campaignName, handle: campaignHandle } of campaignFolders) {
-          // Parse folder name: "Requestor - Nama Campaign" (pemisah harus ada spasi di kedua sisi)
-          const parts = campaignName.split(/\s+-\s+/);
-          const requestor = parts.length > 1 ? parts[0].trim() : 'Unknown';
-          const title = parts.length > 1 ? parts.slice(1).join(' - ').trim() : campaignName;
-          // Get folder date: try files inside, then month folder name, then now
-          let folderDate = '';
-          try {
-            let latest = 0;
-            for await (const [entryName, entryHandle] of campaignHandle.entries()) {
-              if (entryHandle.kind === 'file') {
-                const file = await entryHandle.getFile();
-                if (file.lastModified > latest) latest = file.lastModified;
-              }
-            }
-            if (latest) folderDate = new Date(latest).toISOString().slice(0, 16).replace('T', ' ');
-          } catch { /* ignore */ }
-          // Fallback: parse month name MMYY
-          if (!folderDate && /^\d{4}$/.test(monthName)) {
-            const mm = monthName.slice(0, 2);
-            const yy = monthName.slice(2);
-            const year = Number(yy) >= 50 ? `19${yy}` : `20${yy}`;
-            folderDate = `${year}-${mm}-01 00:00`;
-          }
-          // Fallback: now
-          if (!folderDate) folderDate = new Date().toISOString().slice(0, 16).replace('T', ' ');
-          // Identitas folder = kunci dedup utama (title bisa di-edit user)
-          const folderKey = `${prefix ? `${prefix}/` : ''}${monthName}/${campaignName}`;
-          const match = items.find(item => (item.folderKey && item.folderKey === folderKey) || (!item.folderKey && item.title.toLowerCase().trim() === title.toLowerCase().trim() && item.requestor.toLowerCase().trim() === requestor.toLowerCase().trim()));
-          if (match) {
-            duplicates.push(`${title} (${requestor})`);
-            if (!match.folderKey) { match.folderKey = folderKey; persistDraft(); }
-            continue;
-          }
-          scanned.push({ title, requestor, month: monthName, priority: 'normal', status: 'new_request', type: 'project', date: '', requestDate: folderDate || '', folderKey });
-        }
-        }
-    if (scanned.length === 0 && duplicates.length === 0) { showToast('Tidak ada folder baru ditemukan'); return 0; }
-    console.log('[reqord] scan: scanned=', scanned.length, 'duplicates=', duplicates.length);
-    if (scanned.length === 0 && duplicates.length > 0) {
-      showToast(`${duplicates.length} item sudah ada (duplikat)`);
-      // Show modal listing duplicates
-      const msg = `Item berikut sudah ada di list:\n\n${duplicates.map(d => `• ${d}`).join('\n')}`;
-      await confirmModal(msg, { title: 'Duplikat ditemukan', confirmLabel: 'OK' });
-      return 0;
-    }
-    const ok = await confirmModal(`Ditemukan ${scanned.length} campaign baru${duplicates.length ? ` (${duplicates.length} duplikat di-skip)` : ''}. Tambahkan?`, { title: 'Scan folder', confirmLabel: 'Tambahkan' });
-    if (!ok) return 0;
-    const normalized = scanned.map(normalizeItem);
-    items = [...items, ...normalized];
-    normalized.forEach(item => addActivity('Folder scan', item, `${item.title} (${item.requestor})`));
-    saveItems();
-    render();
-    showToast(`${scanned.length} item ditambahkan${duplicates.length ? `, ${duplicates.length} duplikat di-skip` : ''} · tekan "Sync to Cloud" untuk mengirim`);
-    return scanned.length;
-}
 
 // Logout button handler
 const logoutBtn = document.querySelector('#logoutBtn');
@@ -1074,7 +852,7 @@ if (hasCode && userName) {
   if (userMenuText) userMenuText.textContent = 'Login';
 }
 document.body.classList.toggle('is-admin', isAdmin);
-openDraftDatabase(); updateSyncStatus(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
+updateSyncStatus(); renderActiveFile(); renderActivities(); render(); scheduleDailyReset();
 if (supabaseClient) {
   sbLoadItems(true).then(() => {
     console.log('[reqord] init: loaded from Supabase');

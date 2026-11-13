@@ -8,13 +8,10 @@ const styles = fs.readFileSync('styles.css', 'utf8');
 assert.match(source, /function normalizeStatus/);
 assert.match(source, /function normalizePriority/);
 assert.match(source, /function isDailyDone/);
-assert.match(source, /requestPermission/);
 assert.match(source, /priorityFilter/);
 assert.match(source, /sortFilter/);
 assert.match(source, /hasUnsavedChanges/);
-assert.match(source, /'Unknown'/);
-assert.match(source, /Workbook di-load|item loaded|loaded from Supabase/);
-assert.doesNotMatch(source, /activities = activities\.slice\(0, 100\)/);
+assert.match(source, /loaded from Supabase/);
 assert.match(markup, /activeFileName/);
 assert.match(markup, /saveState/);
 assert.match(source, /renderTitleSuggestions/);
@@ -103,5 +100,10 @@ assert.match(styles, /pill-cancelled/);
 assert.match(styles, /priority-pill/);
 assert.match(source, /bulkDialogStatus/);
 assert.match(source, /folderKey/);
+// Scan folder removed — manual entry only
+assert.doesNotMatch(markup, /scanFolderButton/);
+assert.doesNotMatch(markup, /refreshFolderButton/);
+assert.doesNotMatch(source, /showDirectoryPicker/);
+assert.doesNotMatch(source, /saveFolderHandle/);
 
 console.log('REQORD smoke checks passed (v0.6.1)');
