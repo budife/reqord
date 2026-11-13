@@ -26,9 +26,7 @@
     </button>
     <div class="user-menu-dropdown" id="userMenuDropdown" hidden>
       <a href="#" class="user-menu-item" id="loginLink">Login</a>
-      <button class="user-menu-item" id="changePassBtn" style="display:none;">Ganti Password</button>
-      <button class="user-menu-item" id="exportJsonButton" style="display:none;">Export JSON</button>
-      <button class="user-menu-item" id="importJsonButton" style="display:none;">Import JSON</button>
+      <button class="user-menu-item" id="settingsLink" style="display:none;">Settings</button>
       <button class="user-menu-item" id="logoutBtn" style="display:none;">Logout</button>
     </div>
   </div>
@@ -126,6 +124,14 @@
       <input id="confirmPassInput" class="delete-confirm-input" type="password" placeholder="Konfirmasi password..." aria-label="Konfirmasi password" style="margin:0;width:100%;box-sizing:border-box;">
     </div>
     <div class="delete-actions"><button class="secondary-button" id="cancelChangePassDialog">Batal</button><button class="primary-button" id="submitChangePassDialog">Ubah</button></div>
+  </dialog>
+  <dialog id="settingsDialog" class="delete-dialog settings-dialog">
+    <div class="delete-modal-head"><span class="delete-warning settings-warning">⚙</span><div><span class="eyebrow">SETTINGS</span><h2>Pengaturan</h2></div><button class="modal-close" id="closeSettingsDialog" aria-label="Tutup settings">×</button></div>
+    <div class="settings-list">
+      <button class="settings-item" id="settingsChangePass"><span class="settings-item-icon">?</span><span class="settings-item-body"><strong>Ganti Password</strong><small>Ubah password akun Anda</small></span><span class="settings-item-arrow">›</span></button>
+      <button class="settings-item" id="settingsExport"><span class="settings-item-icon">↥</span><span class="settings-item-body"><strong>Export JSON</strong><small>Simpan data ke file JSON</small></span><span class="settings-item-arrow">›</span></button>
+      <button class="settings-item" id="settingsImport"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import JSON</strong><small>Muat data dari file JSON</small></span><span class="settings-item-arrow">›</span></button>
+    </div>
   </dialog>
   <dialog id="deleteDialog" class="delete-dialog">
     <div class="delete-modal-head"><span class="delete-warning">!</span><div><span class="eyebrow">PERMANENT ACTION</span><h2>Delete request?</h2></div><button class="modal-close" id="closeDeleteButton" aria-label="Tutup konfirmasi delete">×</button></div>

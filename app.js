@@ -482,8 +482,7 @@ document.querySelector('#refreshFolderButton').addEventListener('click', async (
   } catch (e) { showToast(`Refresh gagal: ${e.message}`); addActivity('Refresh gagal', {}, e.message); }
 });
 
-const exportBtn = document.querySelector('#exportJsonButton');
-if (exportBtn) exportBtn.addEventListener('click', () => {
+function doExportJson() {
   if (!items.length) { showToast('Tidak ada data untuk diexport'); return; }
   const data = JSON.stringify({ items, activities, exportedAt: new Date().toISOString() }, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
@@ -494,13 +493,28 @@ if (exportBtn) exportBtn.addEventListener('click', () => {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   showToast('JSON diexport');
-  closeUserMenu();
+}
+
+function doImportJson() {
+  document.querySelector('#jsonFileInput').click();
+}
+
+const settingsExport = document.querySelector('#settingsExport');
+if (settingsExport) settingsExport.addEventListener('click', () => {
+  doExportJson();
+  document.querySelector('#settingsDialog').close();
 });
 
-const importBtn = document.querySelector('#importJsonButton');
-if (importBtn) importBtn.addEventListener('click', () => {
-  document.querySelector('#jsonFileInput').click();
-  closeUserMenu();
+const settingsImport = document.querySelector('#settingsImport');
+if (settingsImport) settingsImport.addEventListener('click', () => {
+  doImportJson();
+  document.querySelector('#settingsDialog').close();
+});
+
+const settingsChangePass = document.querySelector('#settingsChangePass');
+if (settingsChangePass) settingsChangePass.addEventListener('click', () => {
+  document.querySelector('#settingsDialog').close();
+  document.querySelector('#changePassDialog').showModal();
 });
 
 const jsonInput = document.querySelector('#jsonFileInput');
@@ -928,34 +942,34 @@ if (submitChangePassDialog) {
     showToast('Password berhasil diubah');
   });
 }
-const changePassBtn = document.querySelector('#changePassBtn');
-if (changePassBtn) {
-  changePassBtn.addEventListener('click', () => {
+const settingsLink = document.querySelector('#settingsLink');
+if (settingsLink) {
+  settingsLink.addEventListener('click', () => {
     closeUserMenu();
-    document.querySelector('#changePassDialog').showModal();
+    document.querySelector('#settingsDialog').showModal();
+  });
+}
+const closeSettingsDialog = document.querySelector('#closeSettingsDialog');
+if (closeSettingsDialog) {
+  closeSettingsDialog.addEventListener('click', () => {
+    document.querySelector('#settingsDialog').close();
   });
 }
 window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
 const _logoutBtn = document.querySelector('#logoutBtn');
-const _changePassBtn = document.querySelector('#changePassBtn');
+const _settingsLink = document.querySelector('#settingsLink');
 const _loginLink = document.querySelector('#loginLink');
-const _exportBtn = document.querySelector('#exportJsonButton');
-const _importBtn = document.querySelector('#importJsonButton');
 const hasCode = !!localStorage.getItem('reqord-access-code');
 isAdmin = localStorage.getItem('reqord-is-admin') === '1';
 if (hasCode && userName) {
   if (_logoutBtn) _logoutBtn.style.display = '';
-  if (_changePassBtn) _changePassBtn.style.display = isAdmin ? '' : 'none';
+  if (_settingsLink) _settingsLink.style.display = '';
   if (_loginLink) _loginLink.style.display = 'none';
-  if (_exportBtn) _exportBtn.style.display = '';
-  if (_importBtn) _importBtn.style.display = '';
   if (userMenuText) userMenuText.textContent = userName;
 } else {
   if (_logoutBtn) _logoutBtn.style.display = 'none';
-  if (_changePassBtn) _changePassBtn.style.display = 'none';
+  if (_settingsLink) _settingsLink.style.display = 'none';
   if (_loginLink) _loginLink.style.display = '';
-  if (_exportBtn) _exportBtn.style.display = 'none';
-  if (_importBtn) _importBtn.style.display = 'none';
   if (userMenuText) userMenuText.textContent = 'Login';
 }
 document.body.classList.toggle('is-admin', isAdmin);
