@@ -1,5 +1,21 @@
 [
   {
+    "version": "v0.6.1",
+    "date": "2026-11-13",
+    "dateLabel": "13 Nov 2026",
+    "title": "11 panel status, settings & manual entry",
+    "highlights": [
+      "11 panel status: satu tabel per status (New Request s.d. Cancelled), panel kosong tersembunyi",
+      "Scan Folder & Refresh dihapus: input manual lewat + Tambah supaya data benar-benar ter-track",
+      "Settings dialog: Ganti Password, Export/Import Excel (XLSX) & JSON",
+      "Show more: 20 item per halaman di tiap panel + public board",
+      "Activity mencatat username (user · requestor · date)",
+      "Sync reconciliation: item di DB yang foldernya hilang ditandai badge orphan",
+      "Title cell 1 baris (truncate with ellipsis), tidak wrap di bawah checkbox",
+      "User menu dropdown di header (Login / Settings / Logout)"
+    ]
+  },
+  {
     "version": "v0.6.0",
     "date": "2026-11-13",
     "dateLabel": "13 Nov 2026",

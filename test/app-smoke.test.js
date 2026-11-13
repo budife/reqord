@@ -36,8 +36,6 @@ assert.match(source, /text\.includes\('revision'\)/);
 assert.match(source, /removeActionCells/);
 assert.match(markup, /editDeadlineInput/);
 assert.match(styles, /Deadline/);
-assert.match(source, /isCompletedRequest/);
-assert.match(source, /Boolean\(item\.completedAt\)/);
 assert.match(styles, /\.table-scroll thead\{display:none\}/);
 assert.match(styles, /td\.row-actions\{display:table-cell/);
 assert.match(styles, /table-layout:fixed/);

@@ -1,4 +1,4 @@
-console.log('[reqord] v0.6.0');
+console.log('[reqord] v0.6.1');
 const SUPABASE_URL = 'https://htyfykkurammflwefxgw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_iUul7iVeH-ReFlSxVT-ulQ_qhkgzPAz';
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
@@ -8,21 +8,19 @@ const LEGACY_STORAGE_KEY = 'synaps-project-work-orders';
 const groups = { new_request: 'New Request', waiting_brief: 'Waiting Brief', working: 'Working', draft_preview: '1st Draft', revision: 'In Revision', preview: 'Preview', on_hold: 'On Hold', approved: 'Approved', done: 'Done', daily: 'Daily', cancelled: 'Cancelled' };
 let userName = '';
 try { const stored = localStorage.getItem('reqord-username'); if (stored) userName = atob(stored); } catch(e) {}
-const _adminToken = 'YnVkZA==';
 let isAdmin = false;
 let items = repairItemIds(loadItems());
-let openedFileHandle = null;
 let openedFileName = '';
 let hasUnsavedChanges = false;
 let hasUnsyncedChanges = false;
 let syncSnapshot = new Map(); // id -> signature terakhir yang ada di cloud
+let lastSyncedIds = loadLastSyncedIds(); // id yang terakhir ada di cloud (untuk deteksi hapus remote)
 let lastSyncTime = null;
 let isLoadingFromCloud = false;
 let syncState = 'idle'; // idle | syncing | error
 let syncProgress = { done: 0, total: 0 };
 let activities = loadStoredActivities();
 let isSaving = false;
-const saveAsRequested = false;
 let deletedItem = null;
 let priorityFilter = 'all';
 let sortFilter = 'newest';
@@ -71,6 +69,8 @@ function persistDraft() {
 }
 
 function loadStoredActivities() { try { const raw = localStorage.getItem(ACTIVITIES_KEY); const parsed = JSON.parse(raw); return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
+function loadLastSyncedIds() { try { const raw = localStorage.getItem('reqord-last-synced-ids'); const parsed = JSON.parse(raw); return new Set(Array.isArray(parsed) ? parsed : []); } catch { return new Set(); } }
+function persistLastSyncedIds() { try { localStorage.setItem('reqord-last-synced-ids', JSON.stringify([...lastSyncedIds])); } catch { /* ignore */ } }
 function activityKey(activity) { return [activity.date, activity.action, activity.title, activity.details].join('|'); }
 function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details, user: userName || 'Guest' }); persistDraft(); renderActivities(); }
 function renderActivities() { const list = document.querySelector('#activityList'); if (!list) return; list.innerHTML = activities.length ? activities.map(activity => `<div class="activity-item"><strong>${escapeHtml(activity.action)}</strong><span>${escapeHtml(activity.title || activity.details || 'reqord')}</span><small>${escapeHtml(activity.user || 'Guest')}${activity.requestor ? ` · ${escapeHtml(activity.requestor)}` : ''} · ${escapeHtml(displayDate(activity.date, true))}</small></div>`).join('') : '<p class="activity-empty">Belum ada activity.</p>'; }
@@ -100,17 +100,14 @@ function normalizeStatus(value) {
 }
 function normalizePriority(value) { const text = String(value || 'normal').toLowerCase(); return text.includes('high') || text.includes('penting') ? 'high' : text.includes('low') || text.includes('nanti') ? 'low' : 'normal'; }
 
-function isCompletedRequest(item) { return item?.type === 'project' && (item.status === 'done' || item.done === true || Boolean(item.completedAt)); }
 function normalizeDateValue(value) { if (!value) return ''; if (value instanceof Date) return `${localDate(value)}T${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`; return String(value).trim().replace(' ', 'T').slice(0, 16); }
 function defaultDeadline(requestDate) { if (!requestDate) return ''; const base = new Date(requestDate.includes('T') ? requestDate : `${requestDate}T00:00:00`); if (Number.isNaN(base.getTime())) return ''; base.setDate(base.getDate() + 3); return normalizeDateValue(base); }
 function nowDateTime() { const date = new Date(); return `${localDate(date)}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`; }
 function itemSignature(item) { const compact = {}; Object.entries(normalizeItem(item)).forEach(([key, value]) => { if (key === 'updatedAt' || value === undefined || value === null || value === '') return; compact[key] = value; }); return JSON.stringify(compact); }
 function today() { return localDate(new Date()); }
 function isDailyDone(item) { return item.type === 'daily' && item.dailyDoneDate === today(); }
-function refreshDailyDates() { items.filter(item => item.type === 'daily').forEach(item => { item.requestDate = today(); item.date = today(); item.done = isDailyDone(item); }); }
 function scheduleDailyReset() { const nextDay = new Date(); nextDay.setHours(24, 0, 1, 0); setTimeout(() => { items.filter(item => item.type === 'daily' && item.dailyDoneDate !== today()).forEach(item => { item.dailyDoneDate = ''; item.done = false; }); persistDraft(); render(); scheduleDailyReset(); }, nextDay.getTime() - Date.now()); }
 function localDate(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
-function dateAfterDays(days, base = today()) { const date = new Date(base.includes('T') ? base : `${base}T00:00:00`); date.setDate(date.getDate() + days); return localDate(date); }
 function displayDate(value, includeTime = false) { if (!value) return 'No date'; const date = new Date(value.includes('T') ? value : `${value}T00:00:00`); if (Number.isNaN(date.getTime())) return value; return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', ...(includeTime ? { year: 'numeric' } : {}) }) + (includeTime && value.includes('T') ? `, ${date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}` : ''); }
 function targetDoneLabel(value) { if (!value) return '<span class="target-empty">No deadline</span>'; const target = new Date(`${String(value).slice(0, 10)}T00:00:00`); const current = new Date(`${today()}T00:00:00`); if (Number.isNaN(target.getTime())) return escapeHtml(value); const days = Math.ceil((target - current) / 86400000); const date = target.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); const detail = days < 0 ? `Terlambat ${Math.abs(days)} hari` : days === 0 ? 'Hari ini' : days === 1 ? 'Besok' : `${days} hari lagi`; return `<span class="target-date">${escapeHtml(date)}</span><small class="target-detail">${detail}</small>`; }
 function urgencyClass() { return ''; }
@@ -184,8 +181,6 @@ function renderRow(item) {
   const dailyCheck = isDaily ? `<button class="action-button complete-action daily-check ${doneToday ? 'daily-done' : ''}" data-row-action="daily-done" data-id="${item.id}" title="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai hari ini'}" aria-label="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai hari ini'}" aria-pressed="${doneToday}">${doneToday ? '☑' : '☐'}</button>` : '';
   return `<tr class="${urgencyClass(item.date)} ${isDaily && doneToday ? 'daily-row-done' : ''}"><td class="title-cell ${isDaily && doneToday ? 'daily-title-done' : ''}">${checkBox}<span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</td><td>${escapeHtml(item.requestor)}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}>${statusOptions}</select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td>${escapeHtml(displayDate(item.requestDate, true))}</td><td class="target-cell deadline-cell" title="Deadline: ${escapeHtml(displayDate(item.date, true))}">${isDaily ? dailyStatus : targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${dailyCheck}${deleteButton}</td></tr>`;
 }
-function renderDailyTasks(tasks) { refreshDailyDates(); const dailyItems = items.filter(item => item.type === 'daily'); document.querySelector('#dailyCount').textContent = dailyItems.length; document.querySelector('#dailyProgress').textContent = `${dailyItems.filter(isDailyDone).length} selesai hari ini`; document.querySelector('#dailyTable').innerHTML = tasks.map(renderDailyRow).join(''); document.querySelector('#dailyEmpty').hidden = tasks.length !== 0; makeRowsEditable(); }
-function renderDailyRow(item) { const doneToday = isDailyDone(item); const completeButton = `<button class="action-button complete-action daily-check ${doneToday ? 'daily-done' : ''}" data-row-action="daily-done" data-id="${item.id}" title="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-label="${doneToday ? 'Selesai, klik untuk batalkan' : 'Tandai selesai'}" aria-pressed="${doneToday}">${doneToday ? '☑' : '☐'}</button>`; const dailyStatus = `<span class="daily-status-label ${doneToday ? 'is-done' : ''}">${doneToday ? 'Selesai' : 'Belum selesai'}<small>${escapeHtml(displayDate(today(), false))}</small></span>`; return `<tr class="${doneToday ? 'daily-row-done' : ''}"><td class="title-cell ${doneToday ? 'daily-title-done' : ''}">${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority"><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td class="daily-status-cell">${dailyStatus}</td><td class="row-actions">${completeButton}<button class="action-button delete-action" data-row-action="delete" data-id="${item.id}" title="Hapus daily task" aria-label="Hapus daily task">⌫</button></td></tr>`; }
 function updateSyncStatus() {
   const el = document.querySelector('#saveState');
   const dot = document.querySelector('#activeFileName .sync-dot');
@@ -902,17 +897,32 @@ async function sbLoadItems(showLoading = false) {
       byId.set(String(r.id), r);
     }
   }
+  // Hapus item lokal yang terakhir ada di cloud tapi sekarang hilang (dihapus di device lain)
+  // Guard: hanya jalankan bila fetch remote berhasil dan tidak kosong (hindari false positive saat koneksi transient)
+  const remoteIds = new Set(remote.map(r => String(r.id)));
+  let removedRemote = 0;
+  if (remote.length > 0 || lastSyncedIds.size === 0) {
+    for (const id of [...lastSyncedIds]) {
+      if (!remoteIds.has(id) && byId.has(id)) {
+        byId.delete(id);
+        removedRemote++;
+        syncSnapshot.delete(id);
+      }
+    }
+  }
   const next = [...byId.values()];
   const signature = list => JSON.stringify([...list].sort((a, b) => String(a.id).localeCompare(String(b.id))).map(item => ({ ...normalizeItem(item), updatedAt: '' })));
   const unchanged = signature(next) === signature(items);
   items = next;
+  lastSyncedIds = new Set(remoteIds);
+  persistLastSyncedIds();
   if (showLoading) { lastSyncTime = new Date(); syncState = 'idle'; }
   // Jangan re-render bila isinya sama saja — re-render akan menutup dropdown status yang sedang dibuka.
   if (!unchanged) { persistDraft(); render(); }
   syncSnapshot = new Map(remote.map(r => [String(r.id), itemSignature(r)]));
   if (showLoading) isLoadingFromCloud = false;
   updateSyncStatus();
-  console.log('[reqord] sbLoadItems: merged', remote.length, 'remote items, total', items.length, unchanged ? '(tanpa perubahan)' : '');
+  console.log('[reqord] sbLoadItems: merged', remote.length, 'remote items, total', items.length, removedRemote ? `, removed ${removedRemote} remote-deleted` : '', unchanged ? '(tanpa perubahan)' : '');
 }
 
 function sbToItem(row) {
@@ -1028,6 +1038,8 @@ async function sbSyncAll() {
     hasUnsyncedChanges = false;
     lastSyncTime = new Date();
     syncSnapshot = new Map(items.map(item => [String(item.id), itemSignature(item)]));
+    lastSyncedIds = new Set(items.map(item => String(item.id)));
+    persistLastSyncedIds();
   }
   updateSyncStatus();
   render(); // refresh badges

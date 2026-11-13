@@ -2,6 +2,27 @@
 
 Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti kategori sederhana agar mudah dibaca oleh manusia dan AI agent.
 
+## [v0.6.1] — 2026-11-13
+
+### Added
+
+- 11 panel status: satu tabel per status (New Request, Waiting Brief, Working, 1st Draft, In Revision, Preview, On Hold, Approved, Done, Daily, Cancelled); panel kosong tersembunyi.
+- Settings dialog di header: Ganti Password, Export Excel (XLSX), Export JSON, Import Excel, Import JSON.
+- Show more: 20 item per halaman di tiap panel status + public board ("Show more (N lagi)").
+- Activity mencatat username (`user · requestor · date`).
+- Sync reconciliation: item di DB yang foldernya tidak ada lagi ditandai badge ⚠ orphan.
+
+### Changed
+
+- User menu dropdown di header (Login / Settings / Logout).
+- Title cell 1 baris: truncate dengan ellipsis, tidak wrap di bawah checkbox.
+- Cache-buster `app.js?v=67`, `public.js?v=4`.
+
+### Removed
+
+- Scan Folder & Refresh: input kini manual lewat `+ Tambah` supaya data benar-benar ter-track.
+- Kode mati: `scanFolderHandle`, `saveFolderHandle`, `restoreFolderHandle`, `openDraftDatabase`, `storageDatabase`, `isLoadingWorkbook`, `dateAfterDays`, `isCompletedRequest`, `renderDailyTasks`, `renderDailyRow`, `refreshDailyDates`.
+
 ## [v0.6.0] — 2026-11-13
 
 ### Added
