@@ -375,11 +375,13 @@ document.querySelector('#submitAddDialog').addEventListener('click', () => {
 });
 document.querySelector('#requestorInput').addEventListener('input', () => renderRequestorSuggestions('requestorInput', 'requestorSuggestions'));
 document.querySelector('#titleInput').addEventListener('input', renderTitleSuggestions);
-document.querySelector('#requestorSuggestions').addEventListener('mousedown', event => { event.preventDefault(); const btn = event.target.closest('[data-requestor]'); if (btn) chooseRequestor(btn.dataset.requestor, 'requestorInput', 'requestorSuggestions'); });
+document.querySelector('#requestorSuggestions').addEventListener('mousedown', event => event.preventDefault());
+document.querySelector('#requestorSuggestions').addEventListener('click', event => { const btn = event.target.closest('[data-requestor]'); if (btn) chooseRequestor(btn.dataset.requestor, 'requestorInput', 'requestorSuggestions'); });
 document.querySelector('#editRequestorInput').addEventListener('input', () => renderRequestorSuggestions('editRequestorInput', 'editRequestorSuggestions'));
-document.querySelector('#editRequestorSuggestions').addEventListener('mousedown', event => { event.preventDefault(); const btn = event.target.closest('[data-requestor]'); if (btn) chooseRequestor(btn.dataset.requestor, 'editRequestorInput', 'editRequestorSuggestions'); });
-document.querySelector('#titleSuggestions').addEventListener('mousedown', event => {
-  event.preventDefault();
+document.querySelector('#editRequestorSuggestions').addEventListener('mousedown', event => event.preventDefault());
+document.querySelector('#editRequestorSuggestions').addEventListener('click', event => { const btn = event.target.closest('[data-requestor]'); if (btn) chooseRequestor(btn.dataset.requestor, 'editRequestorInput', 'editRequestorSuggestions'); });
+document.querySelector('#titleSuggestions').addEventListener('mousedown', event => event.preventDefault());
+document.querySelector('#titleSuggestions').addEventListener('click', event => {
   const btn = event.target.closest('[data-title-id]');
   if (!btn) return;
   document.querySelector('#titleInput').value = btn.querySelector('.suggestion-name')?.textContent || '';
