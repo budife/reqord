@@ -967,14 +967,35 @@ function itemToSb(item, userId) {
   };
 }
 
+async function ensureAuth() {
+  if (!supabaseClient) return null;
+  const user = await sbGetUser();
+  if (user) return user;
+  const storedCode = localStorage.getItem('reqord-access-code');
+  const storedName = localStorage.getItem('reqord-username');
+  if (!storedCode || !storedName) return null;
+  try {
+    const code = atob(storedCode);
+    const name = atob(storedName);
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email: name + '@gmail.com', password: code });
+    if (error) return null;
+    return data.user || null;
+  } catch { return null; }
+}
+
 async function sbDeleteItem(id) {
-  syncSnapshot.delete(String(id));
   if (!supabaseClient) return;
+  const user = await ensureAuth();
+  if (!user) { showToast('Login dulu untuk menghapus data di cloud'); return; }
   const { error } = await supabaseClient
     .from('work_orders')
     .delete()
     .eq('id', id);
-  if (error) { showToast('Delete sync gagal: ' + error.message); console.error('[reqord] sbDeleteItem error:', error); }
+  if (error) { showToast('Hapus gagal: ' + error.message); console.error('[reqord] sbDeleteItem error:', error); return; }
+  // Hanya hapus dari snapshot setelah berhasil — supaya sync berikutnya bisa coba lagi kalau gagal
+  syncSnapshot.delete(String(id));
+  lastSyncedIds.delete(String(id));
+  persistLastSyncedIds();
 }
 
 async function sbSyncAll() {
@@ -988,6 +1009,18 @@ async function sbSyncAll() {
     const { data, error } = await supabaseClient.from('work_orders').select('id, folder_key, title, requestor, status');
     if (!error && data) dbItems = data;
   } catch (e) { console.warn('[reqord] reconcile fetch failed:', e); }
+  
+  // 1b. Reconcile: buang item lokal yang terakhir ada di cloud tapi sekarang hilang (dihapus device lain)
+  if (dbItems.length > 0 || lastSyncedIds.size === 0) {
+    const dbIds = new Set(dbItems.map(d => String(d.id)));
+    const beforeCount = items.length;
+    items = items.filter(item => !lastSyncedIds.has(String(item.id)) || dbIds.has(String(item.id)));
+    const removedRemote = beforeCount - items.length;
+    if (removedRemote) {
+      console.log('[reqord] sbSyncAll: removed', removedRemote, 'remote-deleted items');
+      persistDraft();
+    }
+  }
   
   // 2. Get current scanned folderKeys from localStorage
   const scannedFolderKeys = new Set(items.filter(i => i.folderKey).map(i => i.folderKey));
