@@ -494,11 +494,13 @@ if (exportBtn) exportBtn.addEventListener('click', () => {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   showToast('JSON diexport');
+  closeUserMenu();
 });
 
 const importBtn = document.querySelector('#importJsonButton');
 if (importBtn) importBtn.addEventListener('click', () => {
   document.querySelector('#jsonFileInput').click();
+  closeUserMenu();
 });
 
 const jsonInput = document.querySelector('#jsonFileInput');
@@ -768,6 +770,10 @@ if (logoutBtn) {
 const userMenuTrigger = document.querySelector('#userMenuTrigger');
 const userMenuDropdown = document.querySelector('#userMenuDropdown');
 const userMenuText = document.querySelector('#userMenuText');
+function closeUserMenu() {
+  if (userMenuTrigger) userMenuTrigger.setAttribute('aria-expanded', 'false');
+  if (userMenuDropdown) userMenuDropdown.hidden = true;
+}
 if (userMenuTrigger && userMenuDropdown) {
   userMenuTrigger.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -777,8 +783,7 @@ if (userMenuTrigger && userMenuDropdown) {
   });
   document.addEventListener('click', (e) => {
     if (!userMenuTrigger.contains(e.target) && !userMenuDropdown.contains(e.target)) {
-      userMenuTrigger.setAttribute('aria-expanded', 'false');
-      userMenuDropdown.hidden = true;
+      closeUserMenu();
     }
   });
 }
@@ -787,6 +792,7 @@ const loginLink = document.querySelector('#loginLink');
 if (loginLink) {
   loginLink.addEventListener('click', (e) => {
     e.preventDefault();
+    closeUserMenu();
     const dialog = document.querySelector('#loginDialog');
     if (dialog) dialog.showModal();
   });
@@ -925,6 +931,7 @@ if (submitChangePassDialog) {
 const changePassBtn = document.querySelector('#changePassBtn');
 if (changePassBtn) {
   changePassBtn.addEventListener('click', () => {
+    closeUserMenu();
     document.querySelector('#changePassDialog').showModal();
   });
 }
@@ -932,17 +939,23 @@ window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) retur
 const _logoutBtn = document.querySelector('#logoutBtn');
 const _changePassBtn = document.querySelector('#changePassBtn');
 const _loginLink = document.querySelector('#loginLink');
+const _exportBtn = document.querySelector('#exportJsonButton');
+const _importBtn = document.querySelector('#importJsonButton');
 const hasCode = !!localStorage.getItem('reqord-access-code');
 isAdmin = localStorage.getItem('reqord-is-admin') === '1';
 if (hasCode && userName) {
   if (_logoutBtn) _logoutBtn.style.display = '';
   if (_changePassBtn) _changePassBtn.style.display = isAdmin ? '' : 'none';
   if (_loginLink) _loginLink.style.display = 'none';
+  if (_exportBtn) _exportBtn.style.display = '';
+  if (_importBtn) _importBtn.style.display = '';
   if (userMenuText) userMenuText.textContent = userName;
 } else {
   if (_logoutBtn) _logoutBtn.style.display = 'none';
   if (_changePassBtn) _changePassBtn.style.display = 'none';
   if (_loginLink) _loginLink.style.display = '';
+  if (_exportBtn) _exportBtn.style.display = 'none';
+  if (_importBtn) _importBtn.style.display = 'none';
   if (userMenuText) userMenuText.textContent = 'Login';
 }
 document.body.classList.toggle('is-admin', isAdmin);
