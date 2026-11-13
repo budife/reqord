@@ -69,7 +69,7 @@ html{scroll-behavior:smooth}body{overflow-x:hidden}button,a,input,select{transit
 .add-form>label{display:flex;flex-direction:column;justify-content:flex-start;min-width:0;height:57px;line-height:1.2}
 .add-form>label>input,.add-form>label>select{flex:0 0 37px;height:37px;min-height:37px;margin-top:7px}
 .add-form .primary-button{align-self:start;white-space:nowrap;height:37px;min-height:37px;margin-top:19px}
-.daily-panel{border-color:#cbdabf}.marker-daily{background:var(--green-dark);box-shadow:none}.daily-state{color:var(--green-dark)}
+.marker-daily{background:var(--green-dark);box-shadow:none}.daily-state{color:var(--green-dark)}
 @media(max-width:950px){.add-form{grid-template-columns:repeat(3,1fr)}.add-form .title-field{grid-column:span 3}.add-form .primary-button{grid-column:span 3}}
 @media(max-width:600px){.add-form{grid-template-columns:1fr 1fr}.add-form .title-field,.add-form .primary-button{grid-column:span 2}}
 
@@ -109,16 +109,10 @@ td{border-bottom:1px solid var(--line-soft)!important}
 .action-button{border-color:transparent!important}
 .action-button:hover{border-color:transparent!important}
 .add-panel:hover,.table-panel:hover{border-color:var(--line)!important}
-.table-heading{background:#edf4e5!important}
-.daily-panel .table-heading{background:#f4f0df!important}
-.table-panel:nth-child(3) .table-heading{background:#e8f2ee!important}
-.table-panel:nth-child(4) .table-heading{background:#f1eee8!important}
+.table-heading{background:#edf4e5!important}.table-panel:nth-child(3) .table-heading{background:#e8f2ee!important}.table-panel:nth-child(4) .table-heading{background:#f1eee8!important}
 .table-heading h2{color:#344732}
 .table-heading p{color:#788576}
-.table-state{color:var(--green-dark)!important}
-.daily-panel .table-state{color:#8b7945!important}
-.table-panel:nth-child(3) .table-state{color:#4f806c!important}
-.table-panel:nth-child(4) .table-state{color:#756b5c!important}
+.table-state{color:var(--green-dark)!important}.table-panel:nth-child(3) .table-state{color:#4f806c!important}.table-panel:nth-child(4) .table-state{color:#756b5c!important}
 .settings-icon{display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--line);border-radius:3px;color:var(--green-dark);font-size:16px}.settings-trigger:hover .settings-icon{background:var(--green-soft);border-color:#b9cda9}.settings-trigger .profile-trigger-text strong{font-size:13px}
 .delete-dialog{width:min(430px,calc(100% - 32px));padding:0;border:1px solid #e7d5d0;border-radius:4px;background:#fff;color:var(--text);box-shadow:0 12px 35px rgba(83,58,50,.16)}.delete-dialog::backdrop{background:rgba(61,46,40,.25)}.delete-modal-head{display:flex;align-items:start;gap:10px;padding:20px 22px 16px;border-bottom:1px solid var(--line-soft)}.delete-modal-head h2{margin:5px 0 0;font-size:19px;letter-spacing:-.3px}.delete-warning{display:grid;place-items:center;width:25px;height:25px;border-radius:3px;background:#fbe9e6;color:#a85e59;font-weight:800}.delete-modal-head .modal-close{margin-left:auto}.dialog-content{padding:16px 22px}.delete-actions{display:flex;justify-content:flex-end;gap:8px;padding:16px 22px;border-top:1px solid var(--line-soft)}.delete-actions .secondary-button{height:36px;padding:0 16px;font:500 13px Manrope,system-ui,sans-serif;border-radius:6px}.delete-actions .primary-button{height:36px;padding:0 16px;font:600 13px Manrope,system-ui,sans-serif;border-radius:6px}.delete-copy{padding:0 22px;margin:18px 0 12px;color:var(--muted);font-size:13px;line-height:1.5}.delete-confirm-label{padding:0 22px;margin:0 0 7px;color:var(--muted);font-size:12px}.delete-confirm-label strong{color:#a85e59}.delete-confirm-input{display:block;width:calc(100% - 44px);height:38px;margin:0 22px;padding:9px 10px;border:1px solid var(--line);border-radius:3px;background:#f8faf5;color:var(--text);font:inherit;font-size:13px;outline:0}.delete-confirm-input:focus{border-color:#d7aaa2;box-shadow:none}.delete-confirm-button{height:36px;border:1px solid #d9aaa4;border-radius:3px;background:#f4deda;color:#9b514b;padding:0 13px;font-size:12px;font-weight:700;cursor:pointer}.delete-confirm-button:disabled{cursor:not-allowed;opacity:.45}.delete-confirm-button:not(:disabled):hover{background:#e9c7c1;border-color:#c88d85}
 .add-form input:focus,.add-form select:focus,.search-wrap:focus-within,.status-select:focus,.priority-select:focus{border-color:var(--green);box-shadow:none}
