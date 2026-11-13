@@ -253,3 +253,7 @@ th .check-all { margin-right: 6px; vertical-align: -1px; accent-color: var(--gre
 .priority-pill.priority-high { background: #f8e8e5; color: #a85e59; }
 .priority-pill.priority-normal { background: #f1eee8; color: #756b5c; }
 .priority-pill.priority-low { background: #edf4e5; color: var(--green-dark); }
+
+/* Focus styles - must come after all theme passes to win cascade */
+.secondary-button:focus{outline:none;border:1px solid var(--green)!important;box-shadow:none}
+.primary-button:focus{outline:none;border:1px solid var(--green)!important;box-shadow:none}
