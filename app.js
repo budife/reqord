@@ -11,7 +11,6 @@ try { const stored = localStorage.getItem('reqord-username'); if (stored) userNa
 const _adminToken = 'YnVkZA==';
 let isAdmin = false;
 let items = repairItemIds(loadItems());
-let doneVisibleLimit = 10;
 let openedFileHandle = null;
 let openedFileName = '';
 let hasUnsavedChanges = false;
@@ -131,7 +130,6 @@ function renderTitleSuggestions() { const input = document.querySelector('#title
 function closeTitleSuggestions() { const s = document.querySelector('#titleSuggestions'); if (s) s.hidden = true; }
 function render() {
   const query = document.querySelector('#searchInput').value.trim().toLowerCase();
-  if (query) doneVisibleLimit = 10;
   let visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (priorityFilter === 'all' || item.priority === priorityFilter) && (monthFilter === 'all' || item.month === monthFilter) && (requestorFilter === 'all' || item.requestor === requestorFilter) && (statusFilter === 'all' || item.status === statusFilter));
   visible.sort((a, b) => {
     if (sortFilter === 'priority') return ['high', 'normal', 'low'].indexOf(a.priority) - ['high', 'normal', 'low'].indexOf(b.priority);
@@ -222,7 +220,6 @@ function refreshRequestorFilter() {
   select.innerHTML = '<option value="all">Semua requestor</option>' + names.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
   if (names.includes(current)) select.value = current;
 }
-document.querySelector('#loadMoreDoneButton').addEventListener('click', () => { doneVisibleLimit += 10; render(); });
 
 // === Bulk selection ===
 function updateBulkBar() {
