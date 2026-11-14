@@ -285,3 +285,21 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
   .summary-grid{grid-template-columns:repeat(2,1fr)}
   .chart-bar-label{width:80px;font-size:11px}
 }
+
+#timeRangeFilter{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:8px 32px 8px 12px;
+  font:inherit;
+  font-size:13px;
+  color:var(--text);
+  cursor:pointer;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  transition:border-color .15s,box-shadow .15s;
+}
+#timeRangeFilter:hover{border-color:var(--green)}
+#timeRangeFilter:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(120,155,88,.2)}

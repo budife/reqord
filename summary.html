@@ -28,7 +28,10 @@
       <div class="intro-actions">
         <span class="live"><i class="sync-dot"></i><span id="liveState">Memuat...</span></span>
         <select id="timeRangeFilter" aria-label="Filter rentang waktu">
-          <option value="6">6 bulan terakhir</option>
+          <option value="1">1 bulan terakhir</option>
+          <option value="3">3 bulan terakhir</option>
+          <option value="6" selected>6 bulan terakhir</option>
+          <option value="9">9 bulan terakhir</option>
           <option value="12">12 bulan terakhir</option>
           <option value="24">24 bulan terakhir</option>
           <option value="all">Semua waktu</option>
@@ -74,6 +77,6 @@
     </footer>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="summary.js?v=2"></script>
+  <script src="summary.js?v=3"></script>
 </body>
 </html>
