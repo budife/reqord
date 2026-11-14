@@ -1073,8 +1073,7 @@ function sbToItem(row) {
     subitems: row.subitems || [],
     note: row.note,
     folderKey: row.folder_key || '',
-    updatedAt: row.updated_at,
-    public: row.public || false
+    updatedAt: row.updated_at
   });
 }
 
@@ -1093,8 +1092,7 @@ function itemToSb(item, userId) {
     completed_at: item.completedAt ? item.completedAt.replace(' ', 'T') : null,
     subitems: item.subitems || [],
     note: item.note,
-    folder_key: item.folderKey || null,
-    public: item.public || false
+    folder_key: item.folderKey || null
   };
 }
 
