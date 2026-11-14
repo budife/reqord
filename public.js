@@ -93,7 +93,6 @@ async function loadItems() {
   const { data, error } = await supabaseClient
     .from('work_orders')
     .select('id,title,requestor,status,priority,month,request_date,date,created_at,public')
-    .eq('public', true)
     .order('created_at', { ascending: false });
   if (error) { setLive('Gagal memuat'); console.error('[reqord-public] load error:', error); return; }
   items = (data || []).map(normalizeItem);

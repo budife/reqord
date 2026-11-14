@@ -11,6 +11,7 @@
       "debouncedSync guarded by auth: only runs when `supabaseClient.auth.getUser()` returns a user",
       "Invite codes removed from public source: register validates only generated codes from `reqord_meta` (legacy `budd-reqord` fallback kept)",
       "Public board restricted: only items with `public: true` column visible on public page",
+      "RLS policies verified: anon can SELECT all (main app + public board), authenticated CRUD own rows",
       "item.done reset on Done→other: status change handler sets `item.done = false` for any non-done status",
       "Add dialog: removed dead `type: 'project'` param, new items always start as `new_request`",
       "Realtime self-ignore: captures `currentUserId` at init, ignores payloads where `user_id` matches, debounced 1.5s reload",
