@@ -303,3 +303,5 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 }
 #timeRangeFilter:hover{border-color:var(--green)}
 #timeRangeFilter:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(120,155,88,.2)}
+
+.requestor-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;color:#fff}

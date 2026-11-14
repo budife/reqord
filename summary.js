@@ -14,6 +14,18 @@ const priorityOrder = ['high','normal','low'];
 let items = [];
 let currentTimeRange = '6';
 
+const requestorColors = [
+  '#4ade80', '#60a5fa', '#fbbf24', '#f87171', '#a78bfa',
+  '#f472b6', '#34d399', '#fb923c', '#818cf8', '#22d3ee',
+  '#eab308', '#ef4444', '#14b8a6', '#ec4899', '#6366f1'
+];
+
+function getRequestorColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
+  return requestorColors[Math.abs(hash) % requestorColors.length];
+}
+
 function getMonthRange(range) {
   const now = new Date();
   const endYear = now.getFullYear();
@@ -155,15 +167,17 @@ function renderRequestorTable() {
   const rows = Object.entries(byRequestor)
     .sort((a, b) => b[1].total - a[1].total)
     .slice(0, 20)
-    .map(([name, stats]) => `
+    .map(([name, stats]) => {
+      const color = getRequestorColor(name);
+      return `
       <tr>
-        <td>${escapeHtml(name)}</td>
+        <td><span class="requestor-badge" style="background:${color}">${escapeHtml(name)}</span></td>
         <td>${stats.total}</td>
         <td class="done-cell">${stats.done}</td>
         <td class="working-cell">${stats.working}</td>
         <td class="pending-cell">${stats.pending}</td>
       </tr>
-    `).join('');
+    `;}).join('');
   document.getElementById('requestorTable').innerHTML = rows || '<tr><td colspan="5" style="text-align:center">Belum ada data</td></tr>';
 }
 
