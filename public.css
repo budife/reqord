@@ -49,8 +49,8 @@ html .secondary-button:focus{outline:none;border:1px solid var(--green)!importan
 .toolbar { display: flex; align-items: center; gap: 12px; padding: 16px 0 22px; flex-wrap: wrap; }
 .search-wrap { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 220px; background: #fbfcf8; border: 1px solid var(--line); border-radius: 9px; padding: 10px 13px; color: var(--faint); }
 .search-wrap input { flex: 1; border: 0; outline: 0; background: none; color: var(--text); font: 14px Manrope, system-ui, sans-serif; }
-.toolbar select { height: 36px; padding: 0 36px 0 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcf8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center; color: var(--text); font: 500 13px Manrope, system-ui, sans-serif; cursor: pointer; appearance: none; transition: border-color .15s, box-shadow .15s; }
-.toolbar select:hover { border-color: var(--green); }
+.toolbar select { height: 38px; padding: 0 36px 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); font: 500 13px Manrope, system-ui, sans-serif; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; transition: border-color .15s, color .15s, box-shadow .15s; }
+.toolbar select:hover { border-color: var(--green-dark); color: var(--green-dark); }
 .toolbar select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(120,155,88,.2); }
 .result-count { color: var(--muted); font-size: 13px; margin-left: auto; }
 
