@@ -52,6 +52,9 @@ html .secondary-button:focus{outline:none;border:1px solid var(--green)!importan
 .toolbar select { height: 38px; padding: 0 36px 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); font: 500 13px Manrope, system-ui, sans-serif; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; transition: border-color .15s, color .15s, box-shadow .15s; }
 .toolbar select:hover { border-color: var(--green-dark); color: var(--green-dark); }
 .toolbar select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(120,155,88,.2); }
+.toolbar select option { background: var(--card); color: var(--text); padding: 5px 7px; }
+.toolbar select option:checked { background: var(--green-soft); color: var(--green-dark); }
+.toolbar select option:hover { background: var(--green-soft); }
 .result-count { color: var(--muted); font-size: 13px; margin-left: auto; }
 
 /* Single table */
