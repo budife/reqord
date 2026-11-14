@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=99">
+  <link rel="stylesheet" href="styles.css?v=100">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -130,7 +130,7 @@
       <div style="margin-bottom:16px;">
         <label style="display:block;font-size:0.85rem;color:var(--muted,#94a3b8);margin-bottom:8px;">Generate Kode Baru</label>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <select id="inviteCodeRole" style="flex:1;min-width:140px;padding:8px 12px;border:1px solid var(--line,#e2e8f0);border-radius:6px;background:var(--surface,#fff);font-size:0.9rem;">
+          <select id="inviteCodeRole" class="invite-code-role-select" aria-label="Role">
             <option value="admin" selected>Admin</option>
           </select>
           <button class="primary-button" id="generateInviteCode" style="padding:8px 16px;white-space:nowrap;">Generate</button>
