@@ -12,6 +12,28 @@ const statusOrder = ['new_request','waiting_brief','working','draft_preview','re
 const priorityOrder = ['high','normal','low'];
 
 let items = [];
+let currentTimeRange = '6';
+
+function getMonthRange(range) {
+  const now = new Date();
+  const endYear = now.getFullYear();
+  const endMonth = now.getMonth();
+  const months = [];
+  const count = range === 'all' ? 999 : parseInt(range, 10);
+  for (let i = count - 1; i >= 0; i--) {
+    let y = endYear;
+    let m = endMonth - i;
+    while (m < 0) { m += 12; y -= 1; }
+    months.push(`${y}-${String(m + 1).padStart(2, '0')}`);
+  }
+  return months;
+}
+
+function filterItemsByRange(items, range) {
+  if (range === 'all') return items;
+  const validMonths = new Set(getMonthRange(range));
+  return items.filter(i => i.month && validMonths.has(i.month));
+}
 
 function setLive(text) {
   const el = document.getElementById('liveState');
@@ -55,13 +77,14 @@ function normalizeItem(row) {
 }
 
 function renderSummaryCards() {
-  const total = items.length;
-  const done = items.filter(i => i.status === 'done').length;
-  const working = items.filter(i => ['working','draft_preview','revision','preview'].includes(i.status)).length;
-  const pending = items.filter(i => ['new_request','waiting_brief'].includes(i.status)).length;
-  const onHold = items.filter(i => i.status === 'on_hold').length;
-  const high = items.filter(i => i.priority === 'high').length;
-  const overdue = items.filter(i => i.date && new Date(i.date) < new Date() && i.status !== 'done').length;
+  const filtered = filterItemsByRange(items, currentTimeRange);
+  const total = filtered.length;
+  const done = filtered.filter(i => i.status === 'done').length;
+  const working = filtered.filter(i => ['working','draft_preview','revision','preview'].includes(i.status)).length;
+  const pending = filtered.filter(i => ['new_request','waiting_brief'].includes(i.status)).length;
+  const onHold = filtered.filter(i => i.status === 'on_hold').length;
+  const high = filtered.filter(i => i.priority === 'high').length;
+  const overdue = filtered.filter(i => i.date && new Date(i.date) < new Date() && i.status !== 'done').length;
 
   const grid = document.getElementById('summaryGrid');
   grid.innerHTML = `
@@ -87,29 +110,40 @@ function renderBars(containerId, data, maxVal) {
 }
 
 function renderCharts() {
+  const filtered = filterItemsByRange(items, currentTimeRange);
+
   const statusData = statusOrder.map(s => ({
     label: statusLabels[s] || s,
-    value: items.filter(i => i.status === s).length
+    value: filtered.filter(i => i.status === s).length
   })).filter(d => d.value > 0);
   renderBars('statusBars', statusData, Math.max(...statusData.map(d => d.value), 1));
 
   const priorityData = priorityOrder.map(p => ({
     label: p.charAt(0).toUpperCase() + p.slice(1),
-    value: items.filter(i => i.priority === p).length
+    value: filtered.filter(i => i.priority === p).length
   }));
   renderBars('priorityBars', priorityData, Math.max(...priorityData.map(d => d.value), 1));
 
-  const months = [...new Set(items.map(i => i.month).filter(Boolean))].sort().slice(-6);
-  const monthData = months.map(m => ({
+  const monthLabels = currentTimeRange === 'all'
+    ? [...new Set(items.map(i => i.month).filter(Boolean))].sort()
+    : getMonthRange(currentTimeRange);
+  const monthData = monthLabels.map(m => ({
     label: m,
-    value: items.filter(i => i.month === m).length
+    value: filtered.filter(i => i.month === m).length
   }));
   renderBars('monthBars', monthData, Math.max(...monthData.map(d => d.value), 1));
+
+  const monthTitle = document.querySelector('.chart-card:nth-child(3) h3');
+  if (monthTitle) {
+    const label = currentTimeRange === 'all' ? 'Semua waktu' : `${currentTimeRange} bulan terakhir`;
+    monthTitle.textContent = `Per Bulan (${label})`;
+  }
 }
 
 function renderRequestorTable() {
+  const filtered = filterItemsByRange(items, currentTimeRange);
   const byRequestor = {};
-  items.forEach(item => {
+  filtered.forEach(item => {
     const r = item.requestor || 'Unknown';
     if (!byRequestor[r]) byRequestor[r] = { total: 0, done: 0, working: 0, pending: 0 };
     byRequestor[r].total++;
@@ -145,6 +179,17 @@ async function loadItems() {
   renderCharts();
   renderRequestorTable();
   setLive('Live');
+
+  const filterEl = document.getElementById('timeRangeFilter');
+  if (filterEl) {
+    filterEl.value = currentTimeRange;
+    filterEl.addEventListener('change', e => {
+      currentTimeRange = e.target.value;
+      renderCharts();
+      renderSummaryCards();
+      renderRequestorTable();
+    });
+  }
 }
 
 loadItems();
