@@ -174,7 +174,28 @@ function localDate(date) { return `${date.getFullYear()}-${String(date.getMonth(
 function displayDate(value, includeTime = false) { if (!value) return 'No date'; const date = new Date(value.includes('T') ? value : `${value}T00:00:00`); if (Number.isNaN(date.getTime())) return value; return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', ...(includeTime ? { year: 'numeric' } : {}) }) + (includeTime && value.includes('T') ? `, ${date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}` : ''); }
 function targetDoneLabel(value) { if (!value) return '<span class="target-empty">No deadline</span>'; const target = new Date(`${String(value).slice(0, 10)}T00:00:00`); const current = new Date(`${today()}T00:00:00`); if (Number.isNaN(target.getTime())) return escapeHtml(value); const days = Math.ceil((target - current) / 86400000); const date = target.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); const detail = days < 0 ? `Terlambat ${Math.abs(days)} hari` : days === 0 ? 'Hari ini' : days === 1 ? 'Besok' : `${days} hari lagi`; return `<span class="target-date">${escapeHtml(date)}</span><small class="target-detail">${detail}</small>`; }
 function urgencyClass() { return ''; }
-function requestors() { return [...new Set(items.flatMap(item => String(item.requestor || '').split(',')).map(name => name.trim()).filter(Boolean))]; }
+function getRequestorColor(name) {
+  const colors = [
+    '#4ade80', '#60a5fa', '#fbbf24', '#f87171', '#a78bfa',
+    '#f472b6', '#34d399', '#fb923c', '#818cf8', '#22d3ee',
+    '#eab308', '#ef4444', '#14b8a6', '#ec4899', '#6366f1'
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function renderRequestorPills(requestor) {
+  if (!requestor) return '<span class="requestor-pill" style="background:#9ca3af">Unknown</span>';
+  return requestor.split(',').map(r => r.trim()).filter(Boolean).map(r => {
+    const color = getRequestorColor(r);
+    return `<span class="requestor-pill" style="background:${color}">${escapeHtml(r)}</span>`;
+  }).join(' ');
+}
+
+function requestors() {
+  return [...new Set(items.flatMap(item => String(item.requestor || '').split(',')).map(name => name.trim()).filter(Boolean))];
+}
 function similarityScore(query, name) { if (!query) return 1; if (name === query) return 100; if (name.includes(query)) return 80 - name.indexOf(query); if (query.length < 3) return 0; const matches = [...query].filter(character => name.includes(character)).length; return matches / query.length >= .7 ? 40 - (name.length - query.length) : 0; }
 let requestorMatches = [];
 let requestorActiveIndex = -1;
@@ -240,7 +261,7 @@ function renderRow(item) {
   const deleteButton = canEdit ? `<button class="action-button delete-action" data-row-action="delete" data-id="${item.id}" title="Hapus" aria-label="Hapus">⌫</button>` : '';
   const disabledAttr = canEdit ? '' : 'disabled';
   const statusOptions = `<option value="new_request" ${item.status === 'new_request' ? 'selected' : ''}>New Request</option><option value="waiting_brief" ${item.status === 'waiting_brief' ? 'selected' : ''}>Waiting Brief</option><option value="working" ${item.status === 'working' ? 'selected' : ''}>Working</option><option value="draft_preview" ${item.status === 'draft_preview' ? 'selected' : ''}>1st Draft</option><option value="revision" ${item.status === 'revision' ? 'selected' : ''}>In Revision</option><option value="preview" ${item.status === 'preview' ? 'selected' : ''}>Preview</option><option value="on_hold" ${item.status === 'on_hold' ? 'selected' : ''}>On Hold</option><option value="approved" ${item.status === 'approved' ? 'selected' : ''}>Approved</option><option value="done" ${item.status === 'done' ? 'selected' : ''}>Done</option><option value="daily" ${item.status === 'daily' ? 'selected' : ''}>Daily</option><option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>`;
-  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</td><td>${escapeHtml(item.requestor)}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}>${statusOptions}</select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td>${escapeHtml(displayDate(item.requestDate, true))}</td><td class="target-cell deadline-cell" title="Deadline: ${escapeHtml(displayDate(item.date, true))}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
+  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</td><td>${renderRequestorPills(item.requestor)}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}>${statusOptions}</select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td>${escapeHtml(displayDate(item.requestDate, true))}</td><td class="target-cell deadline-cell" title="Deadline: ${escapeHtml(displayDate(item.date, true))}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
 }
 function updateSyncStatus() {
   const el = document.querySelector('#saveState');

@@ -35,6 +35,25 @@ function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 }
 
+function getRequestorColor(name) {
+  const colors = [
+    '#4ade80', '#60a5fa', '#fbbf24', '#f87171', '#a78bfa',
+    '#f472b6', '#34d399', '#fb923c', '#818cf8', '#22d3ee',
+    '#eab308', '#ef4444', '#14b8a6', '#ec4899', '#6366f1'
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function renderRequestorPills(requestor) {
+  if (!requestor) return '<span class="requestor-pill" style="background:#9ca3af">Unknown</span>';
+  return requestor.split(',').map(r => r.trim()).filter(Boolean).map(r => {
+    const color = getRequestorColor(r);
+    return `<span class="requestor-pill" style="background:${color}">${escapeHtml(r)}</span>`;
+  }).join(' ');
+}
+
 function normalizeStatus(value) {
   const text = String(value || '').toLowerCase();
   if (text.includes('waiting') && (text.includes('brief') || text.includes('full'))) return 'waiting_brief';
@@ -78,7 +97,7 @@ function render() {
   const query = searchQuery.trim().toLowerCase();
   const visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (statusFilter === 'all' || item.status === statusFilter) && (monthFilter === 'all' || item.month === monthFilter));
   const shown = visible.slice(0, visibleLimit);
-  boardBody.innerHTML = shown.map(item => `<tr class="status-${item.status}"><td class="title-cell">${escapeHtml(item.title)}</td><td>${escapeHtml(item.requestor)}</td><td><span class="status-pill pill-${item.status}">${escapeHtml(statusLabels[item.status] || item.status)}</span></td><td><span class="priority-pill priority-${item.priority}">${escapeHtml(item.priority)}</span></td><td>${escapeHtml(item.requestDate)}</td><td>${escapeHtml(item.date) || 'No deadline'}</td></tr>`).join('');
+  boardBody.innerHTML = shown.map(item => `<tr class="status-${item.status}"><td class="title-cell">${escapeHtml(item.title)}</td><td>${renderRequestorPills(item.requestor)}</td><td><span class="status-pill pill-${item.status}">${escapeHtml(statusLabels[item.status] || item.status)}</span></td><td><span class="priority-pill priority-${item.priority}">${escapeHtml(item.priority)}</span></td><td>${escapeHtml(item.requestDate)}</td><td>${escapeHtml(item.date) || 'No deadline'}</td></tr>`).join('');
   resultCount.textContent = `${visible.length} work orders`;
   if (loadMoreButton) {
     const remaining = visible.length - shown.length;

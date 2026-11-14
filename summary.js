@@ -156,12 +156,14 @@ function renderRequestorTable() {
   const filtered = filterItemsByRange(items, currentTimeRange);
   const byRequestor = {};
   filtered.forEach(item => {
-    const r = item.requestor || 'Unknown';
-    if (!byRequestor[r]) byRequestor[r] = { total: 0, done: 0, working: 0, pending: 0 };
-    byRequestor[r].total++;
-    if (item.status === 'done') byRequestor[r].done++;
-    else if (['working','draft_preview','revision','preview'].includes(item.status)) byRequestor[r].working++;
-    else if (['new_request','waiting_brief'].includes(item.status)) byRequestor[r].pending++;
+    const requestors = item.requestor ? item.requestor.split(',').map(r => r.trim()).filter(Boolean) : ['Unknown'];
+    requestors.forEach(r => {
+      if (!byRequestor[r]) byRequestor[r] = { total: 0, done: 0, working: 0, pending: 0 };
+      byRequestor[r].total++;
+      if (item.status === 'done') byRequestor[r].done++;
+      else if (['working','draft_preview','revision','preview'].includes(item.status)) byRequestor[r].working++;
+      else if (['new_request','waiting_brief'].includes(item.status)) byRequestor[r].pending++;
+    });
   });
 
   const rows = Object.entries(byRequestor)
@@ -171,7 +173,7 @@ function renderRequestorTable() {
       const color = getRequestorColor(name);
       return `
       <tr>
-        <td><span class="requestor-badge" style="background:${color}">${escapeHtml(name)}</span></td>
+        <td><span class="requestor-pill" style="background:${color}">${escapeHtml(name)}</span></td>
         <td>${stats.total}</td>
         <td class="done-cell">${stats.done}</td>
         <td class="working-cell">${stats.working}</td>
