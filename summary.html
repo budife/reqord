@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>reqord | Ringkasan</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="public.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=92">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brand-mark">R</span><span>reqord</span></a>
+      <div class="workspace"><span class="workspace-dot"></span> reqord <b>/</b> <strong>Ringkasan</strong></div>
+      <div class="top-actions"><span class="badge">Read-only</span></div>
+    </header>
+
+    <section class="intro">
+      <div>
+        <div class="eyebrow">SUMMARY DASHBOARD</div>
+        <h1>Ringkasan Work Order</h1>
+        <p>Overview status, prioritas, dan timeline.</p>
+      </div>
+      <div class="intro-actions">
+        <span class="live"><i class="sync-dot"></i><span id="liveState">Memuat...</span></span>
+        <a class="secondary-button" href="index.html">Buka app</a>
+      </div>
+    </section>
+
+    <section class="summary-grid" id="summaryGrid">
+      <!-- Cards injected by JS -->
+    </section>
+
+    <section class="summary-charts">
+      <div class="chart-card">
+        <h3>Per Status</h3>
+        <div class="chart-bars" id="statusBars"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Per Prioritas</h3>
+        <div class="chart-bars" id="priorityBars"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Per Bulan (6 terakhir)</h3>
+        <div class="chart-bars" id="monthBars"></div>
+      </div>
+    </section>
+
+    <section class="summary-table">
+      <h3>Top Requestor</h3>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Requestor</th><th>Total</th><th>Done</th><th>Working</th><th>Pending</th></tr>
+          </thead>
+          <tbody id="requestorTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      <span><i class="sync-dot"></i> Data dari reqord</span>
+      <span class="mono">reqord · SUMMARY</span>
+    </footer>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="summary.js?v=1"></script>
+</body>
+</html>

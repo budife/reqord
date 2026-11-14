@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=91">
+  <link rel="stylesheet" href="styles.css?v=93">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -33,7 +33,7 @@
 </div>
     </header>
 
-     <section class="intro"><div><div class="eyebrow">WORK ORDER MANAGER</div><h1>Request work orders</h1><p>Work order dikelompokkan per status.</p></div><div class="intro-actions"><span class="active-file" id="activeFileName"><i class="sync-dot"></i>Siap</span><button class="secondary-button auth-only" id="addWorkOrderButton" type="button">+ Tambah</button><button class="secondary-button auth-only" id="syncCloudButton">Sync to Cloud</button><a class="secondary-button" href="public.html" style="text-decoration:none;">Public board</a><input id="jsonFileInput" type="file" accept=".json" hidden><input id="excelFileInput" type="file" accept=".xlsx,.xls" hidden></div></section>
+     <section class="intro"><div><div class="eyebrow">WORK ORDER MANAGER</div><h1>Request work orders</h1><p>Work order dikelompokkan per status.</p></div><div class="intro-actions"><span class="active-file" id="activeFileName"><i class="sync-dot"></i>Siap</span><button class="secondary-button auth-only" id="addWorkOrderButton" type="button">+ Tambah</button><button class="secondary-button auth-only" id="syncCloudButton">Sync to Cloud</button><a class="secondary-button" href="public.html" style="text-decoration:none;">Public board</a><a class="secondary-button" href="summary.html" style="text-decoration:none;">Ringkasan</a><input id="jsonFileInput" type="file" accept=".json" hidden><input id="excelFileInput" type="file" accept=".xlsx,.xls" hidden></div></section>
 
     <section class="toolbar"><div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Search work orders..."></div><div class="table-filters"><select id="priorityFilter" aria-label="Filter priority"><option value="all">All priorities</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select><select id="sortFilter" aria-label="Sort work orders"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="target">Target done</option><option value="priority">Priority</option></select><select id="monthFilter" aria-label="Filter month"><option value="all">All months</option></select><select id="requestorFilter" aria-label="Filter requestor"><option value="all">Semua requestor</option></select></div><span class="result-count" id="resultCount">0 work orders</span><span class="save-state" id="saveState">Ready</span></section>
 
@@ -180,6 +180,6 @@
     <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.4</span><span>Made thoughtfully</span></div>
   </dialog>
     <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="true"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History & Activity</h2></div><button class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=92" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=93" defer></script>
 </body>
 </html>
