@@ -988,7 +988,6 @@ const settingsLink = document.querySelector('#settingsLink');
 if (settingsLink) {
   settingsLink.addEventListener('click', () => {
     closeUserMenu();
-    refreshBackupInfo();
     document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
     document.querySelector('.settings-tab[data-tab="account"]').classList.add('active');
