@@ -488,14 +488,21 @@ function updateDataExecuteUI() {
   const desc = document.querySelector('#dataExecuteDesc');
   const arrow = document.querySelector('#dataExecuteArrow');
   const loader = document.querySelector('#dataExecuteLoader');
+  const formatFieldset = document.querySelector('#dataFormatFieldset');
 
-  formatBtns.forEach(btn => {
-    const active = btn.dataset.format === dataFormat;
+  actionBtns.forEach(btn => {
+    const active = btn.dataset.action === dataAction;
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-pressed', active);
   });
-  actionBtns.forEach(btn => {
-    const active = btn.dataset.action === dataAction;
+
+  // Show format selector only after action is chosen
+  if (formatFieldset) {
+    formatFieldset.hidden = false;
+  }
+
+  formatBtns.forEach(btn => {
+    const active = btn.dataset.format === dataFormat;
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-pressed', active);
   });
@@ -1055,7 +1062,10 @@ document.querySelectorAll('.settings-tab').forEach(tab => {
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.querySelector(`.settings-panel[data-panel="${tab.dataset.tab}"]`).classList.add('active');
-    if (tab.dataset.tab === 'data') updateDataMeta();
+    if (tab.dataset.tab === 'data') {
+      updateDataMeta();
+      updateDataExecuteUI();
+    }
   });
 });
 window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
