@@ -345,34 +345,27 @@ body.is-admin .settings-tab.admin-only { display: block; }
 .orphan-badge { display: inline-block; margin-left: 6px; font-size: 10px; color: var(--red); background: rgba(233, 139, 154, .12); border: 1px solid rgba(233, 139, 154, .3); border-radius: 3px; padding: 0 4px; cursor: help; vertical-align: middle; }
 @media(max-width:600px){ .orphan-badge { margin: 2px 0 0; display: block; } }
 
-/* Data actions (export/import) */
+/* Data actions (simple 4-button grid) */
 .data-actions { display: flex; flex-direction: column; gap: 12px; padding: 4px 0 8px; }
 .data-meta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding-bottom: 4px; border-bottom: 1px solid var(--line-soft); }
 .data-meta-count { font: 600 13px Manrope,system-ui,sans-serif; color: var(--text); }
 .data-meta-sync { font: 500 11px Manrope,system-ui,sans-serif; color: var(--faint); }
-.data-fieldset { border: 0; padding: 0; margin: 0; }
-.data-legend { font: 600 11px Manrope,system-ui,sans-serif; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
-.data-format-toggle, .data-action-toggle { display: flex; gap: 8px; }
-.data-format-btn, .data-action-btn { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text); font: 600 13px Manrope,system-ui,sans-serif; cursor: pointer; transition: all .15s ease; min-height: 56px; }
+.data-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.data-btn { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text); font: 600 13px Manrope,system-ui,sans-serif; cursor: pointer; transition: all .15s ease; min-height: 56px; }
+.data-btn-import { border-color: var(--red-soft); }
+.data-btn-import:hover { border-color: var(--red); color: var(--red); background: rgba(233, 139, 154, .08); }
+.data-btn:hover { border-color: var(--green-dark); color: var(--green-dark); }
+.data-btn:focus { outline: none; box-shadow: 0 0 0 3px rgba(120,155,88,.2); }
+.data-btn:disabled { opacity: .6; cursor: not-allowed; }
 .data-btn-icon { font-size: 18px; line-height: 1; }
 .data-btn-label { font-size: 13px; font-weight: 700; }
 .data-btn-hint { font: 400 10px Manrope,system-ui,sans-serif; color: var(--faint); }
-.data-format-btn:hover, .data-action-btn:hover { border-color: var(--green-dark); color: var(--green-dark); }
-.data-format-btn.active, .data-action-btn.active { border-color: var(--green-dark); background: var(--green-soft); color: var(--green-dark); }
-.data-format-btn:focus, .data-action-btn:focus { outline: none; box-shadow: 0 0 0 3px rgba(120,155,88,.2); }
-
-.data-execute-btn { margin-top: 4px; position: relative; }
-.data-execute-btn:hover { border-color: var(--green-dark); background: var(--green-soft); }
-.data-execute-btn:disabled { opacity: .6; cursor: not-allowed; }
-.data-execute-loader { display: inline-block; animation: spin 1s linear infinite; margin-left: 8px; font-size: 14px; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .data-divider { height: 1px; background: var(--line); margin: 8px 0 4px; }
 
 @media (max-width: 480px) {
-  .data-format-toggle, .data-action-toggle { gap: 6px; flex-direction: column; }
-  .data-format-btn, .data-action-btn { padding: 14px 12px; font-size: 12px; min-height: 48px; flex-direction: row; align-items: center; justify-content: space-between; }
+  .data-buttons { grid-template-columns: 1fr; }
+  .data-btn { padding: 14px 12px; font-size: 12px; min-height: 48px; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
   .data-btn-hint { display: none; }
-  .data-execute-btn { padding: 14px; }
   .data-meta { gap: 8px; }
 }
 .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--line-soft); background: #f6f8f2; border-radius: 4px 4px 0 0; }

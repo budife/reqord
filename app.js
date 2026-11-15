@@ -465,10 +465,7 @@ function doImportJson() {
   document.querySelector('#jsonFileInput').click();
 }
 
-/* Unified data execute (export/import with format toggle) */
-let dataFormat = 'json'; // 'json' or 'excel'
-let dataAction = 'export'; // 'export' or 'import'
-
+/* Data actions (simple 4-button grid) */
 function updateDataMeta() {
   const countEl = document.querySelector('#dataMetaCount');
   const syncEl = document.querySelector('#dataMetaSync');
@@ -479,67 +476,44 @@ function updateDataMeta() {
   }
 }
 
-function updateDataExecuteUI() {
-  const formatBtns = document.querySelectorAll('.data-format-btn');
-  const actionBtns = document.querySelectorAll('.data-action-btn');
-  const executeBtn = document.querySelector('#settingsDataExecute');
-  const icon = document.querySelector('#dataExecuteIcon');
-  const label = document.querySelector('#dataExecuteLabel');
-  const desc = document.querySelector('#dataExecuteDesc');
-  const arrow = document.querySelector('#dataExecuteArrow');
-  const loader = document.querySelector('#dataExecuteLoader');
-  const formatFieldset = document.querySelector('#dataFormatFieldset');
-
-  actionBtns.forEach(btn => {
-    const active = btn.dataset.action === dataAction;
-    btn.classList.toggle('active', active);
-    btn.setAttribute('aria-pressed', active);
-  });
-
-  // Show format selector only after action is chosen
-  if (formatFieldset) {
-    formatFieldset.hidden = false;
-  }
-
-  formatBtns.forEach(btn => {
-    const active = btn.dataset.format === dataFormat;
-    btn.classList.toggle('active', active);
-    btn.setAttribute('aria-pressed', active);
-  });
-
-  if (dataAction === 'export') {
-    icon.textContent = '↥';
-    label.textContent = `Ekspor ${dataFormat.toUpperCase()}`;
-    desc.textContent = `Simpan data ke file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
-    if (arrow) arrow.textContent = '›';
-  } else {
-    icon.textContent = '↧';
-    label.textContent = `Impor ${dataFormat.toUpperCase()}`;
-    desc.textContent = `Muat data dari file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
-    if (arrow) arrow.textContent = '⚠';
-  }
+function doDataAction(action, format) {
+  (async () => {
+    if (action === 'import') {
+      const ok = await confirmModal(
+        `Impor ${format.toUpperCase()} akan MENGHAPUS SEMUA DATA SAAT INI dan mengganti dengan data dari file.\n\nLanjutkan?`,
+        { title: 'Konfirmasi Impor', eyebrow: 'DESTRUCTIVE ACTION', confirmLabel: 'Ya, impor' }
+      );
+      if (!ok) return;
+    }
+    const btn = document.querySelector(`[data-action="${action}"][data-format="${format}"]`);
+    const originalLabel = btn?.querySelector('.data-btn-label')?.textContent;
+    if (btn) {
+      btn.disabled = true;
+      btn.querySelector('.data-btn-label').textContent = 'Memproses…';
+    }
+    try {
+      if (action === 'export') {
+        if (format === 'json') doExportJson();
+        else doExportExcel();
+      } else {
+        if (format === 'json') doImportJson();
+        else doImportExcel();
+      }
+    } finally {
+      if (btn && originalLabel) {
+        btn.disabled = false;
+        btn.querySelector('.data-btn-label').textContent = originalLabel;
+      }
+      document.querySelector('#settingsDialog').close();
+    }
+  })();
 }
 
-function setDataExecuteLoading(loading) {
-  const executeBtn = document.querySelector('#settingsDataExecute');
-  const loader = document.querySelector('#dataExecuteLoader');
-  const arrow = document.querySelector('#dataExecuteArrow');
-  if (!executeBtn) return;
-  executeBtn.disabled = loading;
-  if (loader) loader.hidden = !loading;
-  if (arrow) arrow.hidden = loading;
-}
-
-document.querySelectorAll('.data-format-btn').forEach(btn => {
+document.querySelectorAll('.data-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    dataFormat = btn.dataset.format;
-    updateDataExecuteUI();
-  });
-});
-document.querySelectorAll('.data-action-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    dataAction = btn.dataset.action;
-    updateDataExecuteUI();
+    const action = btn.dataset.action;
+    const format = btn.dataset.format;
+    doDataAction(action, format);
   });
 });
 
@@ -1041,9 +1015,6 @@ if (settingsLink) {
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
     document.querySelector('.settings-tab[data-tab="account"]').classList.add('active');
     document.querySelector('.settings-panel[data-panel="account"]').classList.add('active');
-    dataFormat = 'json';
-    dataAction = 'export';
-    updateDataExecuteUI();
     updateDataMeta();
     settingsDialog.showModal();
   });
@@ -1062,10 +1033,7 @@ document.querySelectorAll('.settings-tab').forEach(tab => {
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.querySelector(`.settings-panel[data-panel="${tab.dataset.tab}"]`).classList.add('active');
-    if (tab.dataset.tab === 'data') {
-      updateDataMeta();
-      updateDataExecuteUI();
-    }
+    if (tab.dataset.tab === 'data') updateDataMeta();
   });
 });
 window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
