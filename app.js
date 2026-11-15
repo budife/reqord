@@ -249,6 +249,7 @@ function render() {
   renderRequestorSuggestions('editRequestorInput', 'editRequestorSuggestions');
   refreshMonthFilter();
   refreshRequestorFilter();
+  updateDataMeta();
 }
 function renderRow(item) {
   const canEdit = isAdmin;
@@ -468,6 +469,16 @@ function doImportJson() {
 let dataFormat = 'json'; // 'json' or 'excel'
 let dataAction = 'export'; // 'export' or 'import'
 
+function updateDataMeta() {
+  const countEl = document.querySelector('#dataMetaCount');
+  const syncEl = document.querySelector('#dataMetaSync');
+  if (countEl) countEl.textContent = `${items.length} item${items.length !== 1 ? '' : ''}`;
+  if (syncEl) {
+    const state = document.querySelector('#saveState');
+    syncEl.textContent = state ? state.textContent : '';
+  }
+}
+
 function updateDataExecuteUI() {
   const formatBtns = document.querySelectorAll('.data-format-btn');
   const actionBtns = document.querySelectorAll('.data-action-btn');
@@ -475,6 +486,8 @@ function updateDataExecuteUI() {
   const icon = document.querySelector('#dataExecuteIcon');
   const label = document.querySelector('#dataExecuteLabel');
   const desc = document.querySelector('#dataExecuteDesc');
+  const arrow = document.querySelector('#dataExecuteArrow');
+  const loader = document.querySelector('#dataExecuteLoader');
 
   formatBtns.forEach(btn => {
     const active = btn.dataset.format === dataFormat;
@@ -491,11 +504,23 @@ function updateDataExecuteUI() {
     icon.textContent = '↥';
     label.textContent = `Ekspor ${dataFormat.toUpperCase()}`;
     desc.textContent = `Simpan data ke file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
+    if (arrow) arrow.textContent = '›';
   } else {
     icon.textContent = '↧';
     label.textContent = `Impor ${dataFormat.toUpperCase()}`;
     desc.textContent = `Muat data dari file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
+    if (arrow) arrow.textContent = '⚠';
   }
+}
+
+function setDataExecuteLoading(loading) {
+  const executeBtn = document.querySelector('#settingsDataExecute');
+  const loader = document.querySelector('#dataExecuteLoader');
+  const arrow = document.querySelector('#dataExecuteArrow');
+  if (!executeBtn) return;
+  executeBtn.disabled = loading;
+  if (loader) loader.hidden = !loading;
+  if (arrow) arrow.hidden = loading;
 }
 
 document.querySelectorAll('.data-format-btn').forEach(btn => {
@@ -512,13 +537,25 @@ document.querySelectorAll('.data-action-btn').forEach(btn => {
 });
 
 const settingsDataExecute = document.querySelector('#settingsDataExecute');
-if (settingsDataExecute) settingsDataExecute.addEventListener('click', () => {
-  if (dataAction === 'export') {
-    if (dataFormat === 'json') doExportJson();
-    else doExportExcel();
-  } else {
-    if (dataFormat === 'json') doImportJson();
-    else doImportExcel();
+if (settingsDataExecute) settingsDataExecute.addEventListener('click', async () => {
+  if (dataAction === 'import') {
+    const ok = await confirmModal(
+      `Impor ${dataFormat.toUpperCase()} akan MENGHAPUS SEMUA DATA SAAT INI dan mengganti dengan data dari file.\n\nLanjutkan?`,
+      { title: 'Konfirmasi Impor', eyebrow: 'DESTRUCTIVE ACTION', confirmLabel: 'Ya, impor' }
+    );
+    if (!ok) return;
+  }
+  setDataExecuteLoading(true);
+  try {
+    if (dataAction === 'export') {
+      if (dataFormat === 'json') doExportJson();
+      else doExportExcel();
+    } else {
+      if (dataFormat === 'json') doImportJson();
+      else doImportExcel();
+    }
+  } finally {
+    setDataExecuteLoading(false);
   }
   document.querySelector('#settingsDialog').close();
 });
@@ -1000,6 +1037,7 @@ if (settingsLink) {
     dataFormat = 'json';
     dataAction = 'export';
     updateDataExecuteUI();
+    updateDataMeta();
     settingsDialog.showModal();
   });
 }
@@ -1017,6 +1055,7 @@ document.querySelectorAll('.settings-tab').forEach(tab => {
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.querySelector(`.settings-panel[data-panel="${tab.dataset.tab}"]`).classList.add('active');
+    if (tab.dataset.tab === 'data') updateDataMeta();
   });
 });
 window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
