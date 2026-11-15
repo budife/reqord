@@ -988,6 +988,11 @@ const settingsLink = document.querySelector('#settingsLink');
 if (settingsLink) {
   settingsLink.addEventListener('click', () => {
     closeUserMenu();
+    const settingsDialog = document.querySelector('#settingsDialog');
+    if (!settingsDialog) {
+      console.error('[reqord] settingsDialog not found');
+      return;
+    }
     document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
     document.querySelector('.settings-tab[data-tab="account"]').classList.add('active');
@@ -995,7 +1000,7 @@ if (settingsLink) {
     dataFormat = 'json';
     dataAction = 'export';
     updateDataExecuteUI();
-    document.querySelector('#settingsDialog').showModal();
+    settingsDialog.showModal();
   });
 }
 const closeSettingsDialog = document.querySelector('#closeSettingsDialog');
