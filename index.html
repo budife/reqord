@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=112">
+  <link rel="stylesheet" href="styles.css?v=113">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -117,26 +117,34 @@
             <span class="data-meta-count" id="dataMetaCount">0 item</span>
             <span class="data-meta-sync" id="dataMetaSync"></span>
           </div>
-          <div class="data-buttons" role="group" aria-label="Data actions">
-            <button type="button" class="data-btn" id="dataExportJson" data-action="export" data-format="json">
-              <span class="data-btn-icon">↥</span>
-              <span class="data-btn-label">Ekspor JSON</span>
-              <span class="data-btn-hint">Backup lengkap</span>
+          <div class="data-main-buttons" role="group" aria-label="Data actions">
+            <button type="button" class="data-main-btn" id="dataExportBtn">
+              <span class="data-main-icon">↥</span>
+              <span class="data-main-label">Ekspor</span>
             </button>
-            <button type="button" class="data-btn" id="dataExportExcel" data-action="export" data-format="excel">
-              <span class="data-btn-icon">↥</span>
-              <span class="data-btn-label">Ekspor Excel</span>
-              <span class="data-btn-hint">Tabel rapi</span>
+            <button type="button" class="data-main-btn data-main-import" id="dataImportBtn">
+              <span class="data-main-icon">↧</span>
+              <span class="data-main-label">Impor</span>
             </button>
-            <button type="button" class="data-btn data-btn-import" id="dataImportJson" data-action="import" data-format="json">
-              <span class="data-btn-icon">↧</span>
-              <span class="data-btn-label">Impor JSON</span>
-              <span class="data-btn-hint">Replace semua</span>
-            </button>
-            <button type="button" class="data-btn data-btn-import" id="dataImportExcel" data-action="import" data-format="excel">
-              <span class="data-btn-icon">↧</span>
-              <span class="data-btn-label">Impor Excel</span>
-              <span class="data-btn-hint">Replace semua</span>
+          </div>
+          <div class="data-format-row" id="dataFormatRow" hidden>
+            <div class="data-format-toggle" role="radiogroup" aria-label="Format file">
+              <button type="button" class="data-format-btn active" data-format="json" aria-pressed="true">
+                <span class="data-btn-icon">{ }</span>
+                <span class="data-btn-label">JSON</span>
+                <span class="data-btn-hint">Backup lengkap</span>
+              </button>
+              <button type="button" class="data-format-btn" data-format="excel" aria-pressed="false">
+                <span class="data-btn-icon">📊</span>
+                <span class="data-btn-label">Excel</span>
+                <span class="data-btn-hint">Tabel rapi</span>
+              </button>
+            </div>
+            <button type="button" class="data-execute-btn" id="settingsDataExecute">
+              <span class="settings-item-icon" id="dataExecuteIcon">↥</span>
+              <span class="settings-item-body"><strong id="dataExecuteLabel">Ekspor JSON</strong><small id="dataExecuteDesc">Simpan data ke file .json</small></span>
+              <span class="settings-item-arrow" id="dataExecuteArrow">›</span>
+              <span class="data-execute-loader" id="dataExecuteLoader" hidden>⟳</span>
             </button>
           </div>
         </div>
@@ -216,6 +224,6 @@
     <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.4</span><span>Made thoughtfully</span></div>
   </dialog>
     <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="true"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History & Activity</h2></div><button class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=97" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=98" defer></script>
 </body>
 </html>

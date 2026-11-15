@@ -465,7 +465,10 @@ function doImportJson() {
   document.querySelector('#jsonFileInput').click();
 }
 
-/* Data actions (simple 4-button grid) */
+/* Data actions (2-step: action → format → execute) */
+let dataFormat = 'json';
+let dataAction = 'export'; // 'export' or 'import'
+
 function updateDataMeta() {
   const countEl = document.querySelector('#dataMetaCount');
   const syncEl = document.querySelector('#dataMetaSync');
@@ -476,49 +479,59 @@ function updateDataMeta() {
   }
 }
 
-function doDataAction(action, format) {
-  (async () => {
-    if (action === 'import') {
-      const ok = await confirmModal(
-        `Impor ${format.toUpperCase()} akan MENGHAPUS SEMUA DATA SAAT INI dan mengganti dengan data dari file.\n\nLanjutkan?`,
-        { title: 'Konfirmasi Impor', eyebrow: 'DESTRUCTIVE ACTION', confirmLabel: 'Ya, impor' }
-      );
-      if (!ok) return;
-    }
-    const btn = document.querySelector(`[data-action="${action}"][data-format="${format}"]`);
-    const originalLabel = btn?.querySelector('.data-btn-label')?.textContent;
-    if (btn) {
-      btn.disabled = true;
-      btn.querySelector('.data-btn-label').textContent = 'Memproses…';
-    }
-    try {
-      if (action === 'export') {
-        if (format === 'json') doExportJson();
-        else doExportExcel();
-      } else {
-        if (format === 'json') doImportJson();
-        else doImportExcel();
-      }
-    } finally {
-      if (btn && originalLabel) {
-        btn.disabled = false;
-        btn.querySelector('.data-btn-label').textContent = originalLabel;
-      }
-      document.querySelector('#settingsDialog').close();
-    }
-  })();
+function updateDataExecuteUI() {
+  const formatBtns = document.querySelectorAll('.data-format-btn');
+  const executeBtn = document.querySelector('#settingsDataExecute');
+  const icon = document.querySelector('#dataExecuteIcon');
+  const label = document.querySelector('#dataExecuteLabel');
+  const desc = document.querySelector('#dataExecuteDesc');
+  const arrow = document.querySelector('#dataExecuteArrow');
+  const loader = document.querySelector('#dataExecuteLoader');
+  const formatRow = document.querySelector('#dataFormatRow');
+
+  formatBtns.forEach(btn => {
+    const active = btn.dataset.format === dataFormat;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', active);
+  });
+
+  if (dataAction === 'export') {
+    icon.textContent = '↥';
+    label.textContent = `Ekspor ${dataFormat.toUpperCase()}`;
+    desc.textContent = `Simpan data ke file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
+    if (arrow) arrow.textContent = '›';
+    if (executeBtn) executeBtn.classList.remove('data-execute-import');
+  } else {
+    icon.textContent = '↧';
+    label.textContent = `Impor ${dataFormat.toUpperCase()}`;
+    desc.textContent = `Muat data dari file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
+    if (arrow) arrow.textContent = '⚠';
+    if (executeBtn) executeBtn.classList.add('data-execute-import');
+  }
 }
 
-document.querySelectorAll('.data-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const action = btn.dataset.action;
-    const format = btn.dataset.format;
-    doDataAction(action, format);
-  });
-});
+function showFormatRow(action) {
+  dataAction = action;
+  const formatRow = document.querySelector('#dataFormatRow');
+  const exportBtn = document.querySelector('#dataExportBtn');
+  const importBtn = document.querySelector('#dataImportBtn');
+  if (formatRow) formatRow.hidden = false;
+  if (exportBtn) exportBtn.classList.toggle('active', action === 'export');
+  if (importBtn) importBtn.classList.toggle('active', action === 'import');
+  updateDataExecuteUI();
+}
 
-const settingsDataExecute = document.querySelector('#settingsDataExecute');
-if (settingsDataExecute) settingsDataExecute.addEventListener('click', async () => {
+function setDataExecuteLoading(loading) {
+  const executeBtn = document.querySelector('#settingsDataExecute');
+  const loader = document.querySelector('#dataExecuteLoader');
+  const arrow = document.querySelector('#dataExecuteArrow');
+  if (!executeBtn) return;
+  executeBtn.disabled = loading;
+  if (loader) loader.hidden = !loading;
+  if (arrow) arrow.hidden = loading;
+}
+
+async function doDataExecute() {
   if (dataAction === 'import') {
     const ok = await confirmModal(
       `Impor ${dataFormat.toUpperCase()} akan MENGHAPUS SEMUA DATA SAAT INI dan mengganti dengan data dari file.\n\nLanjutkan?`,
@@ -537,9 +550,19 @@ if (settingsDataExecute) settingsDataExecute.addEventListener('click', async () 
     }
   } finally {
     setDataExecuteLoading(false);
+    document.querySelector('#settingsDialog').close();
   }
-  document.querySelector('#settingsDialog').close();
+}
+
+document.querySelector('#dataExportBtn')?.addEventListener('click', () => showFormatRow('export'));
+document.querySelector('#dataImportBtn')?.addEventListener('click', () => showFormatRow('import'));
+document.querySelectorAll('.data-format-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    dataFormat = btn.dataset.format;
+    updateDataExecuteUI();
+  });
 });
+document.querySelector('#settingsDataExecute')?.addEventListener('click', doDataExecute);
 
 const settingsRestoreBackup = document.querySelector('#settingsRestoreBackup');
 if (settingsRestoreBackup) settingsRestoreBackup.addEventListener('click', async () => {
