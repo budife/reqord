@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=106">
+  <link rel="stylesheet" href="styles.css?v=107">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -102,14 +102,25 @@
   </dialog>
   <dialog id="settingsDialog" class="delete-dialog settings-dialog">
     <div class="delete-modal-head"><span class="delete-warning settings-warning">⚙</span><div><span class="eyebrow">SETTINGS</span><h2>Pengaturan</h2></div><button class="modal-close" id="closeSettingsDialog" aria-label="Tutup settings">×</button></div>
-    <div class="settings-list">
-      <button class="settings-item" id="settingsChangePass"><span class="settings-item-icon">?</span><span class="settings-item-body"><strong>Ganti Password</strong><small>Ubah password akun Anda</small></span><span class="settings-item-arrow">›</span></button>
-      <button class="settings-item" id="settingsExportExcel"><span class="settings-item-icon">↥</span><span class="settings-item-body"><strong>Export Excel</strong><small>Simpan data ke file .xlsx</small></span><span class="settings-item-arrow">›</span></button>
-      <button class="settings-item" id="settingsExport"><span class="settings-item-icon">↥</span><span class="settings-item-body"><strong>Export JSON</strong><small>Simpan data ke file JSON</small></span><span class="settings-item-arrow">›</span></button>
-      <button class="settings-item" id="settingsImportExcel"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import Excel</strong><small>Muat data dari file .xlsx</small></span><span class="settings-item-arrow">›</span></button>
-      <button class="settings-item" id="settingsImport"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import JSON</strong><small>Muat data dari file JSON</small></span><span class="settings-item-arrow">›</span></button>
-      <button class="settings-item" id="settingsRestoreBackup"><span class="settings-item-icon">↺</span><span class="settings-item-body"><strong>Pulihkan Backup</strong><small id="restoreBackupInfo">Muat data dari backup lokal terakhir</small></span><span class="settings-item-arrow">›</span></button>
-      <button class="settings-item admin-only" id="settingsInviteCodes"><span class="settings-item-icon">🔐</span><span class="settings-item-body"><strong>Kelola Kode Invite</strong><small>Generate & kelola kode undangan untuk user baru</small></span><span class="settings-item-arrow">›</span></button>
+    <nav class="settings-tabs" aria-label="Settings tabs">
+      <button class="settings-tab active" data-tab="account">Akun</button>
+      <button class="settings-tab" data-tab="data">Data</button>
+      <button class="settings-tab admin-only" data-tab="admin" id="settingsTabAdmin">Admin</button>
+    </nav>
+    <div class="settings-panels">
+      <section class="settings-panel active" data-panel="account">
+        <button class="settings-item" id="settingsChangePass"><span class="settings-item-icon">?</span><span class="settings-item-body"><strong>Ganti Password</strong><small>Ubah password akun Anda</small></span><span class="settings-item-arrow">›</span></button>
+      </section>
+      <section class="settings-panel" data-panel="data">
+        <button class="settings-item" id="settingsExportExcel"><span class="settings-item-icon">↥</span><span class="settings-item-body"><strong>Export Excel</strong><small>Simpan data ke file .xlsx</small></span><span class="settings-item-arrow">›</span></button>
+        <button class="settings-item" id="settingsExport"><span class="settings-item-icon">↥</span><span class="settings-item-body"><strong>Export JSON</strong><small>Simpan data ke file JSON</small></span><span class="settings-item-arrow">›</span></button>
+        <button class="settings-item" id="settingsImportExcel"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import Excel</strong><small>Muat data dari file .xlsx</small></span><span class="settings-item-arrow">›</span></button>
+        <button class="settings-item" id="settingsImport"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import JSON</strong><small>Muat data dari file JSON</small></span><span class="settings-item-arrow">›</span></button>
+        <button class="settings-item" id="settingsRestoreBackup"><span class="settings-item-icon">↺</span><span class="settings-item-body"><strong>Pulihkan Backup</strong><small id="restoreBackupInfo">Muat data dari backup lokal terakhir</small></span><span class="settings-item-arrow">›</span></button>
+      </section>
+      <section class="settings-panel" data-panel="admin">
+        <button class="settings-item" id="settingsInviteCodes"><span class="settings-item-icon">🔐</span><span class="settings-item-body"><strong>Kelola Kode Invite</strong><small>Generate & kelola kode undangan untuk user baru</small></span><span class="settings-item-arrow">›</span></button>
+      </section>
     </div>
   </dialog>
   <dialog id="deleteDialog" class="delete-dialog">

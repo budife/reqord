@@ -965,6 +965,10 @@ if (settingsLink) {
   settingsLink.addEventListener('click', () => {
     closeUserMenu();
     refreshBackupInfo();
+    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector('.settings-tab[data-tab="account"]').classList.add('active');
+    document.querySelector('.settings-panel[data-panel="account"]').classList.add('active');
     document.querySelector('#settingsDialog').showModal();
   });
 }
@@ -974,6 +978,16 @@ if (closeSettingsDialog) {
     document.querySelector('#settingsDialog').close();
   });
 }
+
+/* Settings tabs */
+document.querySelectorAll('.settings-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`.settings-panel[data-panel="${tab.dataset.tab}"]`).classList.add('active');
+  });
+});
 window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });
 const _logoutBtn = document.querySelector('#logoutBtn');
 const _settingsLink = document.querySelector('#settingsLink');
