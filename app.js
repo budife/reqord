@@ -289,8 +289,6 @@ function updateSyncStatus() {
 }
 setInterval(() => { if (document.visibilityState === 'visible') updateSyncStatus(); }, 30000);
 function showToast(message) { const toast = document.querySelector('#toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2400); }
-// Deteksi klik di LUAR area dialog (backdrop), bukan sekadar target === dialog
-function isBackdropClick(dialog, event) { const rect = dialog.getBoundingClientRect(); return !(rect.top <= event.clientY && event.clientY <= rect.bottom && rect.left <= event.clientX && event.clientX <= rect.right); }
 function findItem(id) { return items.find(item => String(item.id) === String(id)); }
 
 document.querySelector('#searchInput').addEventListener('input', () => { resetPanelLimits(); render(); });
