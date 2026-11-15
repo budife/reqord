@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=107">
+  <link rel="stylesheet" href="styles.css?v=108">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -112,10 +112,28 @@
         <button class="settings-item" id="settingsChangePass"><span class="settings-item-icon">?</span><span class="settings-item-body"><strong>Ganti Password</strong><small>Ubah password akun Anda</small></span><span class="settings-item-arrow">›</span></button>
       </section>
       <section class="settings-panel" data-panel="data">
-        <button class="settings-item" id="settingsExportExcel"><span class="settings-item-icon">↥</span><span class="settings-item-body"><strong>Export Excel</strong><small>Simpan data ke file .xlsx</small></span><span class="settings-item-arrow">›</span></button>
-        <button class="settings-item" id="settingsExport"><span class="settings-item-icon">↥</span><span class="settings-item-body"><strong>Export JSON</strong><small>Simpan data ke file JSON</small></span><span class="settings-item-arrow">›</span></button>
-        <button class="settings-item" id="settingsImportExcel"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import Excel</strong><small>Muat data dari file .xlsx</small></span><span class="settings-item-arrow">›</span></button>
-        <button class="settings-item" id="settingsImport"><span class="settings-item-icon">↧</span><span class="settings-item-body"><strong>Import JSON</strong><small>Muat data dari file JSON</small></span><span class="settings-item-arrow">›</span></button>
+        <div class="data-actions">
+          <div class="data-action-group">
+            <label class="data-action-label">Format</label>
+            <div class="data-format-toggle" role="radiogroup" aria-label="Format ekspor/impor">
+              <button type="button" class="data-format-btn active" data-format="json" aria-pressed="true">JSON</button>
+              <button type="button" class="data-format-btn" data-format="excel" aria-pressed="false">Excel</button>
+            </div>
+          </div>
+          <div class="data-action-group">
+            <label class="data-action-label">Aksi</label>
+            <div class="data-action-toggle" role="radiogroup" aria-label="Direksi data">
+              <button type="button" class="data-action-btn active" data-action="export" aria-pressed="true">Ekspor</button>
+              <button type="button" class="data-action-btn" data-action="import" aria-pressed="false">Impor</button>
+            </div>
+          </div>
+          <button class="settings-item data-execute-btn" id="settingsDataExecute">
+            <span class="settings-item-icon" id="dataExecuteIcon">↥</span>
+            <span class="settings-item-body"><strong id="dataExecuteLabel">Ekspor JSON</strong><small id="dataExecuteDesc">Simpan data ke file .json</small></span>
+            <span class="settings-item-arrow">›</span>
+          </button>
+        </div>
+        <div class="data-divider"></div>
         <button class="settings-item" id="settingsRestoreBackup"><span class="settings-item-icon">↺</span><span class="settings-item-body"><strong>Pulihkan Backup</strong><small id="restoreBackupInfo">Muat data dari backup lokal terakhir</small></span><span class="settings-item-arrow">›</span></button>
       </section>
       <section class="settings-panel" data-panel="admin">

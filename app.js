@@ -464,28 +464,65 @@ function doImportJson() {
   document.querySelector('#jsonFileInput').click();
 }
 
-const settingsExport = document.querySelector('#settingsExport');
-if (settingsExport) settingsExport.addEventListener('click', () => {
-  doExportJson();
-  document.querySelector('#settingsDialog').close();
-});
+/* Unified data execute (export/import with format toggle) */
+let dataFormat = 'json'; // 'json' or 'excel'
+let dataAction = 'export'; // 'export' or 'import'
 
-const settingsImport = document.querySelector('#settingsImport');
-if (settingsImport) settingsImport.addEventListener('click', () => {
-  doImportJson();
-  document.querySelector('#settingsDialog').close();
-});
+function updateDataExecuteUI() {
+  const formatBtns = document.querySelectorAll('.data-format-btn');
+  const actionBtns = document.querySelectorAll('.data-action-btn');
+  const executeBtn = document.querySelector('#settingsDataExecute');
+  const icon = document.querySelector('#dataExecuteIcon');
+  const label = document.querySelector('#dataExecuteLabel');
+  const desc = document.querySelector('#dataExecuteDesc');
 
-// Pulihkan dari backup lokal terakhir (rolling backup, maks 5 titik).
-function refreshBackupInfo() {
-  const info = document.querySelector('#restoreBackupInfo');
-  if (!info) return;
-  const backup = latestBackup();
-  if (!backup || !backup.items.length) { info.textContent = 'Belum ada backup tersedia'; return; }
-  const when = Number(backup.when);
-  const label = Number.isFinite(when) ? new Date(when).toLocaleString('id-ID') : backup.key;
-  info.textContent = `Backup terakhir: ${backup.items.length} item · ${label}`;
+  formatBtns.forEach(btn => {
+    const active = btn.dataset.format === dataFormat;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', active);
+  });
+  actionBtns.forEach(btn => {
+    const active = btn.dataset.action === dataAction;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', active);
+  });
+
+  if (dataAction === 'export') {
+    icon.textContent = '↥';
+    label.textContent = `Ekspor ${dataFormat.toUpperCase()}`;
+    desc.textContent = `Simpan data ke file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
+  } else {
+    icon.textContent = '↧';
+    label.textContent = `Impor ${dataFormat.toUpperCase()}`;
+    desc.textContent = `Muat data dari file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
+  }
 }
+
+document.querySelectorAll('.data-format-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    dataFormat = btn.dataset.format;
+    updateDataExecuteUI();
+  });
+});
+document.querySelectorAll('.data-action-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    dataAction = btn.dataset.action;
+    updateDataExecuteUI();
+  });
+});
+
+const settingsDataExecute = document.querySelector('#settingsDataExecute');
+if (settingsDataExecute) settingsDataExecute.addEventListener('click', () => {
+  if (dataAction === 'export') {
+    if (dataFormat === 'json') doExportJson();
+    else doExportExcel();
+  } else {
+    if (dataFormat === 'json') doImportJson();
+    else doImportExcel();
+  }
+  document.querySelector('#settingsDialog').close();
+});
+
 const settingsRestoreBackup = document.querySelector('#settingsRestoreBackup');
 if (settingsRestoreBackup) settingsRestoreBackup.addEventListener('click', async () => {
   const backup = latestBackup();
@@ -665,18 +702,6 @@ function doExportExcel() {
 function doImportExcel() {
   document.querySelector('#excelFileInput').click();
 }
-
-const settingsExportExcel = document.querySelector('#settingsExportExcel');
-if (settingsExportExcel) settingsExportExcel.addEventListener('click', () => {
-  doExportExcel();
-  document.querySelector('#settingsDialog').close();
-});
-
-const settingsImportExcel = document.querySelector('#settingsImportExcel');
-if (settingsImportExcel) settingsImportExcel.addEventListener('click', () => {
-  doImportExcel();
-  document.querySelector('#settingsDialog').close();
-});
 
 const excelInput = document.querySelector('#excelFileInput');
 if (excelInput) excelInput.addEventListener('change', async (event) => {
@@ -969,6 +994,9 @@ if (settingsLink) {
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
     document.querySelector('.settings-tab[data-tab="account"]').classList.add('active');
     document.querySelector('.settings-panel[data-panel="account"]').classList.add('active');
+    dataFormat = 'json';
+    dataAction = 'export';
+    updateDataExecuteUI();
     document.querySelector('#settingsDialog').showModal();
   });
 }
