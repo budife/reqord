@@ -97,6 +97,10 @@ tbody tr:hover { background: #f7faf2; }
 
 .requestor-pill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;color:#fff}
 
+@media(max-width:600px){
+  .requestor-pill{padding:3px 7px;font-size:10px;margin:0 3px 5px 0}
+}
+
 .empty { padding: 22px 18px; color: var(--faint); font-size: 13px; }
 
 .load-more-button { display: block; width: 100%; margin: 18px auto 0; padding: 12px 20px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--green-dark); font: 600 13px Manrope, system-ui, sans-serif; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
