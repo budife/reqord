@@ -218,6 +218,98 @@ body:not(.is-admin) .admin-only { display: none !important; }
 .user-menu-item:last-child { border-radius: 0 0 6px 6px; }
 @media(max-width:600px){ .user-menu-trigger span:not(.user-menu-arrow) { display: none; } .user-menu-trigger { padding: 8px; } }
 
+/* ========== MOBILE RESPONSIVE FIXES ========== */
+@media(max-width:600px){
+  /* Topbar */
+  .topbar{padding:10px 12px;gap:8px}
+  .workspace{display:none}
+  .brand{font-size:16px}
+  .top-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;flex:1}
+  .top-actions .secondary-button,
+  .top-actions .primary-button{padding:10px 14px;font-size:13px;min-height:44px}
+
+  /* Intro */
+  .intro{padding:16px 12px}
+  .intro h1{font-size:22px}
+  .intro-actions{flex-wrap:wrap;gap:8px;align-items:stretch}
+  .intro-actions .secondary-button,
+  .intro-actions .primary-button{flex:1 1 calc(50% - 4px);min-height:44px;font-size:13px;text-align:center}
+  .intro-actions .active-file{order:-1;width:100%;text-align:center;padding:8px;font-size:12px}
+
+  /* Toolbar */
+  .toolbar{padding:10px 12px;flex-direction:column;gap:10px;align-items:stretch}
+  .search-wrap{width:100%}
+  .search-wrap input{padding:12px 12px 12px 36px;font-size:16px} /* prevent zoom on iOS */
+  .table-filters{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+  .table-filters select{flex:1 1 calc(50% - 3px);min-height:44px;font-size:16px;padding:10px 36px 10px 12px}
+  .result-count{font-size:12px;order:3}
+  .save-state{font-size:11px;order:4}
+
+  /* Table panels */
+  .table-panel{margin-bottom:12px;border-radius:10px}
+  .table-heading{padding:12px 14px}
+  .table-heading h2{font-size:14px}
+  .table-heading p{font-size:11px}
+  .table-state{font-size:9px;padding:3px 8px}
+  .table-scroll{margin:0;border-radius:0 0 10px 10px}
+  .table-scroll table{min-width:600px} /* force horizontal scroll */
+  .table-scroll th,.table-scroll td{padding:10px 12px;font-size:13px}
+  .table-scroll th:nth-child(1),.table-scroll td:nth-child(1){width:30%}
+  .table-scroll th:nth-child(2),.table-scroll td:nth-child(2){width:20%}
+  .table-scroll th:nth-child(3),.table-scroll td:nth-child(3){width:16%}
+  .table-scroll th:nth-child(4),.table-scroll td:nth-child(4){width:14%}
+  .table-scroll th:nth-child(5),.table-scroll td:nth-child(5){width:12%}
+  .table-scroll th:nth-child(6),.table-scroll td:nth-child(6){width:8%}
+  .row-actions .action-button{width:36px;height:36px;font-size:18px}
+  .table-empty{padding:20px 14px;font-size:13px}
+
+  /* Status/Priority selects in table rows */
+  .status-select,.priority-select{height:40px;font-size:16px;padding:0 36px 0 10px}
+
+  /* Dialogs */
+  .delete-dialog,.settings-dialog{max-width:calc(100% - 24px);margin:12px}
+  .delete-modal-head{padding:16px 16px 8px}
+  .dialog-content{padding:12px 16px 16px}
+  .edit-field{margin-bottom:14px}
+  .edit-field input,.edit-field textarea,.edit-field select{height:44px;font-size:16px;padding:12px 10px}
+  .edit-field textarea{min-height:100px}
+  .field-input-wrap input{font-size:16px}
+  .delete-actions{padding:0 16px 16px;gap:8px}
+  .delete-actions .secondary-button,
+  .delete-actions .primary-button{flex:1;min-height:48px;font-size:14px}
+
+  /* Suggestion dropdown */
+  .title-suggestions{max-height:200px}
+  .title-suggestions button{padding:14px 12px;font-size:14px}
+  .title-suggestions .suggestion-name{font-size:13px}
+  .title-suggestions small{font-size:11px}
+
+  /* Add dialog specific */
+  .add-form label{margin-bottom:12px}
+  .add-form input,.add-form select{height:44px;font-size:16px}
+
+  /* Settings items */
+  .settings-item{padding:14px}
+  .settings-item-icon{width:36px;height:36px;font-size:16px}
+
+  /* Load more button */
+  .load-more-button{margin:12px 14px 0;padding:14px 16px;font-size:14px;min-height:48px}
+
+  /* Footer */
+  footer{padding:16px 12px;font-size:11px;gap:8px}
+  .mono{font-size:11px}
+}
+
+/* Very small screens (<380px) */
+@media(max-width:379px){
+  .top-actions .secondary-button,
+  .top-actions .primary-button{padding:10px 10px;font-size:12px}
+  .intro-actions .secondary-button,
+  .intro-actions .primary-button{flex:1 1 100%}
+  .table-filters select{flex:1 1 100%}
+  .row-actions .action-button{width:32px;height:32px;font-size:16px}
+}
+
 /* Settings dialog */
 .settings-dialog { padding: 0; }
 .settings-warning { background: var(--green-soft); color: var(--green-dark); }

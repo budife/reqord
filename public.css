@@ -104,6 +104,52 @@ tbody tr:hover { background: #f7faf2; }
 .load-more-button[hidden] { display: none; }
 
 footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 34px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+
+/* ========== MOBILE RESPONSIVE FIXES ========== */
+@media(max-width:600px){
+  .shell{padding:0 12px 32px}
+  .topbar{padding:10px 0;gap:8px}
+  .workspace{display:none}
+  .brand{font-size:16px}
+  .top-actions{gap:6px}
+  .top-actions .secondary-button{min-height:44px;padding:10px 14px;font-size:13px}
+
+  .intro{padding:16px 0}
+  .intro h1{font-size:22px}
+  .intro-actions{flex-wrap:wrap;gap:8px;align-items:stretch}
+  .intro-actions .secondary-button{flex:1 1 calc(50% - 4px);min-height:44px;font-size:13px;text-align:center}
+  .intro-actions .live{order:-1;width:100%;text-align:center;padding:8px;font-size:12px}
+
+  #timeRangeFilter{width:100%;min-height:44px;font-size:16px;padding:10px 36px 10px 12px}
+
+  .summary-grid{grid-template-columns:repeat(2,1fr);gap:10px;padding:16px 0}
+  .summary-card{padding:16px 12px;border-radius:10px}
+  .summary-value{font-size:28px}
+  .summary-label{font-size:11px;margin-top:4px}
+
+  .summary-charts{grid-template-columns:1fr;gap:14px;padding:16px 0}
+  .chart-card{padding:16px;border-radius:10px}
+  .chart-card h3{font-size:12px;margin-bottom:12px}
+  .chart-bar-row{gap:8px;margin-bottom:10px}
+  .chart-bar-label{width:70px;font-size:11px}
+  .chart-bar-track{height:6px}
+  .chart-bar-value{width:35px;font-size:11px}
+
+  .summary-table{padding:16px 0}
+  .summary-table h3{font-size:12px;margin-bottom:12px}
+  .summary-table .table-scroll{border-radius:10px}
+  .summary-table table{min-width:500px}
+  .summary-table th,.summary-table td{padding:10px 12px;font-size:12px}
+  .summary-table th{font-size:10px}
+
+  footer{margin-top:24px;padding-top:14px;font-size:11px;gap:8px}
+  .mono{font-size:11px}
+}
+
+@media(max-width:379px){
+  .intro-actions .secondary-button{flex:1 1 100%}
+  .summary-grid{grid-template-columns:1fr}
+}
 .mono { font-family: "DM Mono", monospace; letter-spacing: .04em; }
 
 @media (max-width: 720px) {
@@ -115,4 +161,15 @@ footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wr
   .search-wrap { min-width: 0; }
   .result-count { margin-left: 0; margin-top: 8px; }
   .table-scroll { overflow-x: auto; }
+
+  /* Additional mobile fixes */
+  .toolbar select{min-height:44px;font-size:16px;padding:10px 36px 10px 12px}
+  .search-wrap input{font-size:16px;padding:12px 12px 12px 36px}
+  .top-actions .secondary-button{min-height:44px;padding:10px 14px;font-size:13px}
+  .intro-actions .secondary-button{min-height:44px;padding:10px 14px;font-size:13px}
+  .table-heading{padding:14px 14px 10px}
+  .table-heading h2{font-size:15px}
+  .table-scroll table{min-width:600px}
+  .table-scroll th,.table-scroll td{padding:10px 12px;font-size:13px}
+  .load-more-button{margin:14px 14px 0;padding:14px 16px;font-size:14px;min-height:48px}
 }
