@@ -477,6 +477,30 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 #timeRangeFilter:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(120,155,88,.2)}
 #timeRangeFilter option{background:var(--card);color:var(--text);padding:5px 7px}
 #timeRangeFilter option:checked{background:var(--green-soft);color:var(--green-dark)}
+
+/* Nav links in intro */
+.nav-link{text-decoration:none}
+
+/* Dialog form styles */
+.dialog-form{display:flex;flex-direction:column;gap:16px;padding:16px 22px}
+.dialog-label{display:block;margin-bottom:6px;font-size:13px;color:var(--muted);font-weight:500}
+.dialog-form .delete-confirm-input{width:100%;box-sizing:border-box}
+.dialog-footer-link{margin:0;padding:8px 22px 0;text-align:center;font-size:13px;color:var(--muted)}
+.dialog-footer-link a{color:var(--green-dark);text-decoration:none}
+.dialog-footer-link a:hover{text-decoration:underline}
+
+/* Invite codes dialog */
+.invite-codes-content{max-height:60vh;overflow:auto}
+.invite-gen-section{margin-bottom:16px}
+.invite-gen-row{display:flex;gap:8px;flex-wrap:wrap}
+.invite-list-section{border-top:1px solid var(--line-soft);padding-top:16px}
+.invite-list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.invite-codes-list{max-height:300px;overflow:auto}
+.invite-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px}
+
+/* Subitem input */
+.subitem-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:14px Manrope,system-ui,sans-serif}
+.subitem-input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(120,155,88,.2)}
 #timeRangeFilter option:hover{background:var(--green-soft)}
 
 .requestor-pill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;color:#fff;margin:0 4px 6px 0}

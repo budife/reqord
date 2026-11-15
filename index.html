@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -18,22 +18,22 @@
       <a class="brand" href="#"><span class="brand-mark">R</span><span>reqord</span></a>
       <div class="workspace"><span class="workspace-dot"></span> reqord <b>/</b> <strong>Work order manager</strong></div>
        <div class="top-actions">
-  <button class="profile-trigger activity-trigger" id="activityButton" aria-label="Buka history dan activity"><span class="settings-icon" aria-hidden="true">◷</span><span class="profile-trigger-text"><strong>History & Activity</strong><small>reqord</small></span></button>
+  <button type="button" class="profile-trigger activity-trigger" id="activityButton" aria-label="Buka history dan activity"><span class="settings-icon" aria-hidden="true">◷</span><span class="profile-trigger-text"><strong>History &amp; Activity</strong><small>reqord</small></span></button>
   <div class="user-menu" id="userMenu">
-    <button class="user-menu-trigger" id="userMenuTrigger" aria-label="Menu pengguna" aria-expanded="false" aria-haspopup="true">
+    <button type="button" class="user-menu-trigger" id="userMenuTrigger" aria-label="Menu pengguna" aria-expanded="false" aria-haspopup="true">
       <span id="userMenuText">Login</span>
       <span class="user-menu-arrow" aria-hidden="true">▾</span>
     </button>
     <div class="user-menu-dropdown" id="userMenuDropdown" hidden>
       <a href="#" class="user-menu-item" id="loginLink">Login</a>
-      <button class="user-menu-item" id="settingsLink" style="display:none;">Settings</button>
-      <button class="user-menu-item" id="logoutBtn" style="display:none;">Logout</button>
+      <button type="button" class="user-menu-item" id="settingsLink" style="display:none;">Settings</button>
+      <button type="button" class="user-menu-item" id="logoutBtn" style="display:none;">Logout</button>
     </div>
   </div>
 </div>
     </header>
 
-     <section class="intro"><div><div class="eyebrow">WORK ORDER MANAGER</div><h1>Request work orders</h1><p>Work order dikelompokkan per status.</p></div><div class="intro-actions"><span class="active-file" id="activeFileName"><i class="sync-dot"></i>Siap</span><button class="secondary-button auth-only" id="addWorkOrderButton" type="button">+ Tambah</button><button class="secondary-button auth-only" id="syncCloudButton">Sync to Cloud</button><a class="secondary-button" href="public.html" style="text-decoration:none;">Board</a><a class="secondary-button" href="summary.html" style="text-decoration:none;">Summary</a><input id="jsonFileInput" type="file" accept=".json" hidden><input id="excelFileInput" type="file" accept=".xlsx,.xls" hidden></div></section>
+     <section class="intro"><div><div class="eyebrow">WORK ORDER MANAGER</div><h1>Request work orders</h1><p>Work order dikelompokkan per status.</p></div><div class="intro-actions"><span class="active-file" id="activeFileName"><i class="sync-dot"></i>Siap</span><button class="secondary-button auth-only" id="addWorkOrderButton" type="button">+ Tambah</button><button type="button" class="secondary-button auth-only" id="syncCloudButton">Sync to Cloud</button><a class="secondary-button nav-link" href="public.html">Board</a><a class="secondary-button nav-link" href="summary.html">Summary</a><input id="jsonFileInput" type="file" accept=".json" hidden><input id="excelFileInput" type="file" accept=".xlsx,.xls" hidden></div></section>
 
     <section class="toolbar"><div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Search work orders..."></div><div class="table-filters"><select id="priorityFilter" aria-label="Filter priority"><option value="all">All priorities</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select><select id="sortFilter" aria-label="Sort work orders"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="target">Target done</option><option value="priority">Priority</option></select><select id="monthFilter" aria-label="Filter month"><option value="all">All months</option></select><select id="requestorFilter" aria-label="Filter requestor"><option value="all">Semua requestor</option></select></div><span class="result-count" id="resultCount">0 work orders</span><span class="save-state" id="saveState">Ready</span></section>
 
@@ -51,10 +51,10 @@
                              <article class="table-panel glass" data-status="cancelled"><div class="table-heading"><div><span class="table-marker marker-cancelled"></span><h2>Cancelled</h2><span class="table-count" id="cancelledCount">0</span><p>Dibatalkan</p></div><span class="table-state">Cancelled</span></div><div class="table-scroll"><table><thead><tr><th>Title</th><th>Requestor</th><th>Status</th><th>Priority</th><th>Request date</th><th>Deadline</th></tr></thead><tbody id="cancelledTable"></tbody></table></div><div class="table-empty" id="cancelledEmpty">Belum ada Cancelled.</div></article>
                </section>
            <dialog id="addDialog" class="delete-dialog">
-      <div class="delete-modal-head"><span class="delete-warning">+</span><div><span class="eyebrow">NEW WORK ORDER</span><h2>Tambah work order</h2></div><button class="modal-close" id="closeAddDialog" aria-label="Tutup">×</button></div>
+      <div class="delete-modal-head"><span class="delete-warning">+</span><div><span class="eyebrow">NEW WORK ORDER</span><h2>Tambah work order</h2></div><button type="button" class="modal-close" id="closeAddDialog" aria-label="Tutup">×</button></div>
       <div class="dialog-content">
-        <label class="edit-field">Title<div class="field-input-wrap"><input id="titleInput" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div></label>
-        <label class="edit-field">Requestor<div class="field-input-wrap"><input id="requestorInput" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div></label>
+        <label class="edit-field" for="titleInput">Title</label><div class="field-input-wrap"><input id="titleInput" type="text" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
+        <label class="edit-field" for="requestorInput">Requestor</label><div class="field-input-wrap"><input id="requestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
         <label class="edit-field">Priority<select id="addPriority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
       </div>
       <div class="delete-actions"><button class="secondary-button" id="cancelAddDialog" type="button">Batal</button><button class="primary-button" id="submitAddDialog" type="button">Tambah</button></div>
@@ -63,53 +63,49 @@
   </main>
   <div id="toast" class="toast" role="status"></div>
   <dialog id="loginDialog" class="delete-dialog">
-    <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">LOGIN</span><h2>Masuk ke reqord</h2></div><button class="modal-close" id="closeLoginDialog" aria-label="Tutup">x</button></div>
-    <div style="padding:16px 22px;">
-      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Username</label>
-      <input id="loginNameInput" class="delete-confirm-input" type="text" placeholder="Username (huruf/angka, tanpa spasi)" aria-label="Username" style="margin:0 0 12px 0;width:100%;box-sizing:border-box;">
-      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Password</label>
-      <input id="loginCodeInput" class="delete-confirm-input" type="password" placeholder="Password..." aria-label="Password" style="margin:0;width:100%;box-sizing:border-box;">
+    <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">LOGIN</span><h2>Masuk ke reqord</h2></div><button type="button" class="modal-close" id="closeLoginDialog" aria-label="Tutup">x</button></div>
+    <div class="dialog-form">
+      <label class="dialog-label" for="loginNameInput">Username</label>
+      <input id="loginNameInput" class="delete-confirm-input" type="text" placeholder="Username (huruf/angka, tanpa spasi)">
+      <label class="dialog-label" for="loginCodeInput">Password</label>
+      <input id="loginCodeInput" class="delete-confirm-input" type="password" placeholder="Password..." autocomplete="current-password">
     </div>
-    <div class="delete-actions"><button class="secondary-button" id="cancelLoginDialog">Batal</button><button class="primary-button" id="submitLoginDialog">Masuk</button></div>
-    <div style="text-align:center;padding:0 22px 16px;font-size:0.8rem;color:var(--muted,#94a3b8);">
-      Belum punya akun? <a href="#" id="showRegisterLink" style="color:var(--accent,#6366f1);">Daftar</a>
-    </div>
+    <div class="delete-actions"><button type="button" class="secondary-button" id="cancelLoginDialog">Batal</button><button type="button" class="primary-button" id="submitLoginDialog">Masuk</button></div>
+    <p class="dialog-footer-link">Belum punya akun? <a href="#" id="showRegisterLink">Daftar</a></p>
   </dialog>
   <dialog id="registerDialog" class="delete-dialog">
-    <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">REGISTER</span><h2>Buat akun baru</h2></div><button class="modal-close" id="closeRegisterDialog" aria-label="Tutup">x</button></div>
-    <div style="padding:16px 22px;">
-      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Username</label>
-      <input id="registerNameInput" class="delete-confirm-input" type="text" placeholder="Username (huruf/angka, tanpa spasi)" aria-label="Username" style="margin:0 0 12px 0;width:100%;box-sizing:border-box;">
-      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Password</label>
-      <input id="registerPassInput" class="delete-confirm-input" type="password" placeholder="Password..." aria-label="Password" style="margin:0 0 12px 0;width:100%;box-sizing:border-box;">
-      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Kode Invitation (wajib)</label>
-      <input id="registerInviteInput" class="delete-confirm-input" type="text" placeholder="Kode invitation (generate via admin)" aria-label="Kode invitation" style="margin:0;width:100%;box-sizing:border-box;">
+    <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">REGISTER</span><h2>Buat akun baru</h2></div><button type="button" class="modal-close" id="closeRegisterDialog" aria-label="Tutup">x</button></div>
+    <div class="dialog-form">
+      <label class="dialog-label" for="registerNameInput">Username</label>
+      <input id="registerNameInput" class="delete-confirm-input" type="text" placeholder="Username (huruf/angka, tanpa spasi)">
+      <label class="dialog-label" for="registerPassInput">Password</label>
+      <input id="registerPassInput" class="delete-confirm-input" type="password" placeholder="Password..." autocomplete="new-password">
+      <label class="dialog-label" for="registerInviteInput">Kode Invitation (wajib)</label>
+      <input id="registerInviteInput" class="delete-confirm-input" type="text" placeholder="Kode invitation (generate via admin)" aria-label="Kode invitation">
     </div>
-    <div class="delete-actions"><button class="secondary-button" id="cancelRegisterDialog">Batal</button><button class="primary-button" id="submitRegisterDialog">Daftar</button></div>
-    <div style="text-align:center;padding:0 22px 16px;font-size:0.8rem;color:var(--muted,#94a3b8);">
-      Sudah punya akun? <a href="#" id="showLoginLink" style="color:var(--accent,#6366f1);">Masuk</a>
-    </div>
+    <div class="delete-actions"><button type="button" class="secondary-button" id="cancelRegisterDialog">Batal</button><button type="button" class="primary-button" id="submitRegisterDialog">Daftar</button></div>
+    <p class="dialog-footer-link">Sudah punya akun? <a href="#" id="showLoginLink">Masuk</a></p>
   </dialog>
   <dialog id="changePassDialog" class="delete-dialog">
-    <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">GANTI PASSWORD</span><h2>Ubah password</h2></div><button class="modal-close" id="closeChangePassDialog" aria-label="Tutup">x</button></div>
-    <div style="padding:16px 22px;">
-      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Password Baru</label>
-      <input id="newPassInput" class="delete-confirm-input" type="password" placeholder="Password baru..." aria-label="Password baru" style="margin:0 0 12px 0;width:100%;box-sizing:border-box;">
-      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--muted,#94a3b8);">Konfirmasi Password</label>
-      <input id="confirmPassInput" class="delete-confirm-input" type="password" placeholder="Konfirmasi password..." aria-label="Konfirmasi password" style="margin:0;width:100%;box-sizing:border-box;">
+    <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">GANTI PASSWORD</span><h2>Ubah password</h2></div><button type="button" class="modal-close" id="closeChangePassDialog" aria-label="Tutup">x</button></div>
+    <div class="dialog-form">
+      <label class="dialog-label" for="newPassInput">Password Baru</label>
+      <input id="newPassInput" class="delete-confirm-input" type="password" placeholder="Password baru..." autocomplete="new-password">
+      <label class="dialog-label" for="confirmPassInput">Konfirmasi Password</label>
+      <input id="confirmPassInput" class="delete-confirm-input" type="password" placeholder="Konfirmasi password..." autocomplete="new-password">
     </div>
-    <div class="delete-actions"><button class="secondary-button" id="cancelChangePassDialog">Batal</button><button class="primary-button" id="submitChangePassDialog">Ubah</button></div>
+    <div class="delete-actions"><button type="button" class="secondary-button" id="cancelChangePassDialog">Batal</button><button type="button" class="primary-button" id="submitChangePassDialog">Ubah</button></div>
   </dialog>
   <dialog id="settingsDialog" class="delete-dialog settings-dialog">
-    <div class="delete-modal-head"><span class="delete-warning settings-warning"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span><div><span class="eyebrow">SETTINGS</span><h2>Pengaturan</h2></div><button class="modal-close" id="closeSettingsDialog" aria-label="Tutup settings">×</button></div>
+    <div class="delete-modal-head"><span class="delete-warning settings-warning"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span><div><span class="eyebrow">SETTINGS</span><h2>Pengaturan</h2></div><button type="button" class="modal-close" id="closeSettingsDialog" aria-label="Tutup settings">×</button></div>
     <nav class="settings-tabs" aria-label="Settings tabs">
-      <button class="settings-tab active" data-tab="account">Akun</button>
-      <button class="settings-tab" data-tab="data">Data</button>
-      <button class="settings-tab admin-only" data-tab="admin" id="settingsTabAdmin">Admin</button>
+      <button type="button" class="settings-tab active" data-tab="account">Akun</button>
+      <button type="button" class="settings-tab" data-tab="data">Data</button>
+      <button type="button" class="settings-tab admin-only" data-tab="admin" id="settingsTabAdmin">Admin</button>
     </nav>
     <div class="settings-panels">
       <section class="settings-panel active" data-panel="account">
-        <button class="settings-item" id="settingsChangePass"><span class="settings-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span><span class="settings-item-body"><strong>Ganti Password</strong><small>Ubah password akun Anda</small></span><span class="settings-item-arrow">›</span></button>
+        <button type="button" class="settings-item" id="settingsChangePass"><span class="settings-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span><span class="settings-item-body"><strong>Ganti Password</strong><small>Ubah password akun Anda</small></span><span class="settings-item-arrow">›</span></button>
       </section>
       <section class="settings-panel" data-panel="data">
         <div class="data-actions">
@@ -149,81 +145,81 @@
           </div>
         </div>
         <div class="data-divider"></div>
-        <button class="settings-item" id="settingsRestoreBackup"><span class="settings-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></span><span class="settings-item-body"><strong>Pulihkan Backup</strong><small id="restoreBackupInfo">Muat data dari backup lokal terakhir</small></span><span class="settings-item-arrow">›</span></button>
+        <button type="button" class="settings-item" id="settingsRestoreBackup"><span class="settings-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></span><span class="settings-item-body"><strong>Pulihkan Backup</strong><small id="restoreBackupInfo">Muat data dari backup lokal terakhir</small></span><span class="settings-item-arrow">›</span></button>
       </section>
       <section class="settings-panel" data-panel="admin">
-        <button class="settings-item" id="settingsInviteCodes"><span class="settings-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span><span class="settings-item-body"><strong>Kelola Kode Invite</strong><small>Generate & kelola kode undangan untuk user baru</small></span><span class="settings-item-arrow">›</span></button>
+        <button type="button" class="settings-item" id="settingsInviteCodes"><span class="settings-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span><span class="settings-item-body"><strong>Kelola Kode Invite</strong><small>Generate &amp; kelola kode undangan untuk user baru</small></span><span class="settings-item-arrow">›</span></button>
       </section>
     </div>
   </dialog>
   <dialog id="deleteDialog" class="delete-dialog">
-    <div class="delete-modal-head"><span class="delete-warning">!</span><div><span class="eyebrow">PERMANENT ACTION</span><h2>Delete request?</h2></div><button class="modal-close" id="closeDeleteButton" aria-label="Tutup konfirmasi delete">×</button></div>
+    <div class="delete-modal-head"><span class="delete-warning">!</span><div><span class="eyebrow">PERMANENT ACTION</span><h2>Delete request?</h2></div><button type="button" class="modal-close" id="closeDeleteButton" aria-label="Tutup konfirmasi delete">×</button></div>
     <p class="delete-copy">Request ini akan dihapus permanen dan tidak bisa dikembalikan.</p>
     <p class="delete-confirm-label">Ketik <strong>saya sudah pikirin</strong> untuk melanjutkan.</p>
-    <input id="deleteConfirmInput" class="delete-confirm-input" autocomplete="off" placeholder="saya sudah pikirin" aria-label="Konfirmasi delete">
-    <div class="delete-actions"><button class="secondary-button" id="cancelDeleteButton">Batal</button><button class="delete-confirm-button" id="confirmDeleteButton" disabled>Hapus permanen</button></div>
+    <input id="deleteConfirmInput" type="text" class="delete-confirm-input" autocomplete="off" placeholder="saya sudah pikirin" aria-label="Konfirmasi delete">
+    <div class="delete-actions"><button type="button" class="secondary-button" id="cancelDeleteButton">Batal</button><button type="button" class="delete-confirm-button" id="confirmDeleteButton" disabled>Hapus permanen</button></div>
   </dialog>
   <dialog id="confirmDialog" class="delete-dialog confirm-dialog">
-    <div class="delete-modal-head"><span class="delete-warning" aria-hidden="true">?</span><div><span class="eyebrow" id="confirmDialogEyebrow">CONFIRM</span><h2 id="confirmDialogTitle">Yakin?</h2></div><button class="modal-close" id="closeConfirmButton" aria-label="Tutup konfirmasi">×</button></div>
+    <div class="delete-modal-head"><span class="delete-warning" aria-hidden="true">?</span><div><span class="eyebrow" id="confirmDialogEyebrow">CONFIRM</span><h2 id="confirmDialogTitle">Yakin?</h2></div><button type="button" class="modal-close" id="closeConfirmButton" aria-label="Tutup konfirmasi">×</button></div>
     <p class="delete-copy" id="confirmDialogMessage"></p>
-    <div class="delete-actions"><button class="secondary-button" id="cancelConfirmButton">Batal</button><button class="delete-confirm-button" id="acceptConfirmButton">Ya, lanjutkan</button></div>
+    <div class="delete-actions"><button type="button" class="secondary-button" id="cancelConfirmButton">Batal</button><button type="button" class="delete-confirm-button" id="acceptConfirmButton">Ya, lanjutkan</button></div>
   </dialog>
   <dialog id="inviteCodesDialog" class="delete-dialog settings-dialog">
-    <div class="delete-modal-head"><span class="delete-warning settings-warning">🔐</span><div><span class="eyebrow">INVITE CODES</span><h2>Kelola Kode Undangan</h2></div><button class="modal-close" id="closeInviteCodesDialog" aria-label="Tutup">×</button></div>
-    <div class="dialog-content" style="max-height:60vh;overflow:auto;">
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.85rem;color:var(--muted,#94a3b8);margin-bottom:8px;">Generate Kode Baru</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <div class="delete-modal-head"><span class="delete-warning settings-warning">🔐</span><div><span class="eyebrow">INVITE CODES</span><h2>Kelola Kode Undangan</h2></div><button type="button" class="modal-close" id="closeInviteCodesDialog" aria-label="Tutup">×</button></div>
+    <div class="dialog-content invite-codes-content">
+      <div class="invite-gen-section">
+        <label class="dialog-label" for="inviteCodeRole">Generate Kode Baru</label>
+        <div class="invite-gen-row">
           <select id="inviteCodeRole" class="invite-code-role-select" aria-label="Role">
             <option value="admin" selected>Admin</option>
           </select>
-          <button class="primary-button" id="generateInviteCode" style="padding:8px 16px;white-space:nowrap;">Generate</button>
+          <button type="button" class="primary-button" id="generateInviteCode">Generate</button>
         </div>
       </div>
-      <div style="border-top:1px solid var(--line-soft,#e2e8f0);padding-top:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="invite-list-section">
+        <div class="invite-list-header">
           <strong>Daftar Kode</strong>
-          <button class="secondary-button" id="refreshInviteCodes" style="padding:6px 12px;font-size:0.8rem;">Refresh</button>
+          <button type="button" class="secondary-button" id="refreshInviteCodes">Refresh</button>
         </div>
-        <div id="inviteCodesList" style="max-height:300px;overflow:auto;">
-          <p style="color:var(--muted,#94a3b8);font-size:0.85rem;text-align:center;padding:20px;">Memuat...</p>
+        <div id="inviteCodesList" class="invite-codes-list">
+          <p class="invite-empty">Memuat...</p>
         </div>
       </div>
     </div>
-    <div class="delete-actions"><button class="secondary-button" id="closeInviteCodesButton">Tutup</button></div>
+    <div class="delete-actions"><button type="button" class="secondary-button" id="closeInviteCodesButton">Tutup</button></div>
   </dialog>
   <dialog id="editDialog" class="delete-dialog edit-dialog">
-     <div class="delete-modal-head"><span class="delete-warning edit-warning">✎</span><div><span class="eyebrow">WORK ORDER DETAILS</span><h2>Edit work order</h2></div><button class="modal-close" id="closeEditButton" aria-label="Tutup work order details">×</button></div>
+     <div class="delete-modal-head"><span class="delete-warning edit-warning">✎</span><div><span class="eyebrow">WORK ORDER DETAILS</span><h2>Edit work order</h2></div><button type="button" class="modal-close" id="closeEditButton" aria-label="Tutup work order details">×</button></div>
      <form id="editForm">
        <div class="dialog-content">
-         <label class="edit-field">Title<input id="editTitleInput" required></label>
-         <label class="edit-field">Requestor<div class="field-input-wrap"><input id="editRequestorInput" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div></label>
+         <label class="edit-field">Title<input id="editTitleInput" type="text" required></label>
+         <label class="edit-field" for="editRequestorInput">Requestor</label><div class="field-input-wrap"><input id="editRequestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
          <label class="edit-field">Request date<input id="editRequestDateInput" type="datetime-local" aria-label="Request date"></label>
          <label class="edit-field">Deadline<input id="editDeadlineInput" type="date" aria-label="Deadline"></label>
          <label class="edit-field">Catatan<textarea id="editNoteInput" rows="4" placeholder="Contoh: Revisi karena menunggu feedback client..."></textarea></label>
-         <label class="edit-field">Subitems<div id="editSubitemList" class="edit-subitem-list"></div><input id="editSubitemInput" placeholder="Tambah subitem... lalu tekan Enter" autocomplete="off" aria-label="Tambah subitem"></label>
+         <label class="edit-field" for="editSubitemInput">Subitems</label><div id="editSubitemList" class="edit-subitem-list"></div><input id="editSubitemInput" type="text" placeholder="Tambah subitem... lalu tekan Enter" autocomplete="off" aria-label="Tambah subitem">
        </div>
-       <div class="delete-actions"><button class="secondary-button" id="cancelEditButton" type="button">Batal</button><button class="primary-button" id="saveEditButton" type="submit">Simpan perubahan</button></div>
-       <button class="modal-delete-link" id="deleteFromEditButton" type="button">Hapus request</button>
+       <div class="delete-actions"><button type="button" class="secondary-button" id="cancelEditButton">Batal</button><button class="primary-button" id="saveEditButton" type="submit">Simpan perubahan</button></div>
+       <button type="button" class="modal-delete-link" id="deleteFromEditButton">Hapus request</button>
      </form>
   </dialog>
   <dialog id="noteDialog" class="delete-dialog note-dialog">
-    <div class="delete-modal-head"><span class="delete-warning note-warning">✎</span><div><span class="eyebrow">WORK ORDER NOTE</span><h2 id="noteDialogTitle">Catatan</h2></div><button class="modal-close" id="closeNoteButton" aria-label="Tutup catatan">×</button></div>
+    <div class="delete-modal-head"><span class="delete-warning note-warning">✎</span><div><span class="eyebrow">WORK ORDER NOTE</span><h2 id="noteDialogTitle">Catatan</h2></div><button type="button" class="modal-close" id="closeNoteButton" aria-label="Tutup catatan">×</button></div>
     <div class="note-content"><p id="noteDialogBody">Belum ada catatan untuk work order ini.</p></div>
-    <div class="delete-actions"><button class="secondary-button" id="editNoteButton" type="button">Edit catatan</button></div>
+    <div class="delete-actions"><button type="button" class="secondary-button" id="editNoteButton">Edit catatan</button></div>
   </dialog>
   <dialog id="subitemDialog" class="delete-dialog subitem-dialog">
-    <div class="delete-modal-head"><span class="delete-warning subitem-warning">☷</span><div><span class="eyebrow">WORK ORDER</span><h2 id="subitemDialogTitle">Subitems</h2></div><button class="modal-close" id="closeSubitemButton" aria-label="Tutup subitems">×</button></div>
-    <input id="subitemInput" class="subitem-input" placeholder="Tambah subitem... lalu tekan Enter" autocomplete="off" aria-label="Tambah subitem">
+    <div class="delete-modal-head"><span class="delete-warning subitem-warning">☷</span><div><span class="eyebrow">WORK ORDER</span><h2 id="subitemDialogTitle">Subitems</h2></div><button type="button" class="modal-close" id="closeSubitemButton" aria-label="Tutup subitems">×</button></div>
+    <input id="subitemInput" type="text" class="subitem-input" placeholder="Tambah subitem... lalu tekan Enter" autocomplete="off" aria-label="Tambah subitem">
   </dialog>
   <dialog id="profileDialog" class="profile-dialog">
-    <div class="profile-modal-head"><div><span class="eyebrow">BUDIFE.PSD</span><h2>Meet the maker</h2></div><button class="modal-close" id="closeProfileButton" aria-label="Tutup maker panel">×</button></div>
-    <nav class="maker-tabs" aria-label="Maker menu"><button class="maker-tab active" data-maker-tab="profile">Profile</button><button class="maker-tab" data-maker-tab="recent">Recent changes</button></nav>
+    <div class="profile-modal-head"><div><span class="eyebrow">BUDIFE.PSD</span><h2>Meet the maker</h2></div><button type="button" class="modal-close" id="closeProfileButton" aria-label="Tutup maker panel">×</button></div>
+    <nav class="maker-tabs" aria-label="Maker menu"><button type="button" class="maker-tab active" data-maker-tab="profile">Profile</button><button type="button" class="maker-tab" data-maker-tab="recent">Recent changes</button></nav>
     <section class="maker-content" data-maker-content="profile"><div class="profile-identity"><span class="profile-avatar profile-avatar-large">BI</span><div><h3>Budi Indra Ilham</h3><a href="https://www.linkedin.com/in/budife/" target="_blank" rel="noreferrer">linkedin.com/in/budife/ ↗</a></div></div><div class="profile-workspace"><span class="workspace-dot"></span><div><small>WORKSPACE</small><strong>reqord / Work order manager</strong></div></div><p class="maker-bio">Building thoughtful tools for turning everyday work into a clearer system.</p></section>
     <section class="maker-content" data-maker-content="recent" hidden><div class="maker-changelog"><span class="eyebrow">WHAT'S NEW</span><h3>Recent changes</h3><div class="changelog-meta"><strong>v0.6.3</strong><span>Updated · 13 Nov 2026</span></div><div class="changelog-group"><label class="recent-date-label" for="recentDateSelect">Tanggal update</label><select id="recentDateSelect" class="recent-date-select" aria-label="Pilih tanggal update"></select><div id="recentReleaseDetail" class="recent-release-detail"><p>Memuat update terbaru…</p></div></div><small>Riwayat lengkap tersedia di <code>CHANGELOG.md</code> pada repository GitHub.</small></div></section>
     <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.4</span><span>Made thoughtfully</span></div>
   </dialog>
-    <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="true"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History & Activity</h2></div><button class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
+    <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="false"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History &amp; Activity</h2></div><button type="button" class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=99" defer></script>
 </body>
 </html>
