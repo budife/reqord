@@ -679,14 +679,13 @@ function doExportExcel() {
   const rows = items.map(item => ({
     Title: item.title,
     Requestor: item.requestor,
-    Type: 'Project',
     Status: groups[item.status] || item.status,
     Priority: item.priority,
     RequestDate: item.requestDate,
     Deadline: item.date || ''
   }));
   const sheet = XLSX.utils.json_to_sheet(rows);
-  sheet['!cols'] = [{ wch: 42 }, { wch: 22 }, { wch: 10 }, { wch: 16 }, { wch: 10 }, { wch: 20 }, { wch: 20 }];
+  sheet['!cols'] = [{ wch: 42 }, { wch: 22 }, { wch: 16 }, { wch: 10 }, { wch: 20 }, { wch: 20 }];
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, sheet, 'Work Orders');
   const file = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
