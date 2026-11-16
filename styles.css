@@ -56,33 +56,7 @@ tr.deadline-yellow td:first-child,tr.deadline-red td:first-child{color:var(--tex
 .requestor-suggestions{background:#fff;border-color:var(--line);box-shadow:0 5px 15px rgba(53,70,43,.12)}
 .requestor-suggestions button:hover{background:var(--green-soft);color:var(--green-dark)}
 
-/* Requestor field in add/edit dialog - enhanced styling */
-.edit-field#requestorField,
-.edit-field#editRequestorField { margin-top: 16px; }
-.edit-field#requestorField .field-input-wrap,
-.edit-field#editRequestorField .field-input-wrap { position: relative; }
-.edit-field#requestorField input,
-.edit-field#editRequestorField input { 
-  height: 42px; 
-  padding: 10px 12px; 
-  border-radius: 8px; 
-  font-size: 14px; 
-  background: var(--card);
-  border: 2px solid var(--line);
-  transition: border-color .15s, box-shadow .15s;
-}
-.edit-field#requestorField input:focus,
-.edit-field#editRequestorField input:focus { 
-  border-color: var(--green); 
-  box-shadow: 0 0 0 3px rgba(120,155,88,.15); 
-  outline: none; 
-}
-.edit-field#requestorField label,
-.edit-field#editRequestorField label { 
-  font: 600 13px Manrope,system-ui,sans-serif; 
-  color: var(--text); 
-  margin-bottom: 6px; 
-}
+/* Requestor field suggestions dropdown */
 .edit-field#requestorField .requestor-suggestions,
 .edit-field#editRequestorField .requestor-suggestions { 
   top: calc(100% + 6px); 
