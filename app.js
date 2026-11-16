@@ -340,9 +340,10 @@ document.querySelector('#submitAddDialog').addEventListener('click', () => {
   const title = document.querySelector('#titleInput').value.trim();
   const requestor = document.querySelector('#requestorInput').value.trim();
   const team = document.querySelector('#teamInput').value.trim();
+  const note = document.querySelector('#addNoteInput').value.trim();
   const priority = document.querySelector('#addPriority').value;
   if (!title || !requestor) { showToast('Title dan requestor wajib diisi'); return; }
-  const item = normalizeItem({ id: generateItemId(), title, requestor, team, priority, status: 'new_request', requestDate: nowDateTime() });
+  const item = normalizeItem({ id: generateItemId(), title, requestor, team, note, priority, status: 'new_request', requestDate: nowDateTime() });
   items = [...items, item];
   addActivity('Work order ditambahkan', item);
   saveItems();
@@ -350,6 +351,7 @@ document.querySelector('#submitAddDialog').addEventListener('click', () => {
   document.querySelector('#titleInput').value = '';
   document.querySelector('#requestorInput').value = '';
   document.querySelector('#teamInput').value = '';
+  document.querySelector('#addNoteInput').value = '';
   document.querySelector('#addPriority').value = 'normal';
   render();
   showToast('Work order ditambahkan');
@@ -647,13 +649,14 @@ function doExportExcel() {
     Title: item.title,
     Requestor: item.requestor,
     Team: item.team,
+    Note: item.note,
     Status: groups[item.status] || item.status,
     Priority: item.priority,
     RequestDate: item.requestDate,
     Deadline: item.date || ''
   }));
   const sheet = XLSX.utils.json_to_sheet(rows);
-  sheet['!cols'] = [{ wch: 42 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 10 }, { wch: 20 }, { wch: 20 }];
+  sheet['!cols'] = [{ wch: 42 }, { wch: 22 }, { wch: 18 }, { wch: 25 }, { wch: 16 }, { wch: 10 }, { wch: 20 }, { wch: 20 }];
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, sheet, 'Work Orders');
   const file = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
@@ -685,6 +688,7 @@ if (excelInput) excelInput.addEventListener('change', async (event) => {
       title: row.Title || row.title || row.Name || '',
       requestor: row.Requestor || row.requestor || '',
       team: row.Team || row.team || '',
+      note: row.Note || row.note || '',
       status: row.Status || '',
       priority: row.Priority || 'normal',
       requestDate: normalizeDateValue(row.RequestDate || row.requestDate) || today(),
