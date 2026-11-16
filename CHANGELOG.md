@@ -23,6 +23,52 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Scan Folder & Refresh: input kini manual lewat `+ Tambah` supaya data benar-benar ter-track.
 - Kode mati: `scanFolderHandle`, `saveFolderHandle`, `restoreFolderHandle`, `openDraftDatabase`, `storageDatabase`, `isLoadingWorkbook`, `dateAfterDays`, `isCompletedRequest`, `renderDailyTasks`, `renderDailyRow`, `refreshDailyDates`.
 
+## [v0.6.2] — 2026-11-13
+
+### Fixed
+
+- Anti data-loss: backup lokal rolling (maks 5 titik), setiap penyimpanan menulis backup sebelumnya; storage corrupt otomatis dipulihkan dari backup.
+- Sync reconciliation tidak lagi menghapus item lokal saat cloud kosong — cloud kosong kini memicu push ulang, bukan hapus.
+- Per-user parked items: logout menyimpan items per-user (parked) dan login mengembalikannya — ganti user tidak lagi berisiko menghapus atau membocorkan data.
+- Status Daily di-normalisasi benar sehingga pindah ke tabel Daily.
+
+### Added
+
+- Auto-sync: perubahan lokal otomatis disinkronkan ke cloud setelah 5 detik idle (batch 50 item/req), indikator status menunjukkan 'belum disinkron'.
+- Settings → Pulihkan Backup: kembalikan data dari titik backup terakhir dengan konfirmasi.
+- Import JSON & Excel wajib konfirmasi karena menimpa semua data.
+
+## [v0.6.3] — 2026-11-13
+
+### Added
+
+- Settings → Kelola Kode Invite (hanya admin): generate kode acak format RQ-XXXXXXXX.
+- Role pilihan: Admin atau Viewer, ditentukan saat generate.
+- Kode invite disimpan di Supabase (reqord_meta), sinkron lintas device.
+- Register sekarang validasi ke kode yang di-generate + legacy 'budd-reqord'.
+- Kode otomatis ditandai used setelah dipakai, tidak bisa dipakai ulang.
+- Salin/hapus kode dari dialog management, kode used dimark visual.
+
+## [v0.6.4] — 2026-11-14
+
+### Fixed
+
+- Activity log per-user: localStorage key `reqord-activities-<user>`, park/restore on logout/login, sync to Supabase key `activities_<user>`.
+- Month filter fixed: new items immediately get correct `month` (YYYY-MM) computed from requestDate/deadline in `normalizeItem()`.
+- Auto-sync now silent: no toast "Tidak ada perubahan" and no sync status updates during 5s debounced auto-sync.
+- debouncedSync guarded by auth: only runs when `supabaseClient.auth.getUser()` returns a user.
+- Invite codes removed from public source: register validates only generated codes from `reqord_meta` (legacy `budd-reqord` fallback kept).
+- Public board restricted: only items with `public: true` column visible on public page.
+- RLS policies verified: anon can SELECT all (main app + public board), authenticated CRUD own rows.
+- item.done reset on Done→other: status change handler sets `item.done = false` for any non-done status.
+- Add dialog: removed dead `type: 'project'` param, new items always start as `new_request`.
+- Realtime self-ignore: captures `currentUserId` at init, ignores payloads where `user_id` matches, debounced 1.5s reload.
+- Secondary-button focus outline fixed: shorthand `border:1px solid #789b58!important` beats thin-line pass `border:1px solid var(--line)!important` cascade.
+
+### Changed
+
+- Cache-buster `app.js?v=69`, `public.js?v=5`.
+
 ## [v0.6.0] — 2026-11-13
 
 ### Added

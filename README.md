@@ -83,7 +83,7 @@ reqord adalah aplikasi work order tracker **manual** — pengguna menambah work 
 
 ## Status
 
-- Versi: v0.6.1.
+- Versi: v0.6.4.
 - Fase: manual work order tracker (11 panel status, local-first + Supabase sync).
 - Stack: vanilla JS + HTML + CSS (no build step).
 - Storage: localStorage (items + activities).

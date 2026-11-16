@@ -62,7 +62,7 @@
     <footer><span><i class="sync-dot"></i> Tersimpan otomatis ke cloud</span><span class="mono">reqord · REQUEST WORK ORDERS</span><span class="app-version">reqord v0.6.4</span><span class="maker-credit">crafted by <button class="maker-trigger" id="makerButton" type="button" aria-label="Meet the maker">budife.psd</button></span></footer>
   </main>
   <div id="toast" class="toast" role="status"></div>
-  <dialog id="loginDialog" class="delete-dialog">
+  <dialog id="loginDialog" class="delete-dialog login-dialog">
     <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">LOGIN</span><h2>Masuk ke reqord</h2></div><button type="button" class="modal-close" id="closeLoginDialog" aria-label="Tutup">x</button></div>
     <div class="dialog-form">
       <label class="dialog-label" for="loginNameInput">Username</label>
@@ -73,7 +73,7 @@
     <div class="delete-actions"><button type="button" class="secondary-button" id="cancelLoginDialog">Batal</button><button type="button" class="primary-button" id="submitLoginDialog">Masuk</button></div>
     <p class="dialog-footer-link">Belum punya akun? <a href="#" id="showRegisterLink">Daftar</a></p>
   </dialog>
-  <dialog id="registerDialog" class="delete-dialog">
+  <dialog id="registerDialog" class="delete-dialog login-dialog">
     <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">REGISTER</span><h2>Buat akun baru</h2></div><button type="button" class="modal-close" id="closeRegisterDialog" aria-label="Tutup">x</button></div>
     <div class="dialog-form">
       <label class="dialog-label" for="registerNameInput">Username</label>
@@ -86,7 +86,7 @@
     <div class="delete-actions"><button type="button" class="secondary-button" id="cancelRegisterDialog">Batal</button><button type="button" class="primary-button" id="submitRegisterDialog">Daftar</button></div>
     <p class="dialog-footer-link">Sudah punya akun? <a href="#" id="showLoginLink">Masuk</a></p>
   </dialog>
-  <dialog id="changePassDialog" class="delete-dialog">
+  <dialog id="changePassDialog" class="delete-dialog login-dialog">
     <div class="delete-modal-head"><span class="delete-warning">?</span><div><span class="eyebrow">GANTI PASSWORD</span><h2>Ubah password</h2></div><button type="button" class="modal-close" id="closeChangePassDialog" aria-label="Tutup">x</button></div>
     <div class="dialog-form">
       <label class="dialog-label" for="newPassInput">Password Baru</label>
@@ -108,48 +108,61 @@
         <button type="button" class="settings-item" id="settingsChangePass"><span class="settings-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span><span class="settings-item-body"><strong>Ganti Password</strong><small>Ubah password akun Anda</small></span><span class="settings-item-arrow">›</span></button>
       </section>
       <section class="settings-panel" data-panel="data">
-        <div class="data-actions">
-          <div class="data-meta" id="dataMeta">
-            <span class="data-meta-count" id="dataMetaCount">0 item</span>
-            <span class="data-meta-sync" id="dataMetaSync"></span>
+        <div class="settings-row">
+          <div class="settings-row-body">
+            <span class="settings-row-title">Ekspor Data</span>
+            <span class="settings-row-desc">Simpan data work order ke file</span>
           </div>
-          <div class="data-main-buttons" role="group" aria-label="Data actions">
-            <button type="button" class="data-main-btn data-main-export" id="dataExportBtn">
-              <span class="data-main-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>
-              <span class="data-main-label">Ekspor</span>
-            </button>
-            <button type="button" class="data-main-btn data-main-import" id="dataImportBtn">
-              <span class="data-main-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>
-              <span class="data-main-label">Impor</span>
-            </button>
+          <button type="button" class="settings-row-btn" id="dataExportJSONBtn">
+            <span class="settings-btn-label">JSON</span>
+            <span class="settings-btn-hint">Backup lengkap</span>
+          </button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-body">
+            <span class="settings-row-title">Ekspor Excel</span>
+            <span class="settings-row-desc">Tabel rapi untuk spreadsheet</span>
           </div>
-          <div class="data-format-row" id="dataFormatRow" hidden>
-            <div class="data-format-toggle" role="radiogroup" aria-label="Format file">
-              <button type="button" class="data-format-btn active" data-format="json" aria-pressed="true">
-                <span class="data-btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 18 2 12 8 6"></polyline></svg></span>
-                <span class="data-btn-label">JSON</span>
-                <span class="data-btn-hint">Backup lengkap</span>
-              </button>
-              <button type="button" class="data-format-btn" data-format="excel" aria-pressed="false">
-                <span class="data-btn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg></span>
-                <span class="data-btn-label">Excel</span>
-                <span class="data-btn-hint">Tabel rapi</span>
-              </button>
-            </div>
-            <button type="button" class="data-execute-btn" id="settingsDataExecute">
-              <span class="data-execute-icon" id="dataExecuteIcon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>
-              <span class="data-execute-label"><strong id="dataExecuteLabel">Ekspor JSON</strong><small id="dataExecuteDesc">Simpan data ke file .json</small></span>
-              <span class="data-execute-arrow" id="dataExecuteArrow">›</span>
-              <span class="data-execute-loader" id="dataExecuteLoader" hidden><span class="spinner"></span></span>
-            </button>
+          <button type="button" class="settings-row-btn" id="dataExportExcelBtn">
+            <span class="settings-btn-label">Excel</span>
+            <span class="settings-btn-hint">.xlsx format</span>
+          </button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-body">
+            <span class="settings-row-title">Impor Data</span>
+            <span class="settings-row-desc">Muat data dari file (menimpa semua)</span>
           </div>
+          <button type="button" class="settings-row-btn" id="dataImportBtn">
+            <span class="settings-btn-label">Impor</span>
+            <span class="settings-btn-hint">JSON atau Excel</span>
+          </button>
         </div>
         <div class="data-divider"></div>
         <button type="button" class="settings-item" id="settingsRestoreBackup"><span class="settings-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></span><span class="settings-item-body"><strong>Pulihkan Backup</strong><small id="restoreBackupInfo">Muat data dari backup lokal terakhir</small></span><span class="settings-item-arrow">›</span></button>
       </section>
       <section class="settings-panel" data-panel="admin">
-        <button type="button" class="settings-item" id="settingsInviteCodes"><span class="settings-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span><span class="settings-item-body"><strong>Kelola Kode Invite</strong><small>Generate &amp; kelola kode undangan untuk user baru</small></span><span class="settings-item-arrow">›</span></button>
-      </section>
+              <div class="invite-codes-panel">
+                <div class="invite-gen-section">
+                  <label class="dialog-label" for="inviteCodeRole">Generate Kode Baru</label>
+                  <div class="invite-gen-row">
+                    <select id="inviteCodeRole" class="invite-code-role-select" aria-label="Role">
+                      <option value="admin" selected>Admin</option>
+                    </select>
+                    <button type="button" class="primary-button" id="generateInviteCode">Generate</button>
+                  </div>
+                </div>
+                <div class="invite-list-section">
+                  <div class="invite-list-header">
+                    <strong>Daftar Kode</strong>
+                    <button type="button" class="secondary-button" id="refreshInviteCodes">Refresh</button>
+                  </div>
+                  <div id="inviteCodesList" class="invite-codes-list">
+                    <p class="invite-empty">Memuat...</p>
+                  </div>
+                </div>
+              </div>
+            </section>
     </div>
   </dialog>
   <dialog id="deleteDialog" class="delete-dialog">
@@ -163,30 +176,6 @@
     <div class="delete-modal-head"><span class="delete-warning" aria-hidden="true">?</span><div><span class="eyebrow" id="confirmDialogEyebrow">CONFIRM</span><h2 id="confirmDialogTitle">Yakin?</h2></div><button type="button" class="modal-close" id="closeConfirmButton" aria-label="Tutup konfirmasi">×</button></div>
     <p class="delete-copy" id="confirmDialogMessage"></p>
     <div class="delete-actions"><button type="button" class="secondary-button" id="cancelConfirmButton">Batal</button><button type="button" class="delete-confirm-button" id="acceptConfirmButton">Ya, lanjutkan</button></div>
-  </dialog>
-  <dialog id="inviteCodesDialog" class="delete-dialog settings-dialog">
-    <div class="delete-modal-head"><span class="delete-warning settings-warning">🔐</span><div><span class="eyebrow">INVITE CODES</span><h2>Kelola Kode Undangan</h2></div><button type="button" class="modal-close" id="closeInviteCodesDialog" aria-label="Tutup">×</button></div>
-    <div class="dialog-content invite-codes-content">
-      <div class="invite-gen-section">
-        <label class="dialog-label" for="inviteCodeRole">Generate Kode Baru</label>
-        <div class="invite-gen-row">
-          <select id="inviteCodeRole" class="invite-code-role-select" aria-label="Role">
-            <option value="admin" selected>Admin</option>
-          </select>
-          <button type="button" class="primary-button" id="generateInviteCode">Generate</button>
-        </div>
-      </div>
-      <div class="invite-list-section">
-        <div class="invite-list-header">
-          <strong>Daftar Kode</strong>
-          <button type="button" class="secondary-button" id="refreshInviteCodes">Refresh</button>
-        </div>
-        <div id="inviteCodesList" class="invite-codes-list">
-          <p class="invite-empty">Memuat...</p>
-        </div>
-      </div>
-    </div>
-    <div class="delete-actions"><button type="button" class="secondary-button" id="closeInviteCodesButton">Tutup</button></div>
   </dialog>
   <dialog id="editDialog" class="delete-dialog edit-dialog">
      <div class="delete-modal-head"><span class="delete-warning edit-warning">✎</span><div><span class="eyebrow">WORK ORDER DETAILS</span><h2>Edit work order</h2></div><button type="button" class="modal-close" id="closeEditButton" aria-label="Tutup work order details">×</button></div>
@@ -216,7 +205,7 @@
     <div class="profile-modal-head"><div><span class="eyebrow">BUDIFE.PSD</span><h2>Meet the maker</h2></div><button type="button" class="modal-close" id="closeProfileButton" aria-label="Tutup maker panel">×</button></div>
     <nav class="maker-tabs" aria-label="Maker menu"><button type="button" class="maker-tab active" data-maker-tab="profile">Profile</button><button type="button" class="maker-tab" data-maker-tab="recent">Recent changes</button></nav>
     <section class="maker-content" data-maker-content="profile"><div class="profile-identity"><span class="profile-avatar profile-avatar-large">BI</span><div><h3>Budi Indra Ilham</h3><a href="https://www.linkedin.com/in/budife/" target="_blank" rel="noreferrer">linkedin.com/in/budife/ ↗</a></div></div><div class="profile-workspace"><span class="workspace-dot"></span><div><small>WORKSPACE</small><strong>reqord / Work order manager</strong></div></div><p class="maker-bio">Building thoughtful tools for turning everyday work into a clearer system.</p></section>
-    <section class="maker-content" data-maker-content="recent" hidden><div class="maker-changelog"><span class="eyebrow">WHAT'S NEW</span><h3>Recent changes</h3><div class="changelog-meta"><strong>v0.6.3</strong><span>Updated · 13 Nov 2026</span></div><div class="changelog-group"><label class="recent-date-label" for="recentDateSelect">Tanggal update</label><select id="recentDateSelect" class="recent-date-select" aria-label="Pilih tanggal update"></select><div id="recentReleaseDetail" class="recent-release-detail"><p>Memuat update terbaru…</p></div></div><small>Riwayat lengkap tersedia di <code>CHANGELOG.md</code> pada repository GitHub.</small></div></section>
+    <section class="maker-content" data-maker-content="recent" hidden><div class="maker-changelog"><span class="eyebrow">WHAT'S NEW</span><h3>Recent changes</h3><div class="changelog-meta"><strong>v0.6.4</strong><span>Updated · 14 Nov 2026</span></div><div class="changelog-group"><label class="recent-date-label" for="recentDateSelect">Tanggal update</label><select id="recentDateSelect" class="recent-date-select" aria-label="Pilih tanggal update"></select><div id="recentReleaseDetail" class="recent-release-detail"><p>Memuat update terbaru…</p></div></div><small>Riwayat lengkap tersedia di <code>CHANGELOG.md</code> pada repository GitHub.</small></div></section>
     <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.4</span><span>Made thoughtfully</span></div>
   </dialog>
     <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="false"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History &amp; Activity</h2></div><button type="button" class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>

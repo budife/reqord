@@ -1,4 +1,4 @@
-console.log('[reqord] v0.6.2');
+console.log('[reqord] v0.6.4');
 const SUPABASE_URL = 'https://htyfykkurammflwefxgw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_iUul7iVeH-ReFlSxVT-ulQ_qhkgzPAz';
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
@@ -385,7 +385,7 @@ const profileDialog = document.querySelector('#profileDialog');
 document.querySelector('#makerButton').addEventListener('click', () => profileDialog.showModal());
 document.querySelector('#closeProfileButton').addEventListener('click', () => profileDialog.close());
 document.querySelectorAll('[data-maker-tab]').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('[data-maker-tab]').forEach(button => button.classList.toggle('active', button === tab)); document.querySelectorAll('[data-maker-content]').forEach(content => { content.hidden = content.dataset.makerContent !== tab.dataset.makerTab; }); }));
-document.querySelector('.profile-footer span').innerHTML = '<i class="sync-dot"></i> reqord v0.6.2';
+document.querySelector('.profile-footer span').innerHTML = '<i class="sync-dot"></i> reqord v0.6.4';
 const fallbackReleaseNotes = [
   { version: 'v0.5.0', date: '2026-11-12', dateLabel: '12 Nov 2026', title: 'Scan folder, sync cloud & public board', highlights: ['Scan Folder: pilih folder Google Drive, work order langsung terisi dari nama folder', 'Login username + kode, sync otomatis ke Supabase, dan Public board read-only', 'Aksi massal: pilih banyak work order, ubah status atau hapus sekaligus', 'Layout mobile diperbaiki: tabel penuh, filter wrap, header rapat', 'Tombol Tambah dan Export/Import JSON tersedia kembali'] },
   { version: 'v0.3.0', date: '2026-09-23', dateLabel: '23 Sep 2026', title: 'Subitems inline & status Preview/Revision', highlights: ['Subitems ala Monday.com: tampil inline di bawah tiap request + checklist modal', 'Tambah, centang, dan hapus subitem; tersimpan ke sheet Subitems + restore saat Load', 'Status baru Preview dan On revision, pindah full via dropdown', 'Delete pindah ke modal edit + undo; kolom Est. bisa diedit manual', 'Subitem selalu ikut tabel parentnya'] },
@@ -457,10 +457,6 @@ function doImportJson() {
   document.querySelector('#jsonFileInput').click();
 }
 
-/* Data actions (2-step: action → format → execute) */
-let dataFormat = 'json';
-let dataAction = 'export'; // 'export' or 'import'
-
 function updateDataMeta() {
   const countEl = document.querySelector('#dataMetaCount');
   const syncEl = document.querySelector('#dataMetaSync');
@@ -470,94 +466,6 @@ function updateDataMeta() {
     syncEl.textContent = state ? state.textContent : '';
   }
 }
-
-function updateDataExecuteUI() {
-  const formatBtns = document.querySelectorAll('.data-format-btn');
-  const executeBtn = document.querySelector('#settingsDataExecute');
-  const icon = document.querySelector('#dataExecuteIcon');
-  const label = document.querySelector('#dataExecuteLabel');
-  const desc = document.querySelector('#dataExecuteDesc');
-  const arrow = document.querySelector('#dataExecuteArrow');
-  const loader = document.querySelector('#dataExecuteLoader');
-  const formatRow = document.querySelector('#dataFormatRow');
-
-  formatBtns.forEach(btn => {
-    const active = btn.dataset.format === dataFormat;
-    btn.classList.toggle('active', active);
-    btn.setAttribute('aria-pressed', active);
-  });
-
-  const exportSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>';
-  const importSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>';
-
-  if (dataAction === 'export') {
-    icon.innerHTML = exportSvg;
-    label.textContent = `Ekspor ${dataFormat.toUpperCase()}`;
-    desc.textContent = `Simpan data ke file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
-    if (arrow) arrow.textContent = '›';
-    if (executeBtn) executeBtn.classList.remove('data-execute-import');
-  } else {
-    icon.innerHTML = importSvg;
-    label.textContent = `Impor ${dataFormat.toUpperCase()}`;
-    desc.textContent = `Muat data dari file .${dataFormat === 'json' ? 'json' : 'xlsx'}`;
-    if (arrow) arrow.textContent = '⚠';
-    if (executeBtn) executeBtn.classList.add('data-execute-import');
-  }
-}
-
-function showFormatRow(action) {
-  dataAction = action;
-  const formatRow = document.querySelector('#dataFormatRow');
-  const exportBtn = document.querySelector('#dataExportBtn');
-  const importBtn = document.querySelector('#dataImportBtn');
-  if (formatRow) formatRow.hidden = false;
-  if (exportBtn) exportBtn.classList.toggle('active', action === 'export');
-  if (importBtn) importBtn.classList.toggle('active', action === 'import');
-  updateDataExecuteUI();
-}
-
-function setDataExecuteLoading(loading) {
-  const executeBtn = document.querySelector('#settingsDataExecute');
-  const loader = document.querySelector('#dataExecuteLoader');
-  const arrow = document.querySelector('#dataExecuteArrow');
-  if (!executeBtn) return;
-  executeBtn.disabled = loading;
-  if (loader) loader.hidden = !loading;
-  if (arrow) arrow.hidden = loading;
-}
-
-async function doDataExecute() {
-  if (dataAction === 'import') {
-    const ok = await confirmModal(
-      `Impor ${dataFormat.toUpperCase()} akan MENGHAPUS SEMUA DATA SAAT INI dan mengganti dengan data dari file.\n\nLanjutkan?`,
-      { title: 'Konfirmasi Impor', eyebrow: 'DESTRUCTIVE ACTION', confirmLabel: 'Ya, impor' }
-    );
-    if (!ok) return;
-  }
-  setDataExecuteLoading(true);
-  try {
-    if (dataAction === 'export') {
-      if (dataFormat === 'json') doExportJson();
-      else doExportExcel();
-    } else {
-      if (dataFormat === 'json') doImportJson();
-      else doImportExcel();
-    }
-  } finally {
-    setDataExecuteLoading(false);
-    document.querySelector('#settingsDialog').close();
-  }
-}
-
-document.querySelector('#dataExportBtn')?.addEventListener('click', () => showFormatRow('export'));
-document.querySelector('#dataImportBtn')?.addEventListener('click', () => showFormatRow('import'));
-document.querySelectorAll('.data-format-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    dataFormat = btn.dataset.format;
-    updateDataExecuteUI();
-  });
-});
-document.querySelector('#settingsDataExecute')?.addEventListener('click', doDataExecute);
 
 const settingsRestoreBackup = document.querySelector('#settingsRestoreBackup');
 if (settingsRestoreBackup) settingsRestoreBackup.addEventListener('click', async () => {
@@ -575,25 +483,19 @@ if (settingsRestoreBackup) settingsRestoreBackup.addEventListener('click', async
   showToast(`${items.length} item dipulihkan dari backup`);
 });
 
+const dataExportJSONBtn = document.querySelector('#dataExportJSONBtn');
+if (dataExportJSONBtn) dataExportJSONBtn.addEventListener('click', () => { doExportJson(); document.querySelector('#settingsDialog').close(); });
+
+const dataExportExcelBtn = document.querySelector('#dataExportExcelBtn');
+if (dataExportExcelBtn) dataExportExcelBtn.addEventListener('click', () => { doExportExcel(); document.querySelector('#settingsDialog').close(); });
+
+const dataImportBtn = document.querySelector('#dataImportBtn');
+if (dataImportBtn) dataImportBtn.addEventListener('click', () => { doImportJson(); document.querySelector('#settingsDialog').close(); });
+
 const settingsChangePass = document.querySelector('#settingsChangePass');
 if (settingsChangePass) settingsChangePass.addEventListener('click', () => {
   document.querySelector('#settingsDialog').close();
   document.querySelector('#changePassDialog').showModal();
-});
-
-const settingsInviteCodes = document.querySelector('#settingsInviteCodes');
-if (settingsInviteCodes) settingsInviteCodes.addEventListener('click', async () => {
-  document.querySelector('#settingsDialog').close();
-  await loadAndShowInviteCodes();
-});
-
-const closeInviteCodesDialog = document.querySelector('#closeInviteCodesDialog');
-if (closeInviteCodesDialog) closeInviteCodesDialog.addEventListener('click', () => {
-  document.querySelector('#inviteCodesDialog').close();
-});
-const closeInviteCodesButton = document.querySelector('#closeInviteCodesButton');
-if (closeInviteCodesButton) closeInviteCodesButton.addEventListener('click', () => {
-  document.querySelector('#inviteCodesDialog').close();
 });
 
 const generateInviteCodeBtn = document.querySelector('#generateInviteCode');
@@ -625,7 +527,6 @@ async function loadAndShowInviteCodes() {
   }
   const listEl = document.querySelector('#inviteCodesList');
   if (listEl) listEl.innerHTML = '<p style="color:var(--muted,#94a3b8);font-size:0.85rem;text-align:center;padding:20px;">Memuat...</p>';
-  document.querySelector('#inviteCodesDialog').showModal();
   inviteCodes = await sbLoadInviteCodes();
   renderInviteCodesList();
 }
@@ -1052,6 +953,7 @@ document.querySelectorAll('.settings-tab').forEach(tab => {
     tab.classList.add('active');
     document.querySelector(`.settings-panel[data-panel="${tab.dataset.tab}"]`).classList.add('active');
     if (tab.dataset.tab === 'data') updateDataMeta();
+    if (tab.dataset.tab === 'admin') loadAndShowInviteCodes();
   });
 });
 window.addEventListener('beforeunload', event => { if (!hasUnsavedChanges) return; event.preventDefault(); event.returnValue = 'Perubahan belum disimpan. Simpan dulu sebelum keluar?'; });

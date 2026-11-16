@@ -28,7 +28,7 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 - Export/Import JSON + Excel (XLSX) di Settings dialog.
 - Activity: catat username (`user`) + requestor + date.
 - Show more: tiap panel status tampil 20 item dulu, tombol "Show more (N lagi)".
-- Versi: v0.6.1.
+- Versi: v0.6.4.
 - Stack: vanilla JS + HTML + CSS (no build), CDN Supabase JS + SheetJS (XLSX).
 - Browser: Chromium.
 
