@@ -717,7 +717,7 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 .subitem-input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(120,155,88,.2)}
 #timeRangeFilter option:hover{background:var(--green-soft)}
 
-.requestor-pill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;color:#fff;margin:0 4px 6px 0}
+.requestor-pill{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:3px 9px;color:#fff;margin:0 4px 6px 0}
 
 @media(max-width:600px){
   .requestor-pill{padding:3px 7px;font-size:10px;margin:0 3px 5px 0}
