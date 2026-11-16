@@ -54,7 +54,7 @@
       <div class="delete-modal-head"><span class="delete-warning">+</span><div><span class="eyebrow">NEW WORK ORDER</span><h2>Tambah work order</h2></div><button type="button" class="modal-close" id="closeAddDialog" aria-label="Tutup">×</button></div>
       <div class="dialog-content">
         <label class="edit-field" for="titleInput">Title</label><div class="field-input-wrap"><input id="titleInput" type="text" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
-        <label class="edit-field" for="requestorInput">Requestor</label><div class="field-input-wrap"><input id="requestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
+        <label class="edit-field" id="requestorField" for="requestorInput">Requestor</label><div class="field-input-wrap"><input id="requestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
         <label class="edit-field">Priority<select id="addPriority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
       </div>
       <div class="delete-actions"><button class="secondary-button" id="cancelAddDialog" type="button">Batal</button><button class="primary-button" id="submitAddDialog" type="button">Tambah</button></div>
@@ -182,7 +182,7 @@
      <form id="editForm">
        <div class="dialog-content">
          <label class="edit-field">Title<input id="editTitleInput" type="text" required></label>
-         <label class="edit-field" for="editRequestorInput">Requestor</label><div class="field-input-wrap"><input id="editRequestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
+         <label class="edit-field" id="editRequestorField" for="editRequestorInput">Requestor</label><div class="field-input-wrap"><input id="editRequestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
          <label class="edit-field">Request date<input id="editRequestDateInput" type="datetime-local" aria-label="Request date"></label>
          <label class="edit-field">Deadline<input id="editDeadlineInput" type="date" aria-label="Deadline"></label>
          <label class="edit-field">Catatan<textarea id="editNoteInput" rows="4" placeholder="Contoh: Revisi karena menunggu feedback client..."></textarea></label>
