@@ -87,6 +87,7 @@ tr.deadline-yellow td:first-child,tr.deadline-red td:first-child{color:var(--tex
   flex-direction: column; 
   gap: 6px; 
   margin-bottom: 16px; 
+  position: relative; 
 }
 .add-dialog .edit-field label,
 .edit-dialog .edit-field label { 
