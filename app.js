@@ -373,10 +373,7 @@ function setupRequestorFocusBlur(inputId, suggestionsId) {
   const suggestions = document.querySelector('#' + suggestionsId);
   if (!input || !suggestions) return;
   let hideTimeout;
-  input.addEventListener('focus', () => {
-    clearTimeout(hideTimeout);
-    renderRequestorSuggestions(inputId, suggestionsId);
-  });
+  // Only show on input (typing), not on focus
   input.addEventListener('blur', () => {
     hideTimeout = setTimeout(() => closeRequestorSuggestions(suggestionsId, inputId), 150);
   });
