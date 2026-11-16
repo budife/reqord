@@ -200,9 +200,9 @@ function similarityScore(query, name) { if (!query) return 1; if (name === query
 let requestorMatches = [];
 let requestorActiveIndex = -1;
 function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase(); }
-function renderRequestorSuggestions(inputId = 'requestorInput', suggestionsId = 'requestorSuggestions') { const input = document.querySelector('#' + inputId); const suggestions = document.querySelector('#' + suggestionsId); if (!input || !suggestions) return; const rawQuery = input.value.trim().toLowerCase(); const query = rawQuery.split(',').pop().trim(); if (!query && document.activeElement !== input) { closeRequestorSuggestions(suggestionsId, inputId); return; } requestorMatches = requestors().map(name => ({ name, score: similarityScore(query, name.toLowerCase()) })).filter(item => !query || item.score > 0).sort((a, b) => b.score - a.score).slice(0, 6).map(item => item.name); requestorActiveIndex = -1; suggestions.innerHTML = requestorMatches.length ? `<div class="suggestion-heading">${query ? 'Matching requestors' : 'Recent requestors'}<span>${requestorMatches.length}</span></div>${requestorMatches.map((name, index) => `<button type="button" role="option" aria-selected="false" data-index="${index}" data-requestor="${escapeHtml(name)}"><span class="suggestion-avatar">${escapeHtml(initials(name))}</span><span class="suggestion-name">${escapeHtml(name)}</span><span class="suggestion-arrow">↵</span></button>`).join('')}` : `<div class="suggestion-empty">Belum ada requestor yang cocok</div>`; suggestions.hidden = !requestorMatches.length; input.setAttribute('aria-expanded', String(requestorMatches.length > 0)); syncSuggestionSpacer(suggestionsId); }
+function renderRequestorSuggestions(inputId = 'requestorInput', suggestionsId = 'requestorSuggestions') { const input = document.querySelector('#' + inputId); const suggestions = document.querySelector('#' + suggestionsId); if (!input || !suggestions) return; const rawQuery = input.value.trim().toLowerCase(); const query = rawQuery.split(',').pop().trim(); if (!query && document.activeElement !== input) { closeRequestorSuggestions(suggestionsId, inputId); return; } requestorMatches = requestors().map(name => ({ name, score: similarityScore(query, name.toLowerCase()) })).filter(item => !query || item.score > 0).sort((a, b) => b.score - a.score).slice(0, 6).map(item => item.name); requestorActiveIndex = -1; suggestions.innerHTML = requestorMatches.length ? `<div class="suggestion-heading">${query ? 'Matching requestors' : 'Recent requestors'}<span>${requestorMatches.length}</span></div>${requestorMatches.map((name, index) => `<button type="button" role="option" aria-selected="false" data-index="${index}" data-requestor="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('')}` : `<div class="suggestion-empty">Belum ada requestor yang cocok</div>`; suggestions.hidden = !requestorMatches.length; input.setAttribute('aria-expanded', String(requestorMatches.length > 0)); syncSuggestionSpacer(suggestionsId); }
 function closeRequestorSuggestions(suggestionsId = 'requestorSuggestions', inputId = 'requestorInput') { const suggestions = document.querySelector('#' + suggestionsId); const input = document.querySelector('#' + inputId); if (!suggestions || !input) return; suggestions.hidden = true; input.setAttribute('aria-expanded', 'false'); requestorActiveIndex = -1; syncSuggestionSpacer(suggestionsId); }
-function syncSuggestionSpacer(suggestionsId) { const suggestions = document.querySelector('#' + suggestionsId); if (!suggestions) return; const field = suggestions.closest('.edit-field'); const spacer = field ? field.querySelector('.suggestion-spacer') : null; if (!spacer) return; const h = suggestions.hidden ? 0 : (suggestions.offsetHeight || 0) + 8; spacer.style.height = h + 'px'; }
+function syncSuggestionSpacer(suggestionsId) { const suggestions = document.querySelector('#' + suggestionsId); if (!suggestions) return; const field = suggestions.closest('.edit-field'); const spacer = field ? field.nextElementSibling : null; if (!spacer || !spacer.classList.contains('suggestion-spacer')) return; const h = suggestions.hidden ? 0 : (suggestions.offsetHeight || 0) + 8; spacer.style.height = h + 'px'; }
 function chooseRequestor(name, inputId = 'requestorInput', suggestionsId = 'requestorSuggestions') { const input = document.querySelector('#' + inputId); if (!input) return; const parts = input.value.split(',').map(part => part.trim()).filter(Boolean); parts[parts.length - 1] = name; const unique = [...new Set(parts)]; input.value = unique.join(', '); closeRequestorSuggestions(suggestionsId, inputId); }
 function titleSimilarity(query, title) { const words = query.toLowerCase().split(/\s+/).filter(Boolean); const candidate = title.toLowerCase(); if (!words.length) return 0; return words.filter(word => candidate.includes(word)).length / words.length; }
 function renderTitleSuggestions() { const input = document.querySelector('#titleInput'); const suggestions = document.querySelector('#titleSuggestions'); if (!input || !suggestions) return; const query = input.value.trim(); if (query.length < 3) { suggestions.hidden = true; syncSuggestionSpacer('titleSuggestions'); return; } const matches = items.map(item => ({ item, score: titleSimilarity(query, item.title) })).filter(match => match.score >= .5).sort((a, b) => b.score - a.score).slice(0, 5); suggestions.innerHTML = matches.length ? `<div class="suggestion-heading">Similar work orders<span>${matches.length}</span></div>${matches.map(({ item }) => `<button type="button" role="option" data-title-id="${item.id}"><span class="suggestion-name">${escapeHtml(item.title)}</span><small>${escapeHtml(groups[item.status] || 'Daily task')} · ${escapeHtml(item.requestor || 'No requestor')}</small></button>`).join('')}` : ''; suggestions.hidden = !matches.length; syncSuggestionSpacer('titleSuggestions'); }
@@ -365,6 +365,36 @@ document.querySelector('#titleSuggestions').addEventListener('click', event => {
   if (!btn) return;
   document.querySelector('#titleInput').value = btn.querySelector('.suggestion-name')?.textContent || '';
   closeTitleSuggestions();
+});
+
+// Focus/blur handlers for requestor suggestions
+function setupRequestorFocusBlur(inputId, suggestionsId) {
+  const input = document.querySelector('#' + inputId);
+  const suggestions = document.querySelector('#' + suggestionsId);
+  if (!input || !suggestions) return;
+  let hideTimeout;
+  input.addEventListener('focus', () => {
+    clearTimeout(hideTimeout);
+    renderRequestorSuggestions(inputId, suggestionsId);
+  });
+  input.addEventListener('blur', () => {
+    hideTimeout = setTimeout(() => closeRequestorSuggestions(suggestionsId, inputId), 150);
+  });
+  suggestions.addEventListener('mousedown', () => clearTimeout(hideTimeout));
+  suggestions.addEventListener('focusin', () => clearTimeout(hideTimeout));
+}
+setupRequestorFocusBlur('requestorInput', 'requestorSuggestions');
+setupRequestorFocusBlur('editRequestorInput', 'editRequestorSuggestions');
+
+// Click outside to close suggestions
+document.addEventListener('click', event => {
+  ['requestorSuggestions', 'editRequestorSuggestions', 'titleSuggestions'].forEach(id => {
+    const suggestions = document.querySelector('#' + id);
+    const input = suggestions?.closest('.edit-field')?.querySelector('input');
+    if (suggestions && input && !suggestions.contains(event.target) && event.target !== input) {
+      closeRequestorSuggestions(id, input.id);
+    }
+  });
 });
 let editTargetId = null;
 const editDialog = document.querySelector('#editDialog');
