@@ -262,7 +262,7 @@ function renderRow(item) {
   const deleteButton = canEdit ? `<button class="action-button delete-action" data-row-action="delete" data-id="${item.id}" title="Hapus" aria-label="Hapus">⌫</button>` : '';
   const disabledAttr = canEdit ? '' : 'disabled';
   const statusOptions = `<option value="new_request" ${item.status === 'new_request' ? 'selected' : ''}>New Request</option><option value="waiting_brief" ${item.status === 'waiting_brief' ? 'selected' : ''}>Waiting Brief</option><option value="working" ${item.status === 'working' ? 'selected' : ''}>Working</option><option value="draft_preview" ${item.status === 'draft_preview' ? 'selected' : ''}>1st Draft</option><option value="revision" ${item.status === 'revision' ? 'selected' : ''}>In Revision</option><option value="preview" ${item.status === 'preview' ? 'selected' : ''}>Preview</option><option value="on_hold" ${item.status === 'on_hold' ? 'selected' : ''}>On Hold</option><option value="approved" ${item.status === 'approved' ? 'selected' : ''}>Approved</option><option value="done" ${item.status === 'done' ? 'selected' : ''}>Done</option><option value="daily" ${item.status === 'daily' ? 'selected' : ''}>Daily</option><option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>`;
-  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</td><td>${renderRequestorPills(item.requestor)}</td><td>${escapeHtml(item.team)}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}>${statusOptions}</select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td>${escapeHtml(displayDate(item.requestDate, true))}</td><td class="target-cell deadline-cell" title="Deadline: ${escapeHtml(displayDate(item.date, true))}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
+  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</td><td>${renderRequestorPills(item.requestor)}</td><td>${escapeHtml(item.team)}</td><td class="note-cell${item.note ? ' has-note' : ''}">${escapeHtml(item.note || '')}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}>${statusOptions}</select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td>${escapeHtml(displayDate(item.requestDate, true))}</td><td class="target-cell deadline-cell" title="Deadline: ${escapeHtml(displayDate(item.date, true))}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
 }
 function updateSyncStatus() {
   const el = document.querySelector('#saveState');
@@ -340,10 +340,9 @@ document.querySelector('#submitAddDialog').addEventListener('click', () => {
   const title = document.querySelector('#titleInput').value.trim();
   const requestor = document.querySelector('#requestorInput').value.trim();
   const team = document.querySelector('#teamInput').value.trim();
-  const note = document.querySelector('#addNoteInput').value.trim();
   const priority = document.querySelector('#addPriority').value;
   if (!title || !requestor) { showToast('Title dan requestor wajib diisi'); return; }
-  const item = normalizeItem({ id: generateItemId(), title, requestor, team, note, priority, status: 'new_request', requestDate: nowDateTime() });
+  const item = normalizeItem({ id: generateItemId(), title, requestor, team, note: '', priority, status: 'new_request', requestDate: nowDateTime() });
   items = [...items, item];
   addActivity('Work order ditambahkan', item);
   saveItems();
@@ -351,7 +350,6 @@ document.querySelector('#submitAddDialog').addEventListener('click', () => {
   document.querySelector('#titleInput').value = '';
   document.querySelector('#requestorInput').value = '';
   document.querySelector('#teamInput').value = '';
-  document.querySelector('#addNoteInput').value = '';
   document.querySelector('#addPriority').value = 'normal';
   render();
   showToast('Work order ditambahkan');
