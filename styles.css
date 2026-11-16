@@ -103,6 +103,108 @@ tr.deadline-yellow td:first-child,tr.deadline-red td:first-child{color:var(--tex
   background: var(--green-soft); 
   color: var(--green-dark); 
 }
+
+/* Add/Edit dialog fields - unified styling */
+.add-dialog .dialog-content,
+.edit-dialog .dialog-content { padding: 20px 24px; }
+.add-dialog .edit-field,
+.edit-dialog .edit-field { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 6px; 
+  margin-bottom: 16px; 
+}
+.add-dialog .edit-field label,
+.edit-dialog .edit-field label { 
+  font: 600 13px Manrope,system-ui,sans-serif; 
+  color: var(--text); 
+}
+.add-dialog .edit-field input,
+.add-dialog .edit-field select,
+.add-dialog .edit-field textarea,
+.edit-dialog .edit-field input,
+.edit-dialog .edit-field select,
+.edit-dialog .edit-field textarea { 
+  height: 42px; 
+  padding: 10px 12px; 
+  border-radius: 8px; 
+  font-size: 14px; 
+  background: var(--card);
+  border: 2px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.add-dialog .edit-field textarea,
+.edit-dialog .edit-field textarea { 
+  min-height: 100px; 
+  resize: vertical; 
+  line-height: 1.5; 
+}
+.add-dialog .edit-field input:focus,
+.add-dialog .edit-field select:focus,
+.add-dialog .edit-field textarea:focus,
+.edit-dialog .edit-field input:focus,
+.edit-dialog .edit-field select:focus,
+.edit-dialog .edit-field textarea:focus { 
+  border-color: var(--green); 
+  box-shadow: 0 0 0 3px rgba(120,155,88,.15); 
+}
+.add-dialog .edit-field select,
+.edit-dialog .edit-field select { 
+  appearance: none; 
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+.add-dialog .edit-field select:focus,
+.edit-dialog .edit-field select:focus { 
+  border-color: var(--green); 
+  box-shadow: 0 0 0 3px rgba(120,155,88,.15); 
+}
+.add-dialog .delete-actions,
+.edit-dialog .delete-actions { padding: 16px 24px; }
+.add-dialog .delete-actions button,
+.edit-dialog .delete-actions button { height: 40px; }
+.add-dialog .modal-delete-link,
+.edit-dialog .modal-delete-link { 
+  display: block; 
+  text-align: center; 
+  padding: 12px; 
+  color: var(--red); 
+  font: 500 13px Manrope,system-ui,sans-serif; 
+  background: none; 
+  border: 0; 
+  cursor: pointer; 
+}
+.add-dialog .modal-delete-link:hover,
+.edit-dialog .modal-delete-link:hover { color: #b3261e; text-decoration: underline; }
+
+/* Title suggestions dropdown */
+.add-dialog .title-suggestions,
+.edit-dialog .title-suggestions { 
+  top: calc(100% + 6px); 
+  border-radius: 10px; 
+  box-shadow: 0 10px 30px rgba(53,70,43,.15); 
+  border: 1px solid var(--line); 
+  background: var(--card); 
+}
+.add-dialog .title-suggestions button,
+.edit-dialog .title-suggestions button { 
+  padding: 10px 12px; 
+  border-radius: 8px; 
+  font-size: 13px; 
+  color: var(--text); 
+}
+.add-dialog .title-suggestions button:hover,
+.edit-dialog .title-suggestions button:hover { 
+  background: var(--green-soft); 
+  color: var(--green-dark); 
+}
 .toast{background:#33492a;border-color:#4e6b3d;color:#fff;box-shadow:0 5px 15px rgba(53,70,43,.14)}
 
 /* Modern interaction layer. */

@@ -50,12 +50,12 @@
                              <article class="table-panel glass" data-status="daily"><div class="table-heading"><div><span class="table-marker marker-daily"></span><h2>Daily</h2><span class="table-count" id="dailyCount">0</span><p>Tugas harian</p></div><span class="table-state">Daily</span></div><div class="table-scroll"><table><thead><tr><th>Title</th><th>Requestor</th><th>Status</th><th>Priority</th><th>Request date</th><th>Deadline</th></tr></thead><tbody id="dailyTable"></tbody></table></div><div class="table-empty" id="dailyEmpty">Belum ada Daily.</div></article>
                              <article class="table-panel glass" data-status="cancelled"><div class="table-heading"><div><span class="table-marker marker-cancelled"></span><h2>Cancelled</h2><span class="table-count" id="cancelledCount">0</span><p>Dibatalkan</p></div><span class="table-state">Cancelled</span></div><div class="table-scroll"><table><thead><tr><th>Title</th><th>Requestor</th><th>Status</th><th>Priority</th><th>Request date</th><th>Deadline</th></tr></thead><tbody id="cancelledTable"></tbody></table></div><div class="table-empty" id="cancelledEmpty">Belum ada Cancelled.</div></article>
                </section>
-           <dialog id="addDialog" class="delete-dialog">
+           <dialog id="addDialog" class="delete-dialog add-dialog">
       <div class="delete-modal-head"><span class="delete-warning">+</span><div><span class="eyebrow">NEW WORK ORDER</span><h2>Tambah work order</h2></div><button type="button" class="modal-close" id="closeAddDialog" aria-label="Tutup">×</button></div>
       <div class="dialog-content">
-        <label class="edit-field" for="titleInput">Title</label><div class="field-input-wrap"><input id="titleInput" type="text" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
+        <label class="edit-field" id="titleField" for="titleInput">Title</label><div class="field-input-wrap"><input id="titleInput" type="text" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
         <label class="edit-field" id="requestorField" for="requestorInput">Requestor</label><div class="field-input-wrap"><input id="requestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
-        <label class="edit-field">Priority<select id="addPriority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
+        <label class="edit-field" id="priorityField">Priority<select id="addPriority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
       </div>
       <div class="delete-actions"><button class="secondary-button" id="cancelAddDialog" type="button">Batal</button><button class="primary-button" id="submitAddDialog" type="button">Tambah</button></div>
     </dialog>
@@ -181,12 +181,12 @@
      <div class="delete-modal-head"><span class="delete-warning edit-warning">✎</span><div><span class="eyebrow">WORK ORDER DETAILS</span><h2>Edit work order</h2></div><button type="button" class="modal-close" id="closeEditButton" aria-label="Tutup work order details">×</button></div>
      <form id="editForm">
        <div class="dialog-content">
-         <label class="edit-field">Title<input id="editTitleInput" type="text" required></label>
+         <label class="edit-field" id="editTitleField">Title<input id="editTitleInput" type="text" required></label>
          <label class="edit-field" id="editRequestorField" for="editRequestorInput">Requestor</label><div class="field-input-wrap"><input id="editRequestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></div><div class="suggestion-spacer" aria-hidden="true"></div>
-         <label class="edit-field">Request date<input id="editRequestDateInput" type="datetime-local" aria-label="Request date"></label>
-         <label class="edit-field">Deadline<input id="editDeadlineInput" type="date" aria-label="Deadline"></label>
-         <label class="edit-field">Catatan<textarea id="editNoteInput" rows="4" placeholder="Contoh: Revisi karena menunggu feedback client..."></textarea></label>
-         <label class="edit-field" for="editSubitemInput">Subitems</label><div id="editSubitemList" class="edit-subitem-list"></div><input id="editSubitemInput" type="text" placeholder="Tambah subitem... lalu tekan Enter" autocomplete="off" aria-label="Tambah subitem">
+         <label class="edit-field" id="editRequestDateField">Request date<input id="editRequestDateInput" type="datetime-local" aria-label="Request date"></label>
+         <label class="edit-field" id="editDeadlineField">Deadline<input id="editDeadlineInput" type="date" aria-label="Deadline"></label>
+         <label class="edit-field" id="editNoteField">Catatan<textarea id="editNoteInput" rows="4" placeholder="Contoh: Revisi karena menunggu feedback client..."></textarea></label>
+         <label class="edit-field" id="editSubitemField" for="editSubitemInput">Subitems</label><div id="editSubitemList" class="edit-subitem-list"></div><input id="editSubitemInput" type="text" placeholder="Tambah subitem... lalu tekan Enter" autocomplete="off" aria-label="Tambah subitem">
        </div>
        <div class="delete-actions"><button type="button" class="secondary-button" id="cancelEditButton">Batal</button><button class="primary-button" id="saveEditButton" type="submit">Simpan perubahan</button></div>
        <button type="button" class="modal-delete-link" id="deleteFromEditButton">Hapus request</button>
