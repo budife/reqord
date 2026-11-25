@@ -1405,6 +1405,7 @@ function sbToItem(row) {
     id: row.id,
     title: row.title,
     requestor: row.requestor,
+    team: row.team || '',
     month: row.month,
     priority: row.priority,
     status: row.status,

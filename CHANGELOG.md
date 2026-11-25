@@ -24,7 +24,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Kolom TEAM dan NOTE dihapus dari tabel. Seluruh metadata kini berkumpul dalam satu baris `.title-meta` di bawah judul (`flex flex-wrap items-center gap-1.5 mt-1.5`): pill TEAM outlined bulat, pill Note outlined bulat (tooltip + klik lihat/edit tetap ada), dan tombol pensil bulat. Kolom REQUESTOR kembali hanya berisi badge nama.
 - Pill TEAM kini memakai palet warna soft yang deterministik per nama team (teks/border/background), tetap outline dan mudah dibaca.
 - Fix: field `team` kini ikut dikirim ke Supabase lewat `itemToSb()` (sebelumnya hanya tersimpan lokal, hilang setelah reload dari cloud). Skrip `migration-team.sql` ditambahkan untuk `ALTER TABLE ... ADD COLUMN team TEXT`; schema doc diperbarui. Sync punya fallback agar sync lain tetap jalan bila kolom belum ada.
-- Sync kini mendeteksi keberadaan kolom `team` sekali lewat `select('team').limit(1)` dan tidak mengirim field itu jika kolom belum ada, sehingga tidak lagi memunculkan toast "Sync gagal: column team". Cache-buster naik ke `app.js?v=100` / `styles.css?v=115`.
+- `sbToItem()` tambah `team: row.team || ''` supaya load dari cloud mempertahankan field team (sebelumnya hilang setelah merge realtime/periodik). Cache-buster naik ke `app.js?v=102`.
 - Input TEAM di dialog Tambah/Edit kini punya suggestion dari team yang pernah dipakai, tetap bisa diisi bebas. Warna pill TEAM dihitung dari hash nama ke HSL: nama sama → warna sama, nama beda → warna beda (tidak lagi terbatas 8 palet). `app.js?v=101`.
 
 
