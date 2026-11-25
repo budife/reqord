@@ -881,11 +881,14 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 .group-check{flex:0 0 auto;margin:0}
 .title-edit-badge{margin-left:0}
 
-/* Team sub-label under requestor + note badge in title meta row */
-.requestor-cell{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
-.requestor-team{color:#64748b;font-size:11px;line-height:1.2;overflow-wrap:anywhere}
-.title-note-badge{position:relative;display:inline-grid;place-items:center;height:18px;padding:0 6px;border:1px solid #dbe3d5;border-radius:4px;background:#f6f8f2;color:#6b7d71;font:600 10px Manrope,system-ui,sans-serif;line-height:1;cursor:pointer}
-.title-note-badge:hover{background:var(--green-soft);color:var(--green-dark);border-color:#b9cdaa}
-.title-note-badge::after{content:attr(data-note);position:absolute;left:0;top:calc(100% + 6px);z-index:60;display:none;width:max-content;max-width:280px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--text);font:500 11px/1.5 Manrope,system-ui,sans-serif;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 10px 24px rgba(15,23,42,.14)}
-.title-note-badge:hover::after,
-.title-note-badge:focus-visible::after{display:block}
+/* Metadata row under the title: team pill, note pill, edit icon */
+.title-content{display:block}
+.title-main{overflow-wrap:anywhere;word-break:break-word}
+.title-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px}
+.title-meta-badge{display:inline-flex;align-items:center;height:20px;padding:0 8px;border:1px solid #cbd5e1;border-radius:999px;background:rgba(255,255,255,.8);color:#475569;font:500 11px Manrope,system-ui,sans-serif;line-height:1;white-space:nowrap}
+.title-meta-badge.note-badge{position:relative;cursor:pointer}
+.title-meta-badge.note-badge:hover{background:var(--green-soft);color:var(--green-dark);border-color:#b9cdaa}
+.title-meta-badge.note-badge::after{content:attr(data-note);position:absolute;left:0;top:calc(100% + 6px);z-index:60;display:none;width:max-content;max-width:280px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--text);font:500 11px/1.5 Manrope,system-ui,sans-serif;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 10px 24px rgba(15,23,42,.14)}
+.title-meta-badge.note-badge:hover::after,
+.title-meta-badge.note-badge:focus::after{display:block}
+.title-meta .title-edit-badge{border-radius:999px;width:20px;height:20px}

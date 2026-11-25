@@ -34,6 +34,13 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Unify metadata under title)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: Requestor kembali bersih (hanya badge nama); TEAM dan NOTE jadi outlined pill bulat satu baris di bawah judul bersama tombol edit.
+- Perubahan: `app.js` `renderRow()` — Requestor langsung `renderRequestorPills()` tanpa `.requestor-cell`/team sub-label; `.title-content` kini berisi `.title-main` (teks + orphan badge) dan `.title-meta` (team pill, note pill, tombol edit). Note badge memakai kelas `.title-meta-badge.note-badge` dengan `data-note`/`title` dan `data-row-action="note"` (handler lama dipertahankan). `styles.css`: `.title-content{display:block}`, `.title-meta{flex wrap; gap:6px; margin-top:6px}`, `.title-meta-badge` outlined pill `border-radius:999px`, `height:20px`, font 11px, border slate-300, tooltip `::after` dari `data-note` (hover/focus), edit icon radius 999px. `test/app-smoke.test.js` assertions disesuaikan; `CHANGELOG.md` diperbarui.
+- Validasi: Chromium 1440px — Requestor cell hanya `<span class="requestor-pill">Budd</span>` (tanpa "MKT"); `.title-meta` children = `[team-badge "MKT", note-badge "Note", title-edit-badge "✎"]`; baris tanpa team/note hanya berisi edit badge. Computed: `display:flex`, `gap:6px`, `margin-top:6px`, `flex-wrap:wrap`, pill radius `999px`, border `rgb(203,213,225)`, font `11px`, tinggi `20px`, edit radius `999px`. Teks judul dan meta keduanya `left:162` (sejajar). Screenshot diverifikasi visual. Note pill pada item asli tetap membuka `#noteDialog` dengan isi benar dan tooltip `content:"menunggu working file"`. `node --check`, 3 test Node, `git diff --check` lolos.
+
 ### 2026-11-25 (Drop Team/Note columns)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).

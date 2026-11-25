@@ -21,7 +21,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Bagian Subitems beserta input dan handler-nya dihapus dari modal Edit work order — pengelolaan sub-item kini hanya lewat expand inline di tabel utama.
 - Checkbox seleksi massal dikembalikan ke semua grup status: master checkbox di header (sebelah kiri TITLE, select-all per grup) + checkbox per baris di dalam sel TITLE. Muncul floating bulk bar saat ada seleksi untuk ubah status/priority atau hapus banyak item. Klik judul untuk expand sub-item berlaku identik di semua panel status.
 - Alignment sel TITLE: checkbox dan konten judul dibungkus flex `items-start gap-3`, checkbox `mt-0.5 shrink-0`, teks + badge edit dalam wrapper `flex-1 min-w-0`. Judul multi-line rata kiri di x yang sama untuk semua baris, ikon pensil ikut sejajar dengan tepi teks, header checkbox sejajar vertikal dengan checkbox baris.
-- Kolom TEAM dan NOTE dihapus dari tabel. TEAM tampil sebagai sub-label muted di bawah badge Requestor hanya saat terisi; NOTE tampil sebagai badge kecil di meta judul (sejajar pensil) dengan tooltip isi catatan dan klik untuk lihat/edit. Sisa 6 kolom (Title/Requestor/Status/Priority/Request date/Deadline) diset ulang 32/13/14/10/14/12% + Actions 5%.
+- Kolom TEAM dan NOTE dihapus dari tabel. Seluruh metadata kini berkumpul dalam satu baris `.title-meta` di bawah judul (`flex flex-wrap items-center gap-1.5 mt-1.5`): pill TEAM outlined bulat, pill Note outlined bulat (tooltip + klik lihat/edit tetap ada), dan tombol pensil bulat. Kolom REQUESTOR kembali hanya berisi badge nama.
 
 
 - Tabel dengan lebar 601–1100px kini discroll horizontal (min-width 1080px) supaya kolom tidak berhimpitan.
