@@ -34,6 +34,13 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Drop Team/Note columns)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: hapus kolom TEAM dan NOTE, pindahkan info secara kondisional ke Requestor (team sub-label) dan meta TITLE (badge Note + tooltip + klik edit), set ulang proporsi 6 kolom tersisa.
+- Perubahan: `index.html` — hapus `<th>Team</th><th>Note</th>` dari 11 header (replace_all). `app.js` `renderRow()` — hapus 2 `<td>`, tambah `.requestor-cell` (pills + `.requestor-team` hanya saat terisi) dan `.title-note-badge` (data-note + title, `data-row-action="note"`, hanya saat note ada); hapus 3 handler mati `.note-cell.has-note`/`.title-cell.has-note`. `renderInlineSubitems()` colSpan disesuaikan jadi header cells + 1 (Actions tidak punya th). `styles.css` — lebar desktop 32/13/14/10/14/12% + Actions 5%, label mobile Requestor/Status/Priority/Date/Deadline digeser, gaya `.requestor-cell`, `.requestor-team`, `.title-note-badge` + tooltip `::after` dari `data-note`. `test/app-smoke.test.js` assertions baru; `CHANGELOG.md` diperbarui.
+- Validasi: Chromium 1440px — header 6 kolom, baris 7 cell (Actions tanpa th), lebar `[377,153,165,118,165,141,59]` total 1178px, Title naik dari 20% ke 32%. Team sub-label `Creative` muncul saat terisi dan `null` saat kosong. Note badge hanya muncul saat ada note; klik badge → `#noteDialog` terbuka dengan isi catatan; tombol "Edit catatan" → `#editDialog` terbuka dengan note terisi. Tooltip `::after` berisi `"menunggu working file"`, `display:block` saat focus, screenshot tooltip terlihat tidak terpotong. Sub-item expand masih jalan (colSpan 7). Mobile 390px: dokumen tidak overflow, label Status/Priority/Date/Deadline benar. `node --check`, 3 test Node, `git diff --check` lolos.
+
 ### 2026-11-25 (Title cell flex alignment)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).
