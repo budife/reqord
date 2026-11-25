@@ -856,3 +856,17 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 .title-edit-badge{display:inline-grid;place-items:center;margin-left:6px;width:18px;height:18px;padding:0;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--green-dark);font:600 10px Manrope,system-ui,sans-serif;line-height:1;vertical-align:middle;cursor:pointer}
 .title-edit-badge:hover{background:var(--green-soft);border-color:#b9cdaa}
 .title-edit-badge:disabled{opacity:.45;cursor:not-allowed}
+
+/* Bulk selection */
+.row-check-wrap,
+.group-check-wrap{display:inline-flex;align-items:center;margin-right:8px;vertical-align:middle}
+.row-check,
+.group-check{width:14px;height:14px;margin:0;accent-color:var(--green-dark);cursor:pointer}
+.row-check:disabled,
+.group-check:disabled{cursor:not-allowed;opacity:.5}
+.bulk-bar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9998;display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;box-shadow:0 12px 32px rgba(15,23,42,.18)}
+.bulk-bar[hidden]{display:none!important}
+.bulk-bar #bulkCount{color:var(--muted);font:600 12px Manrope,system-ui,sans-serif;white-space:nowrap}
+.bulk-bar select{height:32px;padding:0 26px 0 9px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--text);font:500 12px Manrope,system-ui,sans-serif}
+.bulk-bar .secondary-button,
+.bulk-bar .primary-button{height:32px;padding:0 12px;font:600 12px Manrope,system-ui,sans-serif}

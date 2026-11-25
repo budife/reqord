@@ -34,6 +34,17 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Bulk selection across all status groups)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: checkbox seleksi belum muncul — tambahkan master checkbox per header grup, checkbox per baris di kiri judul, bulk action bar, dan pastikan expand sub-item identik di semua grup status.
+- Perubahan:
+  - `app.js`: `selectedIds` Set; `ensureGroupHeaderChecks()` menyisipkan `.group-check` ke `<th>` pertama tiap `.table-panel`; `renderRow()` menyisipkan `.row-check` di dalam `.title-cell` (mengikuti keputusan lama agar lebar kolom tidak bergeser); `ensureBulkBar()` membuat `#bulkBar` sekali di body; `syncSelectionUI()` menyinkronkan row check, master check (termasuk `indeterminate`), dan visibilitas/count bulk bar. `render()` memanggil ketiganya. Handlers `change` untuk row/group check, `applyBulkChange()`, `deleteBulk()` dengan `confirmModal()`, dan delegasi klik `#bulkApply/#bulkClear/#bulkDelete`. Guard `.row-check` ditambahkan pada title click/keydown agar centang tidak men-toggle sub-item.
+  - Perbaikan bug: handler klik-di-luar sub-item dulu memanggil `render()` penuh saat checkbox diklik, membuat elemen terlepas sebelum event `change`-nya jalan — kini cukup `renderInlineSubitems()` (Esc juga). Handler delete sub-item dikembalikan ke event `click` setelah salah terpatch ke `change`.
+  - `styles.css`: `.row-check-wrap/.group-check-wrap`, checkbox 14px accent green, `.bulk-bar` fixed bottom-center z-9998 dengan select/button kompak. `test/app-smoke.test.js` assertions baru; `CHANGELOG.md` diperbarui.
+- Validasi: Chromium 1440px (admin) — 11 panel, 11 `.group-check`, 54 `.row-check`, bulk bar awalnya hidden. Klik row check → "1 dipilih", bar muncul, sub-item tidak expand. Klik group check → semua baris grup tercentang. Select-all Working + bulk status Done → 3 baris pindah, bar hilang. Bulk priority Low dan bulk delete dengan konfirmasi lolos. Expand sub-item di Waiting Brief → inline row + input fokus (sama seperti New Request). Screenshot checkbox header/baris + bulk bar diverifikasi visual. `node --check`, 3 test Node, `git diff --check` lolos.
+- Catatan: checkbox sengaja ditaruh di dalam sel TITLE, bukan kolom baru, supaya nth-child/width rules dan label mobile tidak perlu diubah.
+
 ### 2026-11-25 (Remove subitems from edit modal)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).

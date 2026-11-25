@@ -272,6 +272,9 @@ function render() {
   makeRowsEditable();
   removeActionCells();
   renderInlineSubitems();
+  ensureGroupHeaderChecks();
+  ensureBulkBar();
+  syncSelectionUI();
   renderActiveFile();
   renderRequestorSuggestions('requestorInput', 'requestorSuggestions');
   renderRequestorSuggestions('editRequestorInput', 'editRequestorSuggestions');
@@ -297,6 +300,39 @@ const PRIORITY_OPTIONS = [
   { value: 'normal', label: 'Normal' },
   { value: 'low', label: 'Low' }
 ];
+const selectedIds = new Set();
+function ensureGroupHeaderChecks() {
+  document.querySelectorAll('.table-panel').forEach(panel => {
+    const th = panel.querySelector('thead th:first-child');
+    if (!th || th.querySelector('.group-check')) return;
+    th.insertAdjacentHTML('afterbegin', `<label class="group-check-wrap" title="Pilih semua di grup ini"><input type="checkbox" class="group-check" data-group-status="${panel.dataset.status}" aria-label="Pilih semua work order di grup ini"></label>`);
+  });
+}
+function ensureBulkBar() {
+  if (document.querySelector('#bulkBar')) return;
+  const bar = document.createElement('div');
+  bar.id = 'bulkBar';
+  bar.className = 'bulk-bar';
+  bar.hidden = true;
+  bar.innerHTML = `<span id="bulkCount">0 dipilih</span><select id="bulkStatus" aria-label="Ubah status massal"><option value="">Status...</option>${STATUS_OPTIONS.map(option => `<option value="${option.value}">${option.label}</option>`).join('')}</select><select id="bulkPriority" aria-label="Ubah priority massal"><option value="">Priority...</option>${PRIORITY_OPTIONS.map(option => `<option value="${option.value}">${option.label}</option>`).join('')}</select><button type="button" class="secondary-button" id="bulkApply">Terapkan</button><button type="button" class="secondary-button" id="bulkDelete">Hapus</button><button type="button" class="secondary-button" id="bulkClear">Batal</button>`;
+  document.body.appendChild(bar);
+}
+function syncSelectionUI() {
+  document.querySelectorAll('.row-check').forEach(check => { check.checked = selectedIds.has(check.dataset.checkId); });
+  document.querySelectorAll('.group-check').forEach(check => {
+    const ids = [...document.querySelectorAll(`#${check.dataset.groupStatus}Table .row-check`)].map(item => item.dataset.checkId);
+    const picked = ids.filter(id => selectedIds.has(id)).length;
+    check.checked = ids.length > 0 && picked === ids.length;
+    check.indeterminate = picked > 0 && picked < ids.length;
+    check.disabled = ids.length === 0;
+  });
+  const bar = document.querySelector('#bulkBar');
+  if (bar) {
+    bar.hidden = selectedIds.size === 0;
+    const count = document.querySelector('#bulkCount');
+    if (count) count.textContent = `${selectedIds.size} dipilih`;
+  }
+}
 function renderRow(item) {
   const canEdit = isAdmin;
   const isDone = item.status === 'done';
@@ -311,7 +347,7 @@ function renderRow(item) {
   const priorityLabel = PRIORITY_OPTIONS.find(option => option.value === item.priority)?.label || 'Normal';
   const statusControl = `<div class="custom-select"><button type="button" class="custom-trigger status-select status-${item.status}" data-custom-trigger="status" data-id="${item.id}" data-value="${escapeHtml(item.status)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Status" ${disabledAttr}><span class="trigger-text">${escapeHtml(statusLabel)}</span><span class="trigger-chevron" aria-hidden="true"></span></button></div>`;
   const priorityControl = `<div class="custom-select"><button type="button" class="custom-trigger priority-select priority-${item.priority}" data-custom-trigger="priority" data-id="${item.id}" data-value="${escapeHtml(item.priority)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Priority" ${disabledAttr}><span class="trigger-text">${escapeHtml(priorityLabel)}</span></button></div>`;
-  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}<button type="button" class="title-edit-badge" data-row-action="edit" data-id="${item.id}" title="Edit work order" aria-label="Edit work order" ${disabledAttr}>✎</button></td><td>${renderRequestorPills(item.requestor)}</td><td>${escapeHtml(item.team)}</td><td class="note-cell${item.note ? ' has-note' : ''}">${escapeHtml(item.note || '')}</td><td>${statusControl}</td><td>${priorityControl}</td><td class="request-date-cell">${formatRequestDate(item.requestDate)}</td><td class="target-cell deadline-cell" title="Deadline: ${formatShortDate(item.date)}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
+  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><label class="row-check-wrap"><input type="checkbox" class="row-check" data-check-id="${item.id}" aria-label="Pilih work order"></label><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}<button type="button" class="title-edit-badge" data-row-action="edit" data-id="${item.id}" title="Edit work order" aria-label="Edit work order" ${disabledAttr}>✎</button></td><td>${renderRequestorPills(item.requestor)}</td><td>${escapeHtml(item.team)}</td><td class="note-cell${item.note ? ' has-note' : ''}">${escapeHtml(item.note || '')}</td><td>${statusControl}</td><td>${priorityControl}</td><td class="request-date-cell">${formatRequestDate(item.requestDate)}</td><td class="target-cell deadline-cell" title="Deadline: ${formatShortDate(item.date)}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
 }
 function updateSyncStatus() {
   const el = document.querySelector('#saveState');
@@ -587,7 +623,7 @@ document.querySelector('.table-stack').addEventListener('change', event => { con
 document.querySelector('#closeSubitemButton').addEventListener('click', () => subitemDialog.close());
 document.querySelector('.table-stack').addEventListener('click', event => {
   const title = event.target.closest('.title-cell.has-subitems');
-  if (!title || !title.dataset.subitemId || event.target.closest('.title-edit-badge')) return;
+  if (!title || !title.dataset.subitemId || event.target.closest('.title-edit-badge') || event.target.closest('.row-check')) return;
   event.stopPropagation();
   expandedSubitemId = expandedSubitemId === title.dataset.subitemId ? null : title.dataset.subitemId;
   focusQuickSubitem = Boolean(expandedSubitemId);
@@ -596,7 +632,7 @@ document.querySelector('.table-stack').addEventListener('click', event => {
 });
 document.querySelector('.table-stack').addEventListener('keydown', event => {
   const title = event.target.closest('.title-cell.has-subitems');
-  if (title && !event.target.closest('.title-edit-badge') && (event.key === 'Enter' || event.key === ' ')) {
+  if (title && !event.target.closest('.title-edit-badge') && !event.target.closest('.row-check') && (event.key === 'Enter' || event.key === ' ')) {
     event.preventDefault();
     event.stopPropagation();
     expandedSubitemId = expandedSubitemId === title.dataset.subitemId ? null : title.dataset.subitemId;
@@ -625,7 +661,7 @@ document.querySelector('.table-stack').addEventListener('keydown', event => {
     event.stopPropagation();
     expandedSubitemId = null;
     focusQuickSubitem = false;
-    render();
+    renderInlineSubitems();
   }
 });
 document.querySelector('.table-stack').addEventListener('click', event => {
@@ -646,7 +682,60 @@ document.addEventListener('click', event => {
   if (event.target.closest('.subitem-inline') || event.target.closest('.title-cell.has-subitems')) return;
   expandedSubitemId = null;
   focusQuickSubitem = false;
+  renderInlineSubitems();
+});
+document.querySelector('.table-stack').addEventListener('change', event => {
+  const rowCheck = event.target.closest('.row-check');
+  if (rowCheck) {
+    if (rowCheck.checked) selectedIds.add(rowCheck.dataset.checkId);
+    else selectedIds.delete(rowCheck.dataset.checkId);
+    syncSelectionUI();
+    return;
+  }
+  const groupCheck = event.target.closest('.group-check');
+  if (!groupCheck) return;
+  const ids = [...document.querySelectorAll(`#${groupCheck.dataset.groupStatus}Table .row-check`)].map(item => item.dataset.checkId);
+  ids.forEach(id => groupCheck.checked ? selectedIds.add(id) : selectedIds.delete(id));
+  syncSelectionUI();
+});
+function applyBulkChange(kind, value) {
+  if (!value) return;
+  const chosen = [...selectedIds].map(id => findItem(id)).filter(Boolean);
+  if (!chosen.length) return;
+  chosen.forEach(item => {
+    if (kind === 'status') {
+      item.status = normalizeStatus(value);
+      if (item.status === 'done') { item.done = true; item.completedAt = item.completedAt || new Date().toISOString(); }
+      else item.done = false;
+    } else item.priority = value;
+    addActivity(kind === 'priority' ? 'Priority diubah' : `Status menjadi ${item.status}`, item);
+  });
+  saveItems();
+  selectedIds.clear();
   render();
+  showToast(`${chosen.length} work order diperbarui`);
+}
+async function deleteBulk() {
+  const chosen = [...selectedIds].map(id => findItem(id)).filter(Boolean);
+  if (!chosen.length) return;
+  const ok = await confirmModal(`${chosen.length} work order akan dihapus permanen.`, { title: 'Hapus work order?', confirmLabel: 'Hapus' });
+  if (!ok) return;
+  chosen.forEach(item => { items = items.filter(candidate => candidate.id !== item.id); sbDeleteItem(item.id); addActivity('Request dihapus', item); });
+  saveItems();
+  selectedIds.clear();
+  render();
+  showToast(`${chosen.length} work order dihapus`);
+}
+document.addEventListener('click', event => {
+  if (event.target.closest('#bulkApply')) {
+    const status = document.querySelector('#bulkStatus')?.value;
+    const priority = document.querySelector('#bulkPriority')?.value;
+    if (status) applyBulkChange('status', status);
+    else if (priority) applyBulkChange('priority', priority);
+    return;
+  }
+  if (event.target.closest('#bulkClear')) { selectedIds.clear(); syncSelectionUI(); return; }
+  if (event.target.closest('#bulkDelete')) { deleteBulk(); }
 });
 document.querySelector('.table-stack').addEventListener('click', event => { const button = event.target.closest('[data-row-action="complete"]'); if (button) { const item = findItem(button.dataset.id); if (item && !item.completedAt) item.completedAt = new Date().toISOString(); } }, true);
 

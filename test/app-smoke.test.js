@@ -169,5 +169,10 @@ assert.match(source, /event\.target\.closest\('\.title-edit-badge'\)/);
 assert.doesNotMatch(markup, /editSubitemInput/);
 assert.doesNotMatch(markup, /id="editSubitemList"/);
 assert.doesNotMatch(source, /function renderEditSubitems/);
+assert.match(source, /class="row-check"/);
+assert.match(source, /class="group-check"/);
+assert.match(source, /function syncSelectionUI/);
+assert.match(source, /function applyBulkChange/);
+assert.match(styles, /\.bulk-bar\{position:fixed/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

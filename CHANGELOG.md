@@ -19,6 +19,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Klik judul work order kini toggle expand sub-item inline dengan input auto-focus. Enter menyimpan sub-item dan langsung menyiapkan input baru untuk input beruntun; Esc/klik luar menutup editor tanpa menghapus data. Checklist sub-item menjorok dengan guide line vertikal, checkbox + coretan saat selesai, dan tombol hapus kecil yang muncul saat hover.
 - Badge edit kecil (✎) ditambahkan di ujung setiap TITLE agar modal edit tetap mudah diakses setelah klik judul dipakai untuk toggle sub-item. Klik badge membuka edit dialog tanpa men-toggle sub-item.
 - Bagian Subitems beserta input dan handler-nya dihapus dari modal Edit work order — pengelolaan sub-item kini hanya lewat expand inline di tabel utama.
+- Checkbox seleksi massal dikembalikan ke semua grup status: master checkbox di header (sebelah kiri TITLE, select-all per grup) + checkbox per baris di dalam sel TITLE. Muncul floating bulk bar saat ada seleksi untuk ubah status/priority atau hapus banyak item. Klik judul untuk expand sub-item berlaku identik di semua panel status.
 
 
 - Tabel dengan lebar 601–1100px kini discroll horizontal (min-width 1080px) supaya kolom tidak berhimpitan.
