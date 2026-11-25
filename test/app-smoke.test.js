@@ -148,5 +148,14 @@ assert.match(styles, /\.table-scroll td \.status-select\{/);
 assert.match(styles, /\.table-scroll td \.status-new_request\{background-color:#eaf3fb/);
 assert.match(styles, /\.table-scroll td \.priority-high\{background-image:/);
 assert.match(styles, /\.table-scroll td \.priority-select:hover\{background-color:/);
+assert.match(source, /data-custom-trigger="status"/);
+assert.match(source, /data-custom-trigger="priority"/);
+assert.match(source, /function openInlineMenu/);
+assert.match(source, /function applyInlineChange/);
+assert.match(source, /event\.key === 'Escape'/);
+assert.doesNotMatch(source, /<select class="status-select/);
+assert.doesNotMatch(source, /data-action="status"/);
+assert.match(styles, /\.inline-dropdown-menu\{position:fixed/);
+assert.match(styles, /\.inline-option:hover\{background:#f1f5f9\}/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

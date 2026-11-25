@@ -34,6 +34,17 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Custom inline dropdowns)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: ganti `<select>` native Status/Priority dengan trigger button + floating menu custom, tanpa mengubah alur update data.
+- Perubahan:
+  - `app.js`: konstanta `STATUS_OPTIONS` (11) & `PRIORITY_OPTIONS` (3); `renderRow()` kini memakai `<button class="custom-trigger status-select status-*">` / `<button class="custom-trigger priority-select priority-*">` dengan `data-custom-trigger`, `data-id`, `data-value`, `aria-haspopup/expanded`. Satu menu `#inlineDropdownMenu` dibuat sekali dan di-append ke `body` (position fixed) supaya tidak terpotong `overflow` tabel. Fungsi `ensureInlineMenu`, `openInlineMenu`, `closeInlineMenu`, `applyInlineChange`; klik opsi, klik luar, Esc, resize, scroll, dan `render()` menutup menu. Handler `change` lama dihapus; logika status-done/completedAt, activity, save, toast dipindah persis ke `applyInlineChange()`.
+  - `styles.css`: trigger mempertahankan pill/ghost lama + chevron CSS; menu kartu putih `border-radius:12px`, border slate/80, shadow, padding 6px, z-index 9999, scrollbar tipis; opsi dot warna + check untuk yang aktif + hover `#f1f5f9`.
+  - `test/app-smoke.test.js` assertions baru; `CHANGELOG.md` diperbarui.
+- Validasi: Chromium 1440px — 0 `<select>` di tabel, 108 trigger, `#inlineDropdownMenu` anak `body` dengan `position:fixed`, `z-index:9999`, bg white, radius 12px, 11 opsi status + check di opsi aktif, dot warna sesuai. Pilih `working` → baris pindah dari New Request ke Working, menu tertutup. Pilih priority `high` → label berubah `Normal` → `High`. Esc dan klik luar menutup menu. Screenshot menu diverifikasi visual (kartu tidak terpotong). `node --check`, 3 test Node, `git diff --check` lolos.
+- Catatan: menu di-append ke `body` karena `.table-panel.glass` punya `backdrop-filter` yang membuat containing block; menu di dalam panel berisiko terpotong `overflow` tabel.
+
 ### 2026-11-25 (Status pill & priority ghost dropdown)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).

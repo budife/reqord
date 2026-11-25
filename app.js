@@ -210,6 +210,7 @@ function titleSimilarity(query, title) { const words = query.toLowerCase().split
 function renderTitleSuggestions() { const input = document.querySelector('#titleInput'); const suggestions = document.querySelector('#titleSuggestions'); if (!input || !suggestions) return; const query = input.value.trim(); if (query.length < 3) { suggestions.hidden = true; syncSuggestionSpacer('titleSuggestions'); return; } const matches = items.map(item => ({ item, score: titleSimilarity(query, item.title) })).filter(match => match.score >= .5).sort((a, b) => b.score - a.score).slice(0, 5); suggestions.innerHTML = matches.length ? `<div class="suggestion-heading">Similar work orders<span>${matches.length}</span></div>${matches.map(({ item }) => `<button type="button" role="option" data-title-id="${item.id}" data-title="${escapeHtml(item.title)}"><span class="suggestion-name">${escapeHtml(item.title)} at ${escapeHtml(groups[item.status] || 'Daily task')} by ${escapeHtml(item.requestor || 'No requestor')}</span></button>`).join('')}` : ''; suggestions.hidden = !matches.length; syncSuggestionSpacer('titleSuggestions'); }
 function closeTitleSuggestions() { const s = document.querySelector('#titleSuggestions'); if (s) { s.hidden = true; syncSuggestionSpacer('titleSuggestions'); } }
 function render() {
+  closeInlineMenu();
   const query = document.querySelector('#searchInput').value.trim().toLowerCase();
   let visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (priorityFilter === 'all' || item.priority === priorityFilter) && (monthFilter === 'all' || item.month === monthFilter) && (requestorFilter === 'all' || item.requestor.split(',').map(r => r.trim()).includes(requestorFilter)));
   visible.sort((a, b) => {
@@ -253,6 +254,24 @@ function render() {
   refreshRequestorFilter();
   updateDataMeta();
 }
+const STATUS_OPTIONS = [
+  { value: 'new_request', label: 'New Request' },
+  { value: 'waiting_brief', label: 'Waiting Brief' },
+  { value: 'working', label: 'Working' },
+  { value: 'draft_preview', label: '1st Draft' },
+  { value: 'revision', label: 'In Revision' },
+  { value: 'preview', label: 'Preview' },
+  { value: 'on_hold', label: 'On Hold' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'done', label: 'Done' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'cancelled', label: 'Cancelled' }
+];
+const PRIORITY_OPTIONS = [
+  { value: 'high', label: 'High' },
+  { value: 'normal', label: 'Normal' },
+  { value: 'low', label: 'Low' }
+];
 function renderRow(item) {
   const canEdit = isAdmin;
   const isDone = item.status === 'done';
@@ -263,8 +282,11 @@ function renderRow(item) {
   const revisionButton = canEdit && isDone ? `<button class="action-button revision-action" data-row-action="revision" data-id="${item.id}" title="Kembalikan untuk revisi" aria-label="Kembalikan untuk revisi">↻</button>` : '';
   const deleteButton = canEdit ? `<button class="action-button delete-action" data-row-action="delete" data-id="${item.id}" title="Hapus" aria-label="Hapus">⌫</button>` : '';
   const disabledAttr = canEdit ? '' : 'disabled';
-  const statusOptions = `<option value="new_request" ${item.status === 'new_request' ? 'selected' : ''}>New Request</option><option value="waiting_brief" ${item.status === 'waiting_brief' ? 'selected' : ''}>Waiting Brief</option><option value="working" ${item.status === 'working' ? 'selected' : ''}>Working</option><option value="draft_preview" ${item.status === 'draft_preview' ? 'selected' : ''}>1st Draft</option><option value="revision" ${item.status === 'revision' ? 'selected' : ''}>In Revision</option><option value="preview" ${item.status === 'preview' ? 'selected' : ''}>Preview</option><option value="on_hold" ${item.status === 'on_hold' ? 'selected' : ''}>On Hold</option><option value="approved" ${item.status === 'approved' ? 'selected' : ''}>Approved</option><option value="done" ${item.status === 'done' ? 'selected' : ''}>Done</option><option value="daily" ${item.status === 'daily' ? 'selected' : ''}>Daily</option><option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>`;
-  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</td><td>${renderRequestorPills(item.requestor)}</td><td>${escapeHtml(item.team)}</td><td class="note-cell${item.note ? ' has-note' : ''}">${escapeHtml(item.note || '')}</td><td><select class="status-select status-${item.status}" data-action="status" data-id="${item.id}" aria-label="Status" ${disabledAttr}>${statusOptions}</select></td><td><select class="priority-select priority-${item.priority}" data-action="priority" data-id="${item.id}" aria-label="Priority" ${disabledAttr}><option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option><option value="normal" ${item.priority === 'normal' ? 'selected' : ''}>Normal</option><option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option></select></td><td class="request-date-cell">${formatRequestDate(item.requestDate)}</td><td class="target-cell deadline-cell" title="Deadline: ${formatShortDate(item.date)}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
+  const statusLabel = STATUS_OPTIONS.find(option => option.value === item.status)?.label || 'New Request';
+  const priorityLabel = PRIORITY_OPTIONS.find(option => option.value === item.priority)?.label || 'Normal';
+  const statusControl = `<div class="custom-select"><button type="button" class="custom-trigger status-select status-${item.status}" data-custom-trigger="status" data-id="${item.id}" data-value="${escapeHtml(item.status)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Status" ${disabledAttr}><span class="trigger-text">${escapeHtml(statusLabel)}</span><span class="trigger-chevron" aria-hidden="true"></span></button></div>`;
+  const priorityControl = `<div class="custom-select"><button type="button" class="custom-trigger priority-select priority-${item.priority}" data-custom-trigger="priority" data-id="${item.id}" data-value="${escapeHtml(item.priority)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Priority" ${disabledAttr}><span class="trigger-text">${escapeHtml(priorityLabel)}</span></button></div>`;
+  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</td><td>${renderRequestorPills(item.requestor)}</td><td>${escapeHtml(item.team)}</td><td class="note-cell${item.note ? ' has-note' : ''}">${escapeHtml(item.note || '')}</td><td>${statusControl}</td><td>${priorityControl}</td><td class="request-date-cell">${formatRequestDate(item.requestDate)}</td><td class="target-cell deadline-cell" title="Deadline: ${formatShortDate(item.date)}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
 }
 function updateSyncStatus() {
   const el = document.querySelector('#saveState');
@@ -436,7 +458,79 @@ if (recentDateSelect) { recentDateSelect.addEventListener('change', event => ren
 const activityPanel = document.querySelector('#activityPanel');
 document.querySelector('#activityButton').addEventListener('click', () => { activityPanel.classList.add('open'); activityPanel.setAttribute('aria-hidden', 'false'); });
 document.querySelector('#closeActivityButton').addEventListener('click', () => { activityPanel.classList.remove('open'); activityPanel.setAttribute('aria-hidden', 'true'); });
-document.querySelector('.table-stack').addEventListener('change', event => { const control = event.target; const item = findItem(control.dataset.id); if (!item) return; if (control.dataset.action === 'status') { item.status = normalizeStatus(control.value); if (item.status === 'done') { item.done = true; item.completedAt = item.completedAt || new Date().toISOString(); } else { item.done = false; } } else if (control.dataset.action === 'priority') item.priority = control.value; else return; saveItems(); addActivity(control.dataset.action === 'priority' ? 'Priority diubah' : `Status menjadi ${item.status}`, item); render(); showToast(item.status === 'done' ? 'Request selesai' : 'Request diperbarui'); });
+let inlineMenu = null;
+let inlineTrigger = null;
+function ensureInlineMenu() {
+  if (!inlineMenu) {
+    inlineMenu = document.createElement('div');
+    inlineMenu.id = 'inlineDropdownMenu';
+    inlineMenu.className = 'inline-dropdown-menu';
+    inlineMenu.hidden = true;
+    inlineMenu.setAttribute('role', 'listbox');
+    inlineMenu.addEventListener('click', event => {
+      const option = event.target.closest('.inline-option');
+      if (!option || inlineMenu.hidden) return;
+      event.stopPropagation();
+      const kind = inlineMenu.dataset.kind;
+      const id = inlineMenu.dataset.id;
+      const value = option.dataset.value;
+      closeInlineMenu();
+      applyInlineChange(kind, id, value);
+    });
+    document.body.appendChild(inlineMenu);
+  }
+  return inlineMenu;
+}
+function closeInlineMenu() {
+  if (!inlineMenu || inlineMenu.hidden) return;
+  inlineMenu.hidden = true;
+  inlineMenu.innerHTML = '';
+  if (inlineTrigger) { inlineTrigger.setAttribute('aria-expanded', 'false'); inlineTrigger = null; }
+}
+function openInlineMenu(trigger, kind, id, current) {
+  const menu = ensureInlineMenu();
+  closeInlineMenu();
+  const options = kind === 'status' ? STATUS_OPTIONS : PRIORITY_OPTIONS;
+  menu.dataset.kind = kind;
+  menu.dataset.id = id;
+  menu.innerHTML = options.map(option => {
+    const active = option.value === current;
+    return `<button type="button" class="inline-option" role="option" aria-selected="${active}" data-value="${option.value}"><span class="option-dot opt-${kind}-${option.value}"></span><span class="option-label">${escapeHtml(option.label)}</span><span class="option-check">${active ? '✓' : ''}</span></button>`;
+  }).join('');
+  menu.hidden = false;
+  const rect = trigger.getBoundingClientRect();
+  const height = menu.offsetHeight;
+  const below = rect.bottom + 6;
+  menu.style.top = `${below + height > window.innerHeight ? Math.max(8, rect.top - height - 6) : below}px`;
+  menu.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - menu.offsetWidth - 8))}px`;
+  menu.style.minWidth = `${Math.max(160, rect.width)}px`;
+  trigger.setAttribute('aria-expanded', 'true');
+  inlineTrigger = trigger;
+}
+function applyInlineChange(kind, id, value) {
+  const item = findItem(id);
+  if (!item) return;
+  if (kind === 'status') {
+    item.status = normalizeStatus(value);
+    if (item.status === 'done') { item.done = true; item.completedAt = item.completedAt || new Date().toISOString(); }
+    else item.done = false;
+  } else item.priority = value;
+  saveItems();
+  addActivity(kind === 'priority' ? 'Priority diubah' : `Status menjadi ${item.status}`, item);
+  render();
+  showToast(item.status === 'done' ? 'Request selesai' : 'Request diperbarui');
+}
+document.querySelector('.table-stack').addEventListener('click', event => {
+  const trigger = event.target.closest('[data-custom-trigger]');
+  if (!trigger || trigger.disabled) return;
+  event.stopPropagation();
+  if (inlineTrigger === trigger && inlineMenu && !inlineMenu.hidden) { closeInlineMenu(); return; }
+  openInlineMenu(trigger, trigger.dataset.customTrigger, trigger.dataset.id, trigger.dataset.value);
+});
+document.addEventListener('click', closeInlineMenu);
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closeInlineMenu(); });
+window.addEventListener('resize', closeInlineMenu);
+document.addEventListener('scroll', closeInlineMenu, true);
 let deleteTargetId = null;
 const deleteDialog = document.querySelector('#deleteDialog');
 const deleteConfirmInput = document.querySelector('#deleteConfirmInput');

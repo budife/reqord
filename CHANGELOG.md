@@ -15,6 +15,9 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 ### Changed
 
+- `<select>` native pada kolom STATUS dan PRIORITY diganti custom dropdown: trigger `<button>` (tampilan pill/ghost dipertahankan) + floating menu `<div role="listbox">` yang di-append ke `body` dengan `position:fixed`, kartu putih rounded-xl, border slate, shadow, opsi berdot warna + check pada opsi aktif. Menu nutup saat klik luar, Esc, resize, scroll, atau saat tabel di-render ulang. Logika update status/priority (termasuk done → completedAt, activity, save) dipindah ke `applyInlineChange()` tanpa perubahan perilaku.
+
+
 - Tabel dengan lebar 601–1100px kini discroll horizontal (min-width 1080px) supaya kolom tidak berhimpitan.
 
 ## [v0.6.1] — 2026-11-13
