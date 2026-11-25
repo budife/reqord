@@ -222,19 +222,28 @@ function renderRequestorPills(requestor) {
 }
 
 function getTeamPalette(name) {
-  const palettes = [
-    { text: '#2f7d52', bg: '#eaf4ee', border: '#b9d8c4' },
-    { text: '#3b6ea5', bg: '#eaf3fb', border: '#bfd7ee' },
-    { text: '#8a5a12', bg: '#fbf1de', border: '#e8d19c' },
-    { text: '#6d4fa3', bg: '#f1ecfb', border: '#d4c6ef' },
-    { text: '#2f7a70', bg: '#e9f5f2', border: '#b8ddd4' },
-    { text: '#a85e59', bg: '#fbecec', border: '#e9c3c0' },
-    { text: '#52657d', bg: '#eef1f5', border: '#cbd5e1' },
-    { text: '#a5621c', bg: '#fdf0e3', border: '#ecd0a8' }
-  ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
-  return palettes[Math.abs(hash) % palettes.length];
+  const hue = Math.abs(hash) % 360;
+  return {
+    text: `hsl(${hue} 48% 32%)`,
+    bg: `hsl(${hue} 60% 95%)`,
+    border: `hsl(${hue} 32% 82%)`
+  };
+}
+function teams() {
+  return [...new Set(items.map(item => String(item.team || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+function renderTeamSuggestions(inputId = 'teamInput', suggestionsId = 'teamSuggestions') {
+  const input = document.querySelector('#' + inputId);
+  const suggestions = document.querySelector('#' + suggestionsId);
+  if (!input || !suggestions) return;
+  const query = input.value.trim().toLowerCase();
+  if (!query && document.activeElement !== input) { closeRequestorSuggestions(suggestionsId, inputId); return; }
+  const matches = teams().filter(name => !query || name.toLowerCase().includes(query)).slice(0, 6);
+  suggestions.innerHTML = matches.length ? `<div class="suggestion-heading">${query ? 'Matching teams' : 'Recent teams'}<span>${matches.length}</span></div>${matches.map(name => `<button type="button" role="option" data-team="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('')}` : '';
+  suggestions.hidden = !matches.length;
+  syncSuggestionSpacer(suggestionsId);
 }
 function requestors() {
   return [...new Set(items.flatMap(item => String(item.requestor || '').split(',')).map(name => name.trim()).filter(Boolean))];
@@ -468,6 +477,12 @@ document.querySelector('#requestorSuggestions').addEventListener('click', event 
 document.querySelector('#editRequestorInput').addEventListener('input', () => renderRequestorSuggestions('editRequestorInput', 'editRequestorSuggestions'));
 document.querySelector('#editRequestorSuggestions').addEventListener('mousedown', event => event.preventDefault());
 document.querySelector('#editRequestorSuggestions').addEventListener('click', event => { const btn = event.target.closest('[data-requestor]'); if (btn) chooseRequestor(btn.dataset.requestor, 'editRequestorInput', 'editRequestorSuggestions'); });
+document.querySelector('#teamInput').addEventListener('input', () => renderTeamSuggestions('teamInput', 'teamSuggestions'));
+document.querySelector('#teamSuggestions').addEventListener('mousedown', event => event.preventDefault());
+document.querySelector('#teamSuggestions').addEventListener('click', event => { const btn = event.target.closest('[data-team]'); if (!btn) return; document.querySelector('#teamInput').value = btn.dataset.team; closeRequestorSuggestions('teamSuggestions', 'teamInput'); });
+document.querySelector('#editTeamInput').addEventListener('input', () => renderTeamSuggestions('editTeamInput', 'editTeamSuggestions'));
+document.querySelector('#editTeamSuggestions').addEventListener('mousedown', event => event.preventDefault());
+document.querySelector('#editTeamSuggestions').addEventListener('click', event => { const btn = event.target.closest('[data-team]'); if (!btn) return; document.querySelector('#editTeamInput').value = btn.dataset.team; closeRequestorSuggestions('editTeamSuggestions', 'editTeamInput'); });
 document.querySelector('#titleSuggestions').addEventListener('mousedown', event => event.preventDefault());
 document.querySelector('#titleSuggestions').addEventListener('click', event => {
   const btn = event.target.closest('[data-title-id]');
@@ -491,10 +506,12 @@ function setupRequestorFocusBlur(inputId, suggestionsId) {
 }
 setupRequestorFocusBlur('requestorInput', 'requestorSuggestions');
 setupRequestorFocusBlur('editRequestorInput', 'editRequestorSuggestions');
+setupRequestorFocusBlur('teamInput', 'teamSuggestions');
+setupRequestorFocusBlur('editTeamInput', 'editTeamSuggestions');
 
 // Click outside to close suggestions
 document.addEventListener('click', event => {
-  ['requestorSuggestions', 'editRequestorSuggestions', 'titleSuggestions'].forEach(id => {
+  ['requestorSuggestions', 'editRequestorSuggestions', 'titleSuggestions', 'teamSuggestions', 'editTeamSuggestions'].forEach(id => {
     const suggestions = document.querySelector('#' + id);
     const input = suggestions?.closest('.edit-field')?.querySelector('input');
     if (suggestions && input && !suggestions.contains(event.target) && event.target !== input) {

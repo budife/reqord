@@ -190,6 +190,10 @@ assert.match(fs.readFileSync('migration-team.sql', 'utf8'), /ADD COLUMN IF NOT E
 assert.match(source, /chunk\.map\(\(\{ team, \.\.\.rest \}\) => rest\)/);
 assert.match(source, /sbHasTeamColumn === null/);
 assert.match(source, /if \(!sbHasTeamColumn\) delete row\.team/);
-assert.match(markup, /app\.js\?v=100/);
+assert.match(markup, /app\.js\?v=101/);
+assert.match(markup, /id="teamSuggestions"/);
+assert.match(markup, /id="editTeamSuggestions"/);
+assert.match(source, /function renderTeamSuggestions/);
+assert.match(source, /hsl\(\$\{hue\}/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

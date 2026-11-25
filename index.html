@@ -55,7 +55,7 @@
       <div class="dialog-content">
         <label class="edit-field" id="titleField" for="titleInput">Title<input id="titleInput" type="text" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="requestor-suggestions" hidden></div></label><div class="suggestion-spacer" aria-hidden="true"></div>
         <label class="edit-field" id="requestorField" for="requestorInput">Requestor<input id="requestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></label><div class="suggestion-spacer" aria-hidden="true"></div>
-        <label class="edit-field" id="teamField" for="teamInput">Team<input id="teamInput" type="text" placeholder="Nama team (opsional)" autocomplete="off"></label>
+        <label class="edit-field" id="teamField" for="teamInput">Team<input id="teamInput" type="text" placeholder="Nama team (opsional), bebas diisi" autocomplete="off"><div id="teamSuggestions" class="requestor-suggestions" hidden></div></label><div class="suggestion-spacer" aria-hidden="true"></div>
         <label class="edit-field" id="priorityField">Priority<select id="addPriority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
       </div>
       <div class="delete-actions"><button class="secondary-button" id="cancelAddDialog" type="button">Batal</button><button class="primary-button" id="submitAddDialog" type="button">Tambah</button></div>
@@ -184,7 +184,7 @@
        <div class="dialog-content">
          <label class="edit-field" id="editTitleField">Title<input id="editTitleInput" type="text" required><div id="editTitleSuggestions" class="requestor-suggestions" hidden></div></label>
          <label class="edit-field" id="editRequestorField" for="editRequestorInput">Requestor<input id="editRequestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></label><div class="suggestion-spacer" aria-hidden="true"></div>
-         <label class="edit-field" id="editTeamField" for="editTeamInput">Team<input id="editTeamInput" type="text" placeholder="Nama team (opsional)" autocomplete="off"></label>
+         <label class="edit-field" id="editTeamField" for="editTeamInput">Team<input id="editTeamInput" type="text" placeholder="Nama team (opsional), bebas diisi" autocomplete="off"><div id="editTeamSuggestions" class="requestor-suggestions" hidden></div></label><div class="suggestion-spacer" aria-hidden="true"></div>
          <label class="edit-field" id="editRequestDateField">Request date<input id="editRequestDateInput" type="datetime-local" aria-label="Request date"></label>
          <label class="edit-field" id="editDeadlineField">Deadline<input id="editDeadlineInput" type="date" aria-label="Deadline"></label>
          <label class="edit-field" id="editNoteField">Catatan<textarea id="editNoteInput" rows="4" placeholder="Contoh: Revisi karena menunggu feedback client..."></textarea></label>
@@ -210,6 +210,6 @@
     <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.4</span><span>Made thoughtfully</span></div>
   </dialog>
     <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="false"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History &amp; Activity</h2></div><button type="button" class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=100" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=101" defer></script>
 </body>
 </html>

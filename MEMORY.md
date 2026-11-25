@@ -34,6 +34,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Team suggestions + HSL colors)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan (klarifikasi): SQL sudah dijalankan user; team belum berwarna karena belum ada data. User ingin TEAM bisa diisi bebas dengan suggestion, warna bebas tapi nama yang sama harus warna sama, dan tidak terikat palet tetap yang saya sebut.
+- Perubahan: `app.js` — `getTeamPalette()` kini hash nama → hue HSL (text 48%/32%, bg 60%/95%, border 32%/82%), jadi nama sama = warna sama dan nama beda = warna beda. Tambah `teams()` + `renderTeamSuggestions()`; listener input/click/focus-blur/click-outside untuk `teamSuggestions` dan `editTeamSuggestions`. `index.html` — suggestion div + spacer pada field Team di dialog Tambah/Edit, placeholder "bebas diisi", cache-buster `app.js?v=101`. `test/app-smoke.test.js` assertions baru; `CHANGELOG.md` diperbarui.
+- Validasi: Chromium — input Team "M" memunculkan suggestion `MKT` di dialog Tambah; dialog Edit dengan "MK" juga memunculkan `MKT`; free text "MKT" tersimpan dan badge tampil dengan warna `hsl(86 48% 32%)` / bg `hsl(86 60% 95%)` / border `hsl(86 32% 82%)`. `getTeamPalette('MKT')` identik dua kali; `MKT`, `Creative`, `Tim Acak 123` menghasilkan 3 hue berbeda. `node --check`, 3 test Node, `git diff --check` lolos.
+- Catatan: user sudah menjalankan `migration-team.sql` di Supabase; tidak ada perubahan schema lagi dari sisi saya.
+
 ### 2026-11-25 (Team persistence fix)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).
