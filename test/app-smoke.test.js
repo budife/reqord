@@ -126,4 +126,20 @@ assert.match(source, /RESTORE FROM BACKUP/);
 assert.match(source, /hasUnsavedChanges = false;/);
 assert.doesNotMatch(source, /window\.confirm/);
 
+// Date formatting + deadline urgency badges
+const vm = require('node:vm');
+const helperSrc = source.slice(source.indexOf('function formatShortDate'), source.indexOf('function urgencyClass'));
+const dateCtx = { Date, String, Math, Number, escapeHtml: value => String(value), today: () => '2026-11-25' };
+vm.runInNewContext(`${helperSrc}\nthis.formatRequestDate = formatRequestDate; this.targetDoneLabel = targetDoneLabel;`, dateCtx);
+assert.equal(dateCtx.formatRequestDate('2026-11-25T13:08'), '25/11/2026, 13.08');
+assert.match(dateCtx.targetDoneLabel('2026-11-23'), /deadline-badge is-late">Terlambat 2 hari/);
+assert.match(dateCtx.targetDoneLabel('2026-11-23'), /deadline-date">23\/11\/2026/);
+assert.match(dateCtx.targetDoneLabel('2026-11-25'), /deadline-badge is-today">Hari ini/);
+assert.match(dateCtx.targetDoneLabel('2026-11-26'), /deadline-badge is-soon">Besok/);
+assert.match(dateCtx.targetDoneLabel('2026-11-28'), /deadline-plain">3 hari lagi/);
+assert.match(source, /class="request-date-cell"/);
+assert.match(styles, /\.deadline-badge\.is-late/);
+assert.match(styles, /td\.request-date-cell/);
+assert.match(styles, /white-space:nowrap!important/);
+
 console.log('REQORD smoke checks passed (v0.6.4)');

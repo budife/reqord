@@ -34,6 +34,17 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Table spacing & deadline badges)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: rapikan spacing/lebar kolom tabel request dan format REQUEST DATE + DEADLINE (relative time badge + tanggal DD/MM/YYYY).
+- Perubahan:
+  - `app.js`: helper `formatShortDate()` dan `formatRequestDate()`; `targetDoneLabel()` kini menghasilkan `.deadline-badge.is-late` (merah, "Terlambat X hari"), `.is-today`/`.is-soon` (oranye, "Hari ini"/"Besok"), atau `.deadline-plain` ("X hari lagi"), plus `.deadline-date` DD/MM/YYYY. Baris tabel memakai `<td class="request-date-cell">`; tooltip deadline pakai `formatShortDate()`.
+  - `styles.css`: override desktop (min-width 601) untuk padding 12px di th/td, lebar kolom 20/9/7/8/14/10/14/12/6%, select width 100% + margin-left 6px pada Priority, `white-space:nowrap` pada sel tanggal, scroll horizontal (min-width 1080px) untuk viewport 601–1100px, serta gaya badge.
+  - `test/app-smoke.test.js`: assertions fungsional untuk format tanggal dan keempat state deadline; `CHANGELOG.md` diperbarui.
+- Validasi: `node --check`, 3 test Node, `git diff --check` lolos. Browser Chromium 1440px: lebar kolom `[236,106,82,94,165,118,165,141,71]`, padding 12px, gap Status→Priority 30px, tanggal `25/11/2026, 13.08` nowrap tanpa overflow, badge `Terlambat 2 hari` (merah) / `Hari ini` / `Besok` (oranye) / `3 hari lagi` (abu) + tanggal DD/MM/YYYY. Screenshot diverifikasi visual. Mobile 390px: tidak ada overflow dokumen; 900px: table-scroll 1080px dengan overflow-x auto.
+- Catatan: kolom Note masih memakai ellipsis bawaan (klik untuk lihat catatan penuh) — tidak diubah karena tidak diminta.
+
 ### 2026-11-25 (Title column wrap)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).

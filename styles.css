@@ -723,3 +723,34 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 @media(max-width:600px){
   .requestor-pill{padding:3px 7px;font-size:10px;margin:0 3px 5px 0}
 }
+
+/* Request table: consistent cell padding, balanced columns, compact date cells */
+@media(min-width:601px){
+  .table-scroll th,
+  .table-scroll td{padding:10px 12px!important}
+  .table-scroll th:nth-child(1),.table-scroll td:nth-child(1){width:20%!important}
+  .table-scroll th:nth-child(2),.table-scroll td:nth-child(2){width:9%!important}
+  .table-scroll th:nth-child(3),.table-scroll td:nth-child(3){width:7%!important}
+  .table-scroll th:nth-child(4),.table-scroll td:nth-child(4){width:8%!important}
+  .table-scroll th:nth-child(5),.table-scroll td:nth-child(5){width:14%!important}
+  .table-scroll th:nth-child(6),.table-scroll td:nth-child(6){width:10%!important}
+  .table-scroll th:nth-child(7),.table-scroll td:nth-child(7){width:14%!important}
+  .table-scroll th:nth-child(8),.table-scroll td:nth-child(8){width:12%!important}
+  .table-scroll th:nth-child(9),.table-scroll td:nth-child(9){width:6%!important}
+  .table-scroll td .status-select,
+  .table-scroll td .priority-select{width:100%;max-width:100%;font-size:12px;padding:0 28px 0 8px}
+  .table-scroll td .priority-select{margin-left:6px}
+  .table-scroll td.request-date-cell,
+  .table-scroll td.target-cell{white-space:nowrap!important}
+}
+@media(min-width:601px) and (max-width:1100px){
+  .table-scroll{overflow-x:auto}
+  .table-scroll table{min-width:1080px!important}
+}
+.table-scroll td.request-date-cell{color:var(--muted)}
+.date-empty{color:var(--faint)}
+.deadline-badge{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700;line-height:1.5;white-space:nowrap}
+.deadline-badge.is-late{background:#fdeaea;color:#b23b3b}
+.deadline-badge.is-today,.deadline-badge.is-soon{background:#fff3d8;color:#8a5a12}
+.deadline-plain{color:var(--muted);font-size:11px;font-weight:600;white-space:nowrap}
+.deadline-date{display:block;margin-top:3px;color:var(--muted);font-size:11px;white-space:nowrap}

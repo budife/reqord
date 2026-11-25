@@ -7,6 +7,13 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 ### Fixed
 
 - Kolom Title di tabel status (termasuk New Request) tidak lagi di-truncate dengan ellipsis. Judul panjang sekarang wrap ke baris baru (`white-space: normal`, `overflow-wrap: anywhere`) supaya terbaca penuh.
+- Spacing tabel request: padding horizontal 12px konsisten di `th`/`td`, jarak 30px antara dropdown Status dan Priority, dan proporsi lebar kolom diset ulang agar Team/Note tidak berlebihan (20/9/7/8/14/10/14/12/6%).
+- REQUEST DATE kini tampil `DD/MM/YYYY, HH.mm` dalam satu baris berwarna muted.
+- DEADLINE kini memakai badge urgensi: merah "Terlambat X hari", oranye "Hari ini"/"Besok", teks biasa "X hari lagi" — diikuti tanggal `DD/MM/YYYY`.
+
+### Changed
+
+- Tabel dengan lebar 601–1100px kini discroll horizontal (min-width 1080px) supaya kolom tidak berhimpitan.
 
 ## [v0.6.1] — 2026-11-13
 
