@@ -34,6 +34,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Title cell flex alignment)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: judul multi-line jangan menjorok ke bawah checkbox — bungkus checkbox + konten dalam flex items-start gap-3, checkbox mt-0.5 shrink-0, teks + ikon edit dalam wrapper flex-1 min-w-0, dan samakan header th dengan flex items-center gap-3.
+- Perubahan: `app.js` `renderRow()` — `.title-cell` kini berisi `.title-cell-inner` (checkbox + `.title-content`); `.title-content` membungkus `.title-text`, orphan badge, dan `.title-edit-badge`. `ensureGroupHeaderChecks()` membungkus isi th pertama dengan `.title-head-inner` + span label. `styles.css`: container flex-start gap 12px, `.row-check{flex:0 0 auto;margin-top:2px}`, `.title-content{flex:1;min-width:0;flex-wrap:wrap;gap:6px}`, header flex center gap 12px, badge margin-left 0. `test/app-smoke.test.js` assertions baru; `CHANGELOG.md` diperbarui.
+- Validasi: Chromium 1440px dengan judul 130 karakter — header checkbox left 136 = row checkbox left 136; `marginTop 2px`, `flex 0 0 auto`, `align-items flex-start`, `gap 12px`; 6 baris teks semua `left: 162`, badge edit `left: 162` (sejajar dengan teks, turun ke baris berikutnya). Screenshot diverifikasi visual. `node --check`, 3 test Node, `git diff --check` lolos.
+- Catatan: checkbox tetap di dalam sel TITLE (bukan kolom baru) supaya width rules dan label mobile tidak berubah.
+
 ### 2026-11-25 (Bulk selection across all status groups)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).

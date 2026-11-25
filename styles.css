@@ -870,3 +870,15 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 .bulk-bar select{height:32px;padding:0 26px 0 9px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--text);font:500 12px Manrope,system-ui,sans-serif}
 .bulk-bar .secondary-button,
 .bulk-bar .primary-button{height:32px;padding:0 12px;font:600 12px Manrope,system-ui,sans-serif}
+
+/* Title cell: checkbox and multi-line title share the same left edge */
+.title-cell-inner{display:flex;align-items:flex-start;gap:12px}
+.title-content{flex:1;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.title-content .title-text{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+.title-head-inner{display:flex;align-items:center;gap:12px}
+.row-check-wrap,
+.group-check-wrap{margin-right:0;flex:0 0 auto}
+.row-check-wrap{align-items:flex-start}
+.row-check{flex:0 0 auto;margin:2px 0 0}
+.group-check{flex:0 0 auto;margin:0}
+.title-edit-badge{margin-left:0}

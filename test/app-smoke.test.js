@@ -174,5 +174,10 @@ assert.match(source, /class="group-check"/);
 assert.match(source, /function syncSelectionUI/);
 assert.match(source, /function applyBulkChange/);
 assert.match(styles, /\.bulk-bar\{position:fixed/);
+assert.match(source, /class="title-cell-inner"/);
+assert.match(source, /class="title-content"/);
+assert.match(styles, /\.title-cell-inner\{display:flex;align-items:flex-start;gap:12px\}/);
+assert.match(styles, /\.row-check\{flex:0 0 auto;margin:2px 0 0\}/);
+assert.match(styles, /\.title-head-inner\{display:flex;align-items:center;gap:12px\}/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');
