@@ -184,5 +184,6 @@ assert.doesNotMatch(markup, /<th>Note<\/th>/);
 assert.match(source, /class="title-meta"/);
 assert.match(styles, /\.title-meta\{display:flex;flex-wrap:wrap/);
 assert.match(styles, /width:32%!important/);
+assert.match(source, /function getTeamPalette/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

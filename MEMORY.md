@@ -34,6 +34,13 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Team pill colors)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: pill TEAM diberi warna-warna.
+- Perubahan: `app.js` — `getTeamPalette(name)` dengan 8 pasangan soft `{text,bg,border}` dan hash deterministik (sama seperti `getRequestorColor`); `renderRow()` menyuntik inline style warna tersebut ke `.team-badge`. `test/app-smoke.test.js` assertion `getTeamPalette`; `CHANGELOG.md` diperbarui. Tidak ada perubahan CSS/HTML.
+- Validasi: Chromium 1440px dengan team `MKT, Creative, Finance, MKT, '', Legal` — 4 warna berbeda terpakai, `MKT` identik dua kali (deterministik), team kosong tetap tanpa badge. Computed contoh: MKT slate `rgb(82,101,125)` / bg `rgb(238,241,245)` / border `rgb(203,213,225)`; Creative oranye; Finance amber; Legal biru. Screenshot: pill terbaca, tidak ada clipping. `node --check`, 3 test Node, `git diff --check` lolos.
+
 ### 2026-11-25 (Unify metadata under title)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).

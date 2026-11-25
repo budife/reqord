@@ -220,6 +220,21 @@ function renderRequestorPills(requestor) {
   }).join(' ');
 }
 
+function getTeamPalette(name) {
+  const palettes = [
+    { text: '#2f7d52', bg: '#eaf4ee', border: '#b9d8c4' },
+    { text: '#3b6ea5', bg: '#eaf3fb', border: '#bfd7ee' },
+    { text: '#8a5a12', bg: '#fbf1de', border: '#e8d19c' },
+    { text: '#6d4fa3', bg: '#f1ecfb', border: '#d4c6ef' },
+    { text: '#2f7a70', bg: '#e9f5f2', border: '#b8ddd4' },
+    { text: '#a85e59', bg: '#fbecec', border: '#e9c3c0' },
+    { text: '#52657d', bg: '#eef1f5', border: '#cbd5e1' },
+    { text: '#a5621c', bg: '#fdf0e3', border: '#ecd0a8' }
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
+  return palettes[Math.abs(hash) % palettes.length];
+}
 function requestors() {
   return [...new Set(items.flatMap(item => String(item.requestor || '').split(',')).map(name => name.trim()).filter(Boolean))];
 }
@@ -350,7 +365,8 @@ function renderRow(item) {
   const priorityControl = `<div class="custom-select"><button type="button" class="custom-trigger priority-select priority-${item.priority}" data-custom-trigger="priority" data-id="${item.id}" data-value="${escapeHtml(item.priority)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Priority" ${disabledAttr}><span class="trigger-text">${escapeHtml(priorityLabel)}</span></button></div>`;
   const noteText = String(item.note || '').trim();
   const teamLabel = String(item.team || '').trim();
-  const teamBadge = teamLabel ? `<span class="title-meta-badge team-badge">${escapeHtml(teamLabel)}</span>` : '';
+  const teamPalette = teamLabel ? getTeamPalette(teamLabel) : null;
+  const teamBadge = teamLabel ? `<span class="title-meta-badge team-badge" style="color:${teamPalette.text};background:${teamPalette.bg};border-color:${teamPalette.border}">${escapeHtml(teamLabel)}</span>` : '';
   const noteBadge = noteText ? `<button type="button" class="title-meta-badge note-badge" data-row-action="note" data-id="${item.id}" data-note="${escapeHtml(noteText)}" title="${escapeHtml(noteText)}" aria-label="Lihat catatan">Note</button>` : '';
   return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><div class="title-cell-inner"><label class="row-check-wrap"><input type="checkbox" class="row-check" data-check-id="${item.id}" aria-label="Pilih work order"></label><div class="title-content"><div class="title-main"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</div><div class="title-meta">${teamBadge}${noteBadge}<button type="button" class="title-edit-badge" data-row-action="edit" data-id="${item.id}" title="Edit work order" aria-label="Edit work order" ${disabledAttr}>✎</button></div></div></div></td><td>${renderRequestorPills(item.requestor)}</td><td>${statusControl}</td><td>${priorityControl}</td><td class="request-date-cell">${formatRequestDate(item.requestDate)}</td><td class="target-cell deadline-cell" title="Deadline: ${formatShortDate(item.date)}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
 }
