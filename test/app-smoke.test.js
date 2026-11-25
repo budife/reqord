@@ -166,5 +166,8 @@ assert.match(styles, /\.subitem-inline-item:hover \.subitem-inline-delete/);
 assert.match(source, /class="title-edit-badge"/);
 assert.match(styles, /\.title-edit-badge\{/);
 assert.match(source, /event\.target\.closest\('\.title-edit-badge'\)/);
+assert.doesNotMatch(markup, /editSubitemInput/);
+assert.doesNotMatch(markup, /id="editSubitemList"/);
+assert.doesNotMatch(source, /function renderEditSubitems/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

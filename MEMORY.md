@@ -34,6 +34,13 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Remove subitems from edit modal)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: subitems di modal edit dihapus karena sudah ada di tabel utama.
+- Perubahan: `index.html` — hapus label `#editSubitemField`, `#editSubitemList`, `#editSubitemInput` dari `#editForm`. `app.js` — hapus `renderEditSubitems()`, pemanggilannya di `openEditDialog()`, serta handler `keydown`/`change`/`click` untuk edit subitems. `test/app-smoke.test.js` assertions bahwa elemen/fungsi tersebut tidak ada lagi; `CHANGELOG.md` diperbarui. Dialog `#subitemDialog` standalone sengaja dibiarkan (tidak diminta).
+- Validasi: Chromium 1440px (admin) — klik badge edit → `#editDialog.open` true, `#editSubitemList`/`#editSubitemInput` tidak ada, label "Subitems" tidak ada; screenshot modal menunjukkan field Title/Requestor/Request date/Deadline/Catatan saja. Klik teks judul setelah modal ditutup → inline subitem tetap muncul dan input fokus (regression OK). `node --check`, 3 test Node, `git diff --check` lolos.
+
 ### 2026-11-25 (Title edit badge)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).
