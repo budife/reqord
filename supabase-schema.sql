@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS work_orders (
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   requestor TEXT NOT NULL,
+  team TEXT,
   month TEXT,
   priority TEXT DEFAULT 'normal' CHECK (priority IN ('high', 'normal', 'low')),
   status TEXT DEFAULT 'list' CHECK (status IN ('list', 'ongoing', 'revision', 'preview', 'done')),

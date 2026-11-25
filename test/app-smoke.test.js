@@ -185,5 +185,8 @@ assert.match(source, /class="title-meta"/);
 assert.match(styles, /\.title-meta\{display:flex;flex-wrap:wrap/);
 assert.match(styles, /width:32%!important/);
 assert.match(source, /function getTeamPalette/);
+assert.match(source, /team: item\.team \|\| null/);
+assert.match(fs.readFileSync('migration-team.sql', 'utf8'), /ADD COLUMN IF NOT EXISTS team TEXT/);
+assert.match(source, /chunk\.map\(\(\{ team, \.\.\.rest \}\) => rest\)/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

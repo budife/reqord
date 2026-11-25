@@ -1407,6 +1407,7 @@ function itemToSb(item, userId) {
     user_id: userId,
     title: item.title,
     requestor: item.requestor,
+    team: item.team || null,
     month: item.month,
     priority: item.priority,
     status: item.status,
@@ -1527,6 +1528,10 @@ async function sbSyncAll(isAuto = false) {
     let { error } = await supabaseClient.from('work_orders').upsert(chunk);
     if (error && /folder_key/i.test(error.message)) {
       const stripped = chunk.map(({ folder_key, ...rest }) => rest);
+      ({ error } = await supabaseClient.from('work_orders').upsert(stripped));
+    }
+    if (error && /team/i.test(error.message)) {
+      const stripped = chunk.map(({ team, ...rest }) => rest);
       ({ error } = await supabaseClient.from('work_orders').upsert(stripped));
     }
     if (error) { failed = true; console.error('[reqord] sbSyncAll chunk error:', error); showToast('Sync gagal: ' + error.message); }

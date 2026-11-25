@@ -34,6 +34,15 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Team persistence fix)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: user lapor "teamnya ga kesimpen".
+- Root cause: `saveItems()` menyimpan `team` ke localStorage, tetapi `itemToSb()` tidak memasukkan field `team` saat upsert ke Supabase. Setelah reload/cloud merge, `sbRowToItem()` dapat `row.team` kosong → badge hilang.
+- Perubahan: `app.js` `itemToSb()` tambah `team: item.team || null`; `sbSyncAll()` dapat fallback menghapus `team` dari chunk bila PostgREST menolak kolom belum ada (mirip fallback `folder_key`). `supabase-schema.sql` tambah `team TEXT`; file baru `migration-team.sql` berisi `ALTER TABLE public.work_orders ADD COLUMN IF NOT EXISTS team TEXT;`. `test/app-smoke.test.js` assertions payload + migrasi + fallback; `CHANGELOG.md` diperbarui.
+- Validasi: Chromium — `itemToSb(sample)` menghasilkan key `team: 'MKT'`; edit Team via modal → `localStorage` dan badge menampilkan `Tim Uji`. `node --check`, 3 test Node, `git diff --check` lolos.
+- PENTING: migrasi `migration-team.sql` belum dijalankan ke Supabase (butuh persetujuan). Sebelum dijalankan, team tetap hanya tersimpan lokal dan cloud sync fallback akan membuang field team.
+
 ### 2026-11-25 (Team pill colors)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).
