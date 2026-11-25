@@ -188,5 +188,8 @@ assert.match(source, /function getTeamPalette/);
 assert.match(source, /team: item\.team \|\| null/);
 assert.match(fs.readFileSync('migration-team.sql', 'utf8'), /ADD COLUMN IF NOT EXISTS team TEXT/);
 assert.match(source, /chunk\.map\(\(\{ team, \.\.\.rest \}\) => rest\)/);
+assert.match(source, /sbHasTeamColumn === null/);
+assert.match(source, /if \(!sbHasTeamColumn\) delete row\.team/);
+assert.match(markup, /app\.js\?v=100/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

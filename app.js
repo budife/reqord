@@ -101,6 +101,7 @@ function loadItems() {
 function saveItems() { hasUnsavedChanges = true; hasUnsyncedChanges = true; persistDraft(); updateSyncStatus(); debouncedSync(); return items; }
 
 let syncTimer = null;
+let sbHasTeamColumn = null;
 function debouncedSync() {
   if (!supabaseClient) return;
   supabaseClient.auth.getUser().then(({ data: { user } }) => {
@@ -1522,7 +1523,16 @@ async function sbSyncAll(isAuto = false) {
   }
   const CHUNK = 50;
   let failed = false;
-  const rows = dirty.map(item => itemToSb(item, user.id));
+  if (sbHasTeamColumn === null) {
+    const { error } = await supabaseClient.from('work_orders').select('team').limit(1);
+    sbHasTeamColumn = !error;
+    if (!sbHasTeamColumn) console.warn('[reqord] kolom team belum ada di Supabase — jalankan migration-team.sql');
+  }
+  const rows = dirty.map(item => {
+    const row = itemToSb(item, user.id);
+    if (!sbHasTeamColumn) delete row.team;
+    return row;
+  });
   for (let start = 0; start < rows.length; start += CHUNK) {
     const chunk = rows.slice(start, start + CHUNK);
     let { error } = await supabaseClient.from('work_orders').upsert(chunk);

@@ -42,6 +42,7 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 - Perubahan: `app.js` `itemToSb()` tambah `team: item.team || null`; `sbSyncAll()` dapat fallback menghapus `team` dari chunk bila PostgREST menolak kolom belum ada (mirip fallback `folder_key`). `supabase-schema.sql` tambah `team TEXT`; file baru `migration-team.sql` berisi `ALTER TABLE public.work_orders ADD COLUMN IF NOT EXISTS team TEXT;`. `test/app-smoke.test.js` assertions payload + migrasi + fallback; `CHANGELOG.md` diperbarui.
 - Validasi: Chromium — `itemToSb(sample)` menghasilkan key `team: 'MKT'`; edit Team via modal → `localStorage` dan badge menampilkan `Tim Uji`. `node --check`, 3 test Node, `git diff --check` lolos.
 - PENTING: migrasi `migration-team.sql` belum dijalankan ke Supabase (butuh persetujuan). Sebelum dijalankan, team tetap hanya tersimpan lokal dan cloud sync fallback akan membuang field team.
+- Follow-up "masih error": user masih melihat toast `Sync gagal: ... column team`. Fallback berbasis regex pesan error terbukti tidak cukup, jadi `sbSyncAll()` kini probe `select('team').limit(1)` sekali (`sbHasTeamColumn`) dan membuang `team` dari payload bila kolom belum ada → tidak ada error. Cache-buster `app.js?v=99→100`, `styles.css?v=114→115` agar kode baru termuat di GitHub Pages. `node --check` + 3 test Node lolos.
 
 ### 2026-11-25 (Team pill colors)
 
