@@ -2,6 +2,12 @@
 
 Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti kategori sederhana agar mudah dibaca oleh manusia dan AI agent.
 
+## [Unreleased]
+
+### Fixed
+
+- Kolom Title di tabel status (termasuk New Request) tidak lagi di-truncate dengan ellipsis. Judul panjang sekarang wrap ke baris baru (`white-space: normal`, `overflow-wrap: anywhere`) supaya terbaca penuh.
+
 ## [v0.6.1] — 2026-11-13
 
 ### Added

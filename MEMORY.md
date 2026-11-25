@@ -34,6 +34,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Title column wrap)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: kolom Title di tabel New Request jangan di-truncate; judul panjang harus wrap supaya terbaca penuh.
+- Perubahan: `styles.css` baris 302-303 — `.title-cell` dari `white-space:nowrap; overflow:hidden; text-overflow:ellipsis` menjadi `white-space:normal; overflow:visible; overflow-wrap:anywhere; word-break:break-word`; `.title-text` ikut di-set wrap. Aturan berlaku global untuk semua panel status, bukan hanya New Request. `CHANGELOG.md` dapat entri Unreleased.
+- Validasi: server lokal `http://127.0.0.1:8099/index.html`, browser Chromium — judul 120 karakter di New Request: `whiteSpace:normal`, `textOverflow:clip`, `scrollWidth == clientWidth` (tidak ada overflow horizontal), teks lengkap terbaca. Cek desktop (lebar sel ~155px → wrap ~9 baris) dan mobile 390px (lebar sel ~574px → wrap 2 baris) lolos. `node --check app.js/public.js/summary.js`, tiga test Node, dan `git diff --check` lolos.
+- Catatan: keputusan lama di CHANGELOG v0.6.1 ("Title cell 1 baris: truncate dengan ellipsis") dengan sengaja dibatalkan sesuai requirement terbaru user.
+
 ### 2026-11-13 (Hapus Scan Folder — manual entry only)
 
 - Agent/model: Hermes Agent.

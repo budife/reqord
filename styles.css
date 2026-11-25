@@ -299,8 +299,8 @@ td{border-bottom:1px solid var(--line-soft)!important}
 .duration-cell{white-space:nowrap}.duration-edit-button{display:inline-grid;place-items:center;margin-left:6px;padding:0;border:0;background:transparent;color:var(--green-dark);font:14px/1 inherit;cursor:pointer}.duration-edit-button:hover{color:#4f7036}
 .modal-delete-link{display:block;margin:0 22px 18px;padding:0;border:0;background:transparent;color:#a85e59;font:600 10px Manrope,system-ui,sans-serif;text-align:left;cursor:pointer}.modal-delete-link:hover{text-decoration:underline}
 
-.title-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.title-cell .title-text { display: inline; }
+.title-cell { white-space: normal; overflow: visible; overflow-wrap: anywhere; word-break: break-word; }
+.title-cell .title-text { display: inline; overflow-wrap: anywhere; word-break: break-word; }
 body:not(.is-admin) #selectAllButton { display: none !important; }
 body:not(.is-admin) .auth-only { display: none !important; }
 body:not(.is-admin) .admin-only { display: none !important; }
