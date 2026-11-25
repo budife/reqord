@@ -140,7 +140,32 @@ function persistPendingDeletes() { try { localStorage.setItem('reqord-pending-de
 function activityKey(activity) { return [activity.date, activity.action, activity.title, activity.details].join('|'); }
 function addActivity(action, item = {}, details = '') { activities.unshift({ date: nowDateTime(), action, title: item.title || '', requestor: item.requestor || '', details, user: userName || 'Guest' }); saveStoredActivities(userName, activities); renderActivities(); }
 function renderActivities() { const list = document.querySelector('#activityList'); if (!list) return; list.innerHTML = activities.length ? activities.map(activity => `<div class="activity-item"><strong>${escapeHtml(activity.action)}</strong><span>${escapeHtml(activity.title || activity.details || 'reqord')}</span><small>${escapeHtml(activity.user || 'Guest')}${activity.requestor ? ` · ${escapeHtml(activity.requestor)}` : ''} · ${escapeHtml(displayDate(activity.date, true))}</small></div>`).join('') : '<p class="activity-empty">Belum ada activity.</p>'; }
-function renderInlineSubitems() { document.querySelectorAll('.subitem-inline').forEach(row => row.remove()); const statusOrder = ['new_request', 'waiting_brief', 'working', 'draft_preview', 'revision', 'preview', 'on_hold', 'approved', 'done', 'daily', 'cancelled']; statusOrder.forEach(status => { const tbody = document.querySelector(`#${status}Table`); if (!tbody) return; tbody.querySelectorAll('tr:not(.subitem-inline)').forEach(row => { const control = row.querySelector('[data-id]'); const item = control && findItem(control.dataset.id); if (!item) return; item.subitems = Array.isArray(item.subitems) ? item.subitems : []; if (!item.subitems.length) return; const table = row.closest('table'); const inlineRow = document.createElement('tr'); inlineRow.className = 'subitem-inline'; inlineRow.dataset.parentId = item.id; const cell = document.createElement('td'); cell.colSpan = table?.tHead?.rows[0]?.cells.length || 7; cell.innerHTML = `<div class="subitem-inline-list">${item.subitems.map(subitem => `<label class="subitem-inline-item"><input type="checkbox" data-inline-subitem-parent="${item.id}" data-inline-subitem-id="${subitem.id}" ${subitem.done ? 'checked' : ''}><span>${escapeHtml(subitem.title)}</span></label>`).join('')}</div>`; inlineRow.append(cell); row.after(inlineRow); }); }); }
+let expandedSubitemId = null;
+let focusQuickSubitem = false;
+function renderInlineSubitems() {
+  document.querySelectorAll('.subitem-inline').forEach(row => row.remove());
+  document.querySelectorAll('.title-cell.has-subitems').forEach(title => title.setAttribute('aria-expanded', String(title.dataset.subitemId === expandedSubitemId)));
+  if (!expandedSubitemId) return;
+  const item = findItem(expandedSubitemId);
+  if (!item) { expandedSubitemId = null; return; }
+  const parentRow = [...document.querySelectorAll('.table-scroll tbody tr:not(.subitem-inline)')].find(row => row.querySelector('.title-cell')?.dataset.subitemId === expandedSubitemId);
+  if (!parentRow) return;
+  const table = parentRow.closest('table');
+  const inlineRow = document.createElement('tr');
+  inlineRow.className = 'subitem-inline';
+  inlineRow.dataset.parentId = item.id;
+  const cell = document.createElement('td');
+  cell.colSpan = table?.tHead?.rows[0]?.cells.length || 9;
+  item.subitems = Array.isArray(item.subitems) ? item.subitems : [];
+  cell.innerHTML = `<div class="subitem-inline-list">${item.subitems.map(subitem => `<div class="subitem-inline-item${subitem.done ? ' is-done' : ''}"><label class="subitem-inline-check"><input type="checkbox" data-inline-subitem-parent="${item.id}" data-inline-subitem-id="${subitem.id}" ${subitem.done ? 'checked' : ''}><span>${escapeHtml(subitem.title)}</span></label><button type="button" class="subitem-inline-delete" data-inline-parent-id="${item.id}" data-inline-delete-id="${subitem.id}" aria-label="Hapus subitem">×</button></div>`).join('')}<div class="quick-subitem-row"><input class="quick-subitem-input" data-quick-parent="${item.id}" type="text" placeholder="Tambah sub-item..." aria-label="Tambah sub-item" autocomplete="off"></div></div>`;
+  inlineRow.append(cell);
+  parentRow.after(inlineRow);
+  if (focusQuickSubitem) {
+    const input = inlineRow.querySelector('.quick-subitem-input');
+    if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+    focusQuickSubitem = false;
+  }
+}
 function removeActionCells() { document.querySelectorAll('.table-scroll tbody tr .row-actions').forEach(actions => actions.remove()); }
 function makeRowsEditable() { if (!isAdmin) return; document.querySelectorAll('.table-scroll tbody tr').forEach(row => { const control = row.querySelector('[data-id]'); if (!control) return; const id = control.dataset.id; const item = findItem(id); const title = row.querySelector('.title-cell'); const requestor = row.querySelector('td:nth-child(2)'); if (title) { title.removeAttribute('contenteditable'); title.removeAttribute('data-action'); title.removeAttribute('data-id'); title.classList.add('has-subitems'); title.dataset.subitemId = id; title.tabIndex = 0; title.setAttribute('role', 'button'); title.setAttribute('aria-label', `Tambah subitem untuk ${item?.title || 'work order'}`); } if (requestor) { requestor.removeAttribute('contenteditable'); requestor.removeAttribute('data-action'); requestor.removeAttribute('data-id'); } const actions = row.querySelector('.row-actions'); const status = item.status; if (actions && !actions.querySelector('[data-row-action="edit"]')) actions.insertAdjacentHTML('afterbegin', `<button class="action-button edit-action" data-row-action="edit" data-id="${id}" title="Edit work order" aria-label="Edit work order">✎</button>`); if (actions && status === 'done') { if (!actions.querySelector('[data-row-action="revision"]')) actions.insertAdjacentHTML('beforeend', `<button class="action-button revision-action" data-row-action="revision" data-id="${id}" title="Kembalikan untuk revisi" aria-label="Kembalikan untuk revisi">↻</button>`); if (!actions.querySelector('[data-row-action="delete"]')) actions.insertAdjacentHTML('beforeend', `<button class="action-button delete-action" data-row-action="delete" data-id="${id}" title="Hapus" aria-label="Hapus">⌫</button>`); } if (status === 'new_request') actions.querySelector('[data-row-action="complete"]')?.remove();  }); }
 function renderActiveFile() { const label = document.querySelector('#activeFileName'); const name = openedFileName || 'Siap'; const fileIsDirty = Boolean(openedFileName && hasUnsavedChanges); if (label) { label.innerHTML = `<i class="sync-dot"></i>${escapeHtml(name)}`; label.classList.toggle('is-dirty', fileIsDirty); } }
@@ -563,7 +588,69 @@ const subitemDialog = document.querySelector('#subitemDialog'); let subitemTarge
 document.querySelector('#subitemInput').addEventListener('keydown', event => { if (event.key !== 'Enter') return; event.preventDefault(); const title = event.currentTarget.value.trim(); const item = findItem(subitemTargetId); if (!item || !title) return; item.subitems = Array.isArray(item.subitems) ? item.subitems : []; item.subitems.push({ id: `${item.id}-${Date.now()}`, title, done: false, order: item.subitems.length }); saveItems(); addActivity('Subitem ditambahkan', item, title); event.currentTarget.value = ''; render(); });
 document.querySelector('.table-stack').addEventListener('change', event => { const checkbox = event.target.closest('[data-inline-subitem-id]'); if (!checkbox) return; const item = findItem(checkbox.dataset.inlineSubitemParent); const subitem = item?.subitems.find(candidate => String(candidate.id) === String(checkbox.dataset.inlineSubitemId)); if (!subitem) return; subitem.done = checkbox.checked; saveItems(); addActivity(subitem.done ? 'Subitem selesai' : 'Subitem dibuka lagi', item, subitem.title); render(); });
 document.querySelector('#closeSubitemButton').addEventListener('click', () => subitemDialog.close());
-document.querySelector('.table-stack').addEventListener('click', event => { const title = event.target.closest('.title-cell.has-subitems'); if (title) openEditDialog(title.dataset.subitemId); }); document.querySelector('.table-stack').addEventListener('keydown', event => { const title = event.target.closest('.title-cell.has-subitems'); if (title && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openEditDialog(title.dataset.subitemId); } });
+document.querySelector('.table-stack').addEventListener('click', event => {
+  const title = event.target.closest('.title-cell.has-subitems');
+  if (!title || !title.dataset.subitemId) return;
+  event.stopPropagation();
+  expandedSubitemId = expandedSubitemId === title.dataset.subitemId ? null : title.dataset.subitemId;
+  focusQuickSubitem = Boolean(expandedSubitemId);
+  title.setAttribute('aria-expanded', String(Boolean(expandedSubitemId)));
+  render();
+});
+document.querySelector('.table-stack').addEventListener('keydown', event => {
+  const title = event.target.closest('.title-cell.has-subitems');
+  if (title && (event.key === 'Enter' || event.key === ' ')) {
+    event.preventDefault();
+    event.stopPropagation();
+    expandedSubitemId = expandedSubitemId === title.dataset.subitemId ? null : title.dataset.subitemId;
+    focusQuickSubitem = Boolean(expandedSubitemId);
+    render();
+    return;
+  }
+  const input = event.target.closest('.quick-subitem-input');
+  if (!input) return;
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    const titleText = input.value.trim();
+    if (!titleText) return;
+    const item = findItem(input.dataset.quickParent);
+    if (!item) return;
+    item.subitems = Array.isArray(item.subitems) ? item.subitems : [];
+    item.subitems.push({ id: `${item.id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, title: titleText, done: false, order: item.subitems.length });
+    saveItems();
+    addActivity('Subitem ditambahkan', item, titleText);
+    focusQuickSubitem = true;
+    render();
+    return;
+  }
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    event.stopPropagation();
+    expandedSubitemId = null;
+    focusQuickSubitem = false;
+    render();
+  }
+});
+document.querySelector('.table-stack').addEventListener('click', event => {
+  const button = event.target.closest('.subitem-inline-delete');
+  if (!button) return;
+  event.stopPropagation();
+  const item = findItem(button.dataset.inlineParentId);
+  const index = item?.subitems.findIndex(candidate => String(candidate.id) === String(button.dataset.inlineDeleteId));
+  if (!item || index < 0) return;
+  const removed = item.subitems.splice(index, 1)[0];
+  saveItems();
+  addActivity('Subitem dihapus', item, removed.title);
+  focusQuickSubitem = true;
+  render();
+});
+document.addEventListener('click', event => {
+  if (!expandedSubitemId) return;
+  if (event.target.closest('.subitem-inline') || event.target.closest('.title-cell.has-subitems')) return;
+  expandedSubitemId = null;
+  focusQuickSubitem = false;
+  render();
+});
 document.querySelector('.table-stack').addEventListener('click', event => { const button = event.target.closest('[data-row-action="complete"]'); if (button) { const item = findItem(button.dataset.id); if (item && !item.completedAt) item.completedAt = new Date().toISOString(); } }, true);
 
 function doExportJson() {

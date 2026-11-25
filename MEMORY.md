@@ -34,6 +34,17 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Quick inline sub-item creation)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: klik TITLE langsung expand sub-item + input auto-focus; Enter menyimpan dan input baru tetap fokus untuk input beruntun; Esc/klik luar menutup input kosong tanpa menghapus data; checklist menjorok dengan guide line, checkbox coret, hapus saat hover.
+- Perubahan:
+  - `app.js`: state `expandedSubitemId` + `focusQuickSubitem`. `renderInlineSubitems()` ditulis ulang — hanya merender baris inline untuk item yang expanded, menyisipkan `.quick-subitem-input`, dan men-set `aria-expanded` pada title. Handler click title kini toggle (bukan `openEditDialog`); handler keydown menangani Enter pada input (`saveItems` + `addActivity` + `render` dengan focus flag) dan Escape; handler click untuk `.subitem-inline-delete`; document click menutup editor saat klik di luar `.subitem-inline`/title. Checkbox existing tetap memakai `change` delegate lama.
+  - `styles.css`: `.subitem-inline-check`, `.subitem-inline-delete` (opacity 0 → 1 saat hover/focus, selalu 1 di mobile), `.quick-subitem-row`, `.quick-subitem-input` dengan focus garis tipis.
+  - `test/app-smoke.test.js` assertions baru; `CHANGELOG.md` diperbarui.
+- Validasi: Chromium 1440px (admin) — klik title → 1 `.subitem-inline`, input focus, placeholder `Tambah sub-item...`. Dua Enter berturut-turut menambahkan `Subitem A` + `Subitem B`; input tetap fokus dan kosong setelah tiap Enter. Checkbox `Subitem A` → `textDecorationLine: line-through`, warna muted. Esc → inline baris 0; buka lagi → 4 subitem masih ada. Klik luar → tertutup. Klik delete `Subitem B` → hilang, input kembali fokus. Screenshot panel expanded diverifikasi visual (guide line, checklist, input). `node --check`, 3 test Node, `git diff --check` lolos.
+- Catatan: modal edit subitem lama masih ada dan berfungsi; yang diubah hanya akses cepat dari klik title.
+
 ### 2026-11-25 (Custom inline dropdowns)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).

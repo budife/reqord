@@ -157,5 +157,11 @@ assert.doesNotMatch(source, /<select class="status-select/);
 assert.doesNotMatch(source, /data-action="status"/);
 assert.match(styles, /\.inline-dropdown-menu\{position:fixed/);
 assert.match(styles, /\.inline-option:hover\{background:#f1f5f9\}/);
+assert.match(source, /expandedSubitemId/);
+assert.match(source, /quick-subitem-input/);
+assert.match(source, /subitem-inline-delete/);
+assert.doesNotMatch(source, /openEditDialog\(title\.dataset\.subitemId\)/);
+assert.match(styles, /\.quick-subitem-input:focus/);
+assert.match(styles, /\.subitem-inline-item:hover \.subitem-inline-delete/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');
