@@ -311,7 +311,7 @@ function renderRow(item) {
   const priorityLabel = PRIORITY_OPTIONS.find(option => option.value === item.priority)?.label || 'Normal';
   const statusControl = `<div class="custom-select"><button type="button" class="custom-trigger status-select status-${item.status}" data-custom-trigger="status" data-id="${item.id}" data-value="${escapeHtml(item.status)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Status" ${disabledAttr}><span class="trigger-text">${escapeHtml(statusLabel)}</span><span class="trigger-chevron" aria-hidden="true"></span></button></div>`;
   const priorityControl = `<div class="custom-select"><button type="button" class="custom-trigger priority-select priority-${item.priority}" data-custom-trigger="priority" data-id="${item.id}" data-value="${escapeHtml(item.priority)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Priority" ${disabledAttr}><span class="trigger-text">${escapeHtml(priorityLabel)}</span></button></div>`;
-  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</td><td>${renderRequestorPills(item.requestor)}</td><td>${escapeHtml(item.team)}</td><td class="note-cell${item.note ? ' has-note' : ''}">${escapeHtml(item.note || '')}</td><td>${statusControl}</td><td>${priorityControl}</td><td class="request-date-cell">${formatRequestDate(item.requestDate)}</td><td class="target-cell deadline-cell" title="Deadline: ${formatShortDate(item.date)}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
+  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}<button type="button" class="title-edit-badge" data-row-action="edit" data-id="${item.id}" title="Edit work order" aria-label="Edit work order" ${disabledAttr}>✎</button></td><td>${renderRequestorPills(item.requestor)}</td><td>${escapeHtml(item.team)}</td><td class="note-cell${item.note ? ' has-note' : ''}">${escapeHtml(item.note || '')}</td><td>${statusControl}</td><td>${priorityControl}</td><td class="request-date-cell">${formatRequestDate(item.requestDate)}</td><td class="target-cell deadline-cell" title="Deadline: ${formatShortDate(item.date)}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
 }
 function updateSyncStatus() {
   const el = document.querySelector('#saveState');
@@ -590,7 +590,7 @@ document.querySelector('.table-stack').addEventListener('change', event => { con
 document.querySelector('#closeSubitemButton').addEventListener('click', () => subitemDialog.close());
 document.querySelector('.table-stack').addEventListener('click', event => {
   const title = event.target.closest('.title-cell.has-subitems');
-  if (!title || !title.dataset.subitemId) return;
+  if (!title || !title.dataset.subitemId || event.target.closest('.title-edit-badge')) return;
   event.stopPropagation();
   expandedSubitemId = expandedSubitemId === title.dataset.subitemId ? null : title.dataset.subitemId;
   focusQuickSubitem = Boolean(expandedSubitemId);
@@ -599,7 +599,7 @@ document.querySelector('.table-stack').addEventListener('click', event => {
 });
 document.querySelector('.table-stack').addEventListener('keydown', event => {
   const title = event.target.closest('.title-cell.has-subitems');
-  if (title && (event.key === 'Enter' || event.key === ' ')) {
+  if (title && !event.target.closest('.title-edit-badge') && (event.key === 'Enter' || event.key === ' ')) {
     event.preventDefault();
     event.stopPropagation();
     expandedSubitemId = expandedSubitemId === title.dataset.subitemId ? null : title.dataset.subitemId;

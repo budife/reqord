@@ -163,5 +163,8 @@ assert.match(source, /subitem-inline-delete/);
 assert.doesNotMatch(source, /openEditDialog\(title\.dataset\.subitemId\)/);
 assert.match(styles, /\.quick-subitem-input:focus/);
 assert.match(styles, /\.subitem-inline-item:hover \.subitem-inline-delete/);
+assert.match(source, /class="title-edit-badge"/);
+assert.match(styles, /\.title-edit-badge\{/);
+assert.match(source, /event\.target\.closest\('\.title-edit-badge'\)/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

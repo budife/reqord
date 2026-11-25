@@ -34,6 +34,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Title edit badge)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: karena klik TITLE sekarang toggle sub-item, edit jadi tidak bisa diakses dari judul — tambahkan badge edit kecil di ujung setiap title.
+- Perubahan: `app.js` `renderRow()` menyisipkan `<button class="title-edit-badge" data-row-action="edit" data-id="...">✎</button>` di akhir `.title-cell` (mengikuti `disabledAttr` untuk viewer). Title click/keydown handlers diberi guard `event.target.closest('.title-edit-badge')` agar badge tidak memicu toggle. Handler `data-row-action="edit"` lama tetap membuka `openEditDialog`. `styles.css`: badge 18×18px, border tipis, radius 4px, warna green-dark, hover soft; `test/app-smoke.test.js` assertions baru; `CHANGELOG.md` diperbarui.
+- Validasi: Chromium 1440px (admin) — 54 badge = 54 title, 0 disabled. Klik badge → `#editDialog.open === true`, `.subitem-inline` tetap 0, `aria-expanded` tetap false. Klik teks judul setelah dialog ditutup → inline subitem muncul, edit dialog tidak open. Screenshot badge terlihat rapi di ujung teks tanpa mengganggu wrap. `node --check`, 3 test Node, `git diff --check` lolos.
+- Catatan: tombol edit di row-actions tetap ada; badge ini tambahan sesuai permintaan.
+
 ### 2026-11-25 (Quick inline sub-item creation)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).

@@ -17,6 +17,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 - `<select>` native pada kolom STATUS dan PRIORITY diganti custom dropdown: trigger `<button>` (tampilan pill/ghost dipertahankan) + floating menu `<div role="listbox">` yang di-append ke `body` dengan `position:fixed`, kartu putih rounded-xl, border slate, shadow, opsi berdot warna + check pada opsi aktif. Menu nutup saat klik luar, Esc, resize, scroll, atau saat tabel di-render ulang. Logika update status/priority (termasuk done → completedAt, activity, save) dipindah ke `applyInlineChange()` tanpa perubahan perilaku.
 - Klik judul work order kini toggle expand sub-item inline dengan input auto-focus. Enter menyimpan sub-item dan langsung menyiapkan input baru untuk input beruntun; Esc/klik luar menutup editor tanpa menghapus data. Checklist sub-item menjorok dengan guide line vertikal, checkbox + coretan saat selesai, dan tombol hapus kecil yang muncul saat hover.
+- Badge edit kecil (✎) ditambahkan di ujung setiap TITLE agar modal edit tetap mudah diakses setelah klik judul dipakai untuk toggle sub-item. Klik badge membuka edit dialog tanpa men-toggle sub-item.
 
 
 - Tabel dengan lebar 601–1100px kini discroll horizontal (min-width 1080px) supaya kolom tidak berhimpitan.

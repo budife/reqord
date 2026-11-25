@@ -851,3 +851,8 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 .quick-subitem-input::placeholder{color:#aab4aa}
 .quick-subitem-input:focus{border-style:solid;border-color:var(--green);box-shadow:none}
 @media(max-width:600px){.subitem-inline-delete{opacity:1}}
+
+/* Compact edit badge at the end of every title */
+.title-edit-badge{display:inline-grid;place-items:center;margin-left:6px;width:18px;height:18px;padding:0;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--green-dark);font:600 10px Manrope,system-ui,sans-serif;line-height:1;vertical-align:middle;cursor:pointer}
+.title-edit-badge:hover{background:var(--green-soft);border-color:#b9cdaa}
+.title-edit-badge:disabled{opacity:.45;cursor:not-allowed}
