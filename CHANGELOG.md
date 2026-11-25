@@ -11,6 +11,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - REQUEST DATE kini tampil `DD/MM/YYYY, HH.mm` dalam satu baris berwarna muted.
 - DEADLINE kini memakai badge urgensi: merah "Terlambat X hari", oranye "Hari ini"/"Besok", teks biasa "X hari lagi" — diikuti tanggal `DD/MM/YYYY`.
 - Modal Login ("Masuk ke reqord") dipadatkan: lebar 420px (dulu 680px), padding dan gap form dirapikan, tombol Masuk melebar berdampingan dengan Batal. Tinggi modal 330px (dulu 408px).
+- Dropdown Status di tabel kini pill soft berwarna per status + chevron kecil; dropdown Priority kini ghost dropdown dengan dot warna (abu Normal, oranye High, hijau Low) + hover halus. Keduanya rata kiri dengan teks header kolom.
 
 ### Changed
 

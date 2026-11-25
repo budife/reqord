@@ -144,5 +144,9 @@ assert.match(styles, /white-space:nowrap!important/);
 assert.match(styles, /#loginDialog\{width:min\(420px/);
 assert.match(styles, /#loginDialog \.dialog-form\{gap:10px/);
 assert.match(styles, /#loginDialog \.delete-actions \.primary-button\{flex:1/);
+assert.match(styles, /\.table-scroll td \.status-select\{/);
+assert.match(styles, /\.table-scroll td \.status-new_request\{background-color:#eaf3fb/);
+assert.match(styles, /\.table-scroll td \.priority-high\{background-image:/);
+assert.match(styles, /\.table-scroll td \.priority-select:hover\{background-color:/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

@@ -34,6 +34,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Status pill & priority ghost dropdown)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: dropdown Status dan Priority di tabel tidak boleh terlihat seperti kotak putih berborder repetitif; Status = pill soft + chevron, Priority = ghost dropdown + dot warna, keduanya rata kiri dengan header kolom.
+- Perubahan: `styles.css` blok `.table-scroll td .status-select/.priority-select` di akhir file — height 28px, border 0, font 12px!important, `appearance:none`; Status `border-radius:999px`, padding `0 26px 0 12px`, chevron SVG di kanan, warna soft per 11 status; Priority `border-radius:6px`, background transparan, dot SVG di kiri (`left 2px`), padding-left 18px, dot abu/oranye/hijau untuk normal/high/low, hover background 10%. Rule lama `.priority-select{margin-left:6px}` kini kalah (margin:0). Tidak ada perubahan markup/JS. `test/app-smoke.test.js` + `CHANGELOG.md` diperbarui.
+- Validasi: Chromium 1440px — Status `background rgb(234,243,251)`, `color rgb(59,110,165)`, radius 999px, border 0, chevron ada; Priority background transparan, dot ada, radius 6px, hover halus. Posisi kiri: Status header text 654 = select 654; Priority header text 819 = select 819 (selisih 0). Screenshot 7 status berbeda dicek visual — pill warnanya sesuai, dot priority terbaca. `node --check`, 3 test Node, `git diff --check` lolos.
+- Catatan: aplikasi hanya punya 3 nilai priority (high/normal/low) — tidak ada "Urgent", jadi dot merah tidak ditambahkan; Low memakai dot hijau lembut.
+
 ### 2026-11-25 (Compact login dialog)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).
