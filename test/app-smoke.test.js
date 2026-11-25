@@ -141,5 +141,8 @@ assert.match(source, /class="request-date-cell"/);
 assert.match(styles, /\.deadline-badge\.is-late/);
 assert.match(styles, /td\.request-date-cell/);
 assert.match(styles, /white-space:nowrap!important/);
+assert.match(styles, /#loginDialog\{width:min\(420px/);
+assert.match(styles, /#loginDialog \.dialog-form\{gap:10px/);
+assert.match(styles, /#loginDialog \.delete-actions \.primary-button\{flex:1/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

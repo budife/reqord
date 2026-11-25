@@ -754,3 +754,15 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 .deadline-badge.is-today,.deadline-badge.is-soon{background:#fff3d8;color:#8a5a12}
 .deadline-plain{color:var(--muted);font-size:11px;font-weight:600;white-space:nowrap}
 .deadline-date{display:block;margin-top:3px;color:var(--muted);font-size:11px;white-space:nowrap}
+
+/* Compact login dialog */
+#loginDialog{width:min(420px,calc(100% - 32px))}
+#loginDialog .delete-modal-head{gap:9px;padding:14px 18px 10px}
+#loginDialog .delete-modal-head h2{margin:3px 0 0;font-size:17px}
+#loginDialog .dialog-form{gap:10px;padding:14px 18px}
+#loginDialog .dialog-label{margin-bottom:0;font-size:12px}
+#loginDialog .dialog-form .delete-confirm-input{height:36px;padding:8px 10px;font-size:13px}
+#loginDialog .delete-actions{gap:8px;padding:12px 18px}
+#loginDialog .delete-actions .primary-button{flex:1;height:36px}
+#loginDialog .delete-actions .secondary-button{flex:0 0 72px;height:36px}
+#loginDialog .dialog-footer-link{padding:0 18px 12px;font-size:12px}

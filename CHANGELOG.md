@@ -10,6 +10,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 - Spacing tabel request: padding horizontal 12px konsisten di `th`/`td`, jarak 30px antara dropdown Status dan Priority, dan proporsi lebar kolom diset ulang agar Team/Note tidak berlebihan (20/9/7/8/14/10/14/12/6%).
 - REQUEST DATE kini tampil `DD/MM/YYYY, HH.mm` dalam satu baris berwarna muted.
 - DEADLINE kini memakai badge urgensi: merah "Terlambat X hari", oranye "Hari ini"/"Besok", teks biasa "X hari lagi" — diikuti tanggal `DD/MM/YYYY`.
+- Modal Login ("Masuk ke reqord") dipadatkan: lebar 420px (dulu 680px), padding dan gap form dirapikan, tombol Masuk melebar berdampingan dengan Batal. Tinggi modal 330px (dulu 408px).
 
 ### Changed
 

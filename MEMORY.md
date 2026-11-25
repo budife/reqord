@@ -34,6 +34,14 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-25 (Compact login dialog)
+
+- Agent/model: Hermes Agent (tencent/hy4-flash:free).
+- Permintaan: modal Login ("Masuk ke reqord") terlalu lebar dan boros ruang — perkecil ke ~max-w-sm/md, rapatkan padding/gap, proporsi tombol Masuk rapi.
+- Perubahan: `styles.css` blok `#loginDialog` (scoped hanya login, register tidak diubah): width `min(420px,calc(100% - 32px))`, head `14px 18px 10px`, form `gap:10px; padding:14px 18px`, label margin 0 + font 12px, input height 36px, actions `12px 18px`, primary `flex:1` (302px) berdampingan dengan secondary 72px, footer font 12px. `test/app-smoke.test.js` ditambah assertions, `CHANGELOG.md` diperbarui.
+- Validasi: Chromium 1440px — modal **420×330px** (sebelum **680×408px**); head 74px, form 164px, actions 61px, footer 29px; gap form 10px, padding form 14px 18px; gap antar tombol 8px, tidak ada clipping/overflow (screenshot dicek visual). Mobile 390px — modal 358×342px, left 12/right 370, footer terlihat, dokumen tidak overflow. `node --check`, 3 test Node, `git diff --check` lolos.
+- Catatan: stylesheet di-cache oleh browser saat verifikasi pertama; gunakan `Network.setCacheDisabled` + reload saat menguji perubahan CSS lokal.
+
 ### 2026-11-25 (Table spacing & deadline badges)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).
