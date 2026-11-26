@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=116">
+  <link rel="stylesheet" href="styles.css?v=117">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -198,10 +198,6 @@
     <div class="note-content"><p id="noteDialogBody">Belum ada catatan untuk work order ini.</p></div>
     <div class="delete-actions"><button type="button" class="secondary-button" id="editNoteButton">Edit catatan</button></div>
   </dialog>
-  <dialog id="subitemDialog" class="delete-dialog subitem-dialog">
-    <div class="delete-modal-head"><span class="delete-warning subitem-warning">☷</span><div><span class="eyebrow">WORK ORDER</span><h2 id="subitemDialogTitle">Subitems</h2></div><button type="button" class="modal-close" id="closeSubitemButton" aria-label="Tutup subitems">×</button></div>
-    <input id="subitemInput" type="text" class="subitem-input" placeholder="Tambah subitem... lalu tekan Enter" autocomplete="off" aria-label="Tambah subitem">
-  </dialog>
   <dialog id="profileDialog" class="profile-dialog">
     <div class="profile-modal-head"><div><span class="eyebrow">BUDIFE.PSD</span><h2>Meet the maker</h2></div><button type="button" class="modal-close" id="closeProfileButton" aria-label="Tutup maker panel">×</button></div>
     <nav class="maker-tabs" aria-label="Maker menu"><button type="button" class="maker-tab active" data-maker-tab="profile">Profile</button><button type="button" class="maker-tab" data-maker-tab="recent">Recent changes</button></nav>
@@ -210,6 +206,6 @@
     <div class="profile-footer"><span><i class="sync-dot"></i> reqord v0.6.4</span><span>Made thoughtfully</span></div>
   </dialog>
     <aside id="activityPanel" class="activity-panel" aria-labelledby="activityTitle" aria-hidden="false"><div class="activity-head"><div><span class="eyebrow">WORKSPACE LOG</span><h2 id="activityTitle">History &amp; Activity</h2></div><button type="button" class="modal-close" id="closeActivityButton" aria-label="Tutup history dan activity">×</button></div><div id="activityList" class="activity-list"><p class="activity-empty">Belum ada activity.</p></div></aside>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=103" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="document.body.classList.add('xlsx-unavailable')"></script><script src="app.js?v=104" defer></script>
 </body>
 </html>

@@ -4,6 +4,10 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 ## [Unreleased]
 
+### Removed
+
+- Fitur subitem dihapus dari antarmuka. Kolom `subitems` Supabase tetap utuh agar data lama tidak terhapus.
+
 ### Fixed
 
 - Kolom Title di tabel status (termasuk New Request) tidak lagi di-truncate dengan ellipsis. Judul panjang sekarang wrap ke baris baru (`white-space: normal`, `overflow-wrap: anywhere`) supaya terbaca penuh.

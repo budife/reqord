@@ -15,6 +15,7 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Current State
 
+- 2026-11-26: Fitur subitem dihapus dari UI, event handler, CSS, dan payload sync. Data lama di kolom Supabase `subitems` sengaja tidak dihapus.
 - Produk: reqord adalah work order tracker **manual** (tanpa scan folder) dengan **11 panel status** ( satu tabel per status) berisi semua work order + daily task.
 - Input: manual lewat tombol `+ Tambah` (modal Title + Requestor + Priority) → masuk dengan status `new_request`. Fitur Scan Folder & Refresh sudah dihapus (2026-11-13) supaya data benar-benar tertrack.
 - Status: dropdown di tabel dengan 11 nilai: `new_request` (New Request), `waiting_brief` (Waiting Brief), `working` (Working), `draft_preview` (1st Draft), `revision` (In Revision), `preview` (Preview), `on_hold` (On Hold), `approved` (Approved), `done` (Done), `daily` (Daily), `cancelled` (Cancelled). Item pindah panel sesuai status.

@@ -11,8 +11,7 @@ reqord adalah aplikasi work order tracker **manual** — pengguna menambah work 
 - Tombol `+ Tambah` di intro → modal (Title + Requestor + Priority).
 - Work order baru masuk ke panel `New Request` (status `new_request`).
 - Deadline default = tanggal request + 3 hari, bisa diedit di modal detail.
-- Edit: klik Title membuka modal Work order details (edit + subitems + catatan).
-- Subitem inline + checklist.
+- Edit: tombol ✎ membuka modal Work order details (edit + catatan).
 
 ### 11 Panel Status
 
@@ -43,7 +42,7 @@ reqord adalah aplikasi work order tracker **manual** — pengguna menambah work 
 
 ### History & Activity
 
-- Panel kanan mencatat semua aksi: tambah, edit, hapus, status, subitem, dll.
+- Panel kanan mencatat aksi tambah, edit, hapus, dan perubahan status.
 - Tiap aktivitas mencatat **username** + requestor + tanggal.
 
 ### Papan Publik (read-only)

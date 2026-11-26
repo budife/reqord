@@ -28,7 +28,6 @@ Migrasi reqord dari localStorage-only ke Supabase hosted backend, sehingga data 
   "done": "boolean",
   "completedAt": "string",
   "dailyDoneDate": "string",
-  "subitems": [{ "id", "title", "done", "order" }],
   "note": "string"
 }
 ```
