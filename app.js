@@ -231,8 +231,51 @@ function closeRequestorSuggestions(suggestionsId = 'requestorSuggestions', input
 function syncSuggestionSpacer(suggestionsId) { const suggestions = document.querySelector('#' + suggestionsId); if (!suggestions) return; const field = suggestions.closest('.edit-field'); const spacer = field ? field.nextElementSibling : null; if (!spacer || !spacer.classList.contains('suggestion-spacer')) return; const h = suggestions.hidden ? 0 : (suggestions.offsetHeight || 0) + 8; spacer.style.height = h + 'px'; }
 function chooseRequestor(name, inputId = 'requestorInput', suggestionsId = 'requestorSuggestions') { const input = document.querySelector('#' + inputId); if (!input) return; const parts = input.value.split(',').map(part => part.trim()).filter(Boolean); parts[parts.length - 1] = name; const unique = [...new Set(parts)]; input.value = unique.join(', '); closeRequestorSuggestions(suggestionsId, inputId); }
 function titleSimilarity(query, title) { const words = query.toLowerCase().split(/\s+/).filter(Boolean); const candidate = title.toLowerCase(); if (!words.length) return 0; return words.filter(word => candidate.includes(word)).length / words.length; }
-function renderTitleSuggestions() { const input = document.querySelector('#titleInput'); const suggestions = document.querySelector('#titleSuggestions'); if (!input || !suggestions) return; const query = input.value.trim(); if (query.length < 3) { suggestions.hidden = true; syncSuggestionSpacer('titleSuggestions'); return; } const matches = items.map(item => ({ item, score: titleSimilarity(query, item.title) })).filter(match => match.score >= .5).sort((a, b) => b.score - a.score).slice(0, 5); suggestions.innerHTML = matches.length ? `<div class="suggestion-heading">Similar work orders<span>${matches.length}</span></div>${matches.map(({ item }) => `<button type="button" role="option" data-title-id="${item.id}" data-title="${escapeHtml(item.title)}"><span class="suggestion-name">${escapeHtml(item.title)} at ${escapeHtml(groups[item.status] || 'Daily task')} by ${escapeHtml(item.requestor || 'No requestor')}</span></button>`).join('')}` : ''; suggestions.hidden = !matches.length; syncSuggestionSpacer('titleSuggestions'); }
-function closeTitleSuggestions() { const s = document.querySelector('#titleSuggestions'); if (s) { s.hidden = true; syncSuggestionSpacer('titleSuggestions'); } }
+function renderTitleSuggestions() {
+  const input = document.querySelector('#titleInput');
+  const suggestions = document.querySelector('#titleSuggestions');
+  if (!input || !suggestions) return;
+  const query = input.value.trim();
+  if (query.length < 3) {
+    suggestions.hidden = true;
+    syncSuggestionSpacer('titleSuggestions');
+    resetAddSubmitButton();
+    return;
+  }
+  const exactMatch = items.find(item => item.title.trim().toLowerCase() === query.toLowerCase()) || null;
+  const filteredItems = items.filter(item => item.title.trim().toLowerCase() !== query.toLowerCase());
+  const matches = filteredItems.map(item => ({ item, score: titleSimilarity(query, item.title) })).filter(match => match.score >= .5).sort((a, b) => b.score - a.score).slice(0, 5);
+  const submitBtn = document.querySelector('#submitAddDialog');
+  if (exactMatch) {
+    submitBtn.textContent = 'Tetap Tambah';
+    submitBtn.dataset.hasExactMatch = 'true';
+    submitBtn.dataset.exactMatchId = exactMatch.id;
+  } else {
+    resetAddSubmitButton();
+  }
+  let html = '';
+  if (exactMatch) {
+    html += `<div class="exact-match-warning"><span class="exact-match-warning-icon">⚠️</span><div class="exact-match-warning-text">Work order dengan judul ini sudah ada di <strong>${escapeHtml(groups[exactMatch.status] || 'Daily task')}</strong> (oleh <strong>${escapeHtml(exactMatch.requestor || 'Tidak ada requestor')}</strong>).</div><button type="button" class="exact-match-submit" data-action="confirm-duplicate">Tetap Tambah</button></div>`;
+  }
+  html += `<div class="suggestion-heading">Similar work orders<span>${matches.length}</span></div>`;
+  html += matches.length ? `<div class="suggestion-list">${matches.map(({ item }) => `<button type="button" role="option" data-title-id="${item.id}" data-title="${escapeHtml(item.title)}"><span class="suggestion-name">${escapeHtml(item.title)} at ${escapeHtml(groups[item.status] || 'Daily task')} by ${escapeHtml(item.requestor || 'No requestor')}</span></button>`).join('')}</div>` : `<div class="suggestion-empty">Belum ada work order serupa</div>`;
+  suggestions.innerHTML = html;
+  suggestions.hidden = false;
+  syncSuggestionSpacer('titleSuggestions');
+}
+function closeTitleSuggestions() {
+  const s = document.querySelector('#titleSuggestions');
+  if (s) { s.hidden = true; syncSuggestionSpacer('titleSuggestions'); }
+  resetAddSubmitButton();
+}
+function resetAddSubmitButton() {
+  const btn = document.querySelector('#submitAddDialog');
+  if (btn) {
+    btn.textContent = btn.dataset.defaultText || 'Tambah';
+    btn.dataset.hasExactMatch = 'false';
+    delete btn.dataset.exactMatchId;
+  }
+}
 function render() {
   closeInlineMenu();
   const query = document.querySelector('#searchInput').value.trim().toLowerCase();
@@ -424,6 +467,7 @@ const addDialog = document.querySelector('#addDialog');
 document.querySelector('#addWorkOrderButton').addEventListener('click', () => { addDialog.showModal(); setTimeout(() => document.querySelector('#titleInput').focus(), 50); });
 document.querySelector('#closeAddDialog').addEventListener('click', () => addDialog.close());
 document.querySelector('#cancelAddDialog').addEventListener('click', () => addDialog.close());
+document.querySelector('#addDialog').addEventListener('close', resetAddSubmitButton);
 document.querySelector('#submitAddDialog').addEventListener('click', () => {
   const title = document.querySelector('#titleInput').value.trim();
   const requestor = document.querySelector('#requestorInput').value.trim();
@@ -457,6 +501,23 @@ document.querySelector('#editTeamSuggestions').addEventListener('mousedown', eve
 document.querySelector('#editTeamSuggestions').addEventListener('click', event => { const btn = event.target.closest('[data-team]'); if (!btn) return; document.querySelector('#editTeamInput').value = btn.dataset.team; closeRequestorSuggestions('editTeamSuggestions', 'editTeamInput'); });
 document.querySelector('#titleSuggestions').addEventListener('mousedown', event => event.preventDefault());
 document.querySelector('#titleSuggestions').addEventListener('click', event => {
+  const exactBtn = event.target.closest('[data-action="confirm-duplicate"]');
+  if (exactBtn) {
+    const submitBtn = document.querySelector('#submitAddDialog');
+    const exactMatchId = submitBtn?.dataset.exactMatchId;
+    if (!exactMatchId) return;
+    const exactMatch = items.find(i => i.id === exactMatchId);
+    confirmModal(`Buat duplikat work order "${exactMatch?.title || ''}"? Judul ini sudah ada di ${escapeHtml(groups[exactMatch?.status] || 'Daily task')} (oleh ${escapeHtml(exactMatch?.requestor || 'Tidak ada requestor')}).`, {
+      title: 'Konfirmasi Duplikat',
+      eyebrow: 'DUPLICATE DETECTED',
+      confirmLabel: 'Ya, buat duplikat'
+    }).then(confirmed => {
+      if (confirmed) {
+        submitBtn.click();
+      }
+    });
+    return;
+  }
   const btn = event.target.closest('[data-title-id]');
   if (!btn) return;
   document.querySelector('#titleInput').value = btn.dataset.title || '';

@@ -52,12 +52,12 @@
            <dialog id="addDialog" class="delete-dialog add-dialog">
       <div class="delete-modal-head"><span class="delete-warning">+</span><div><span class="eyebrow">NEW WORK ORDER</span><h2>Tambah work order</h2></div><button type="button" class="modal-close" id="closeAddDialog" aria-label="Tutup">×</button></div>
       <div class="dialog-content">
-        <label class="edit-field" id="titleField" for="titleInput">Title<input id="titleInput" type="text" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="requestor-suggestions" hidden></div></label><div class="suggestion-spacer" aria-hidden="true"></div>
+        <label class="edit-field" id="titleField" for="titleInput">Title<div class="field-input-wrap"><input id="titleInput" type="text" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="title-suggestions" hidden></div></div></label>
         <label class="edit-field" id="requestorField" for="requestorInput">Requestor<input id="requestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></label><div class="suggestion-spacer" aria-hidden="true"></div>
         <label class="edit-field" id="teamField" for="teamInput">Team<input id="teamInput" type="text" placeholder="Nama team (opsional), bebas diisi" autocomplete="off"><div id="teamSuggestions" class="requestor-suggestions" hidden></div></label><div class="suggestion-spacer" aria-hidden="true"></div>
         <label class="edit-field" id="priorityField">Priority<select id="addPriority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
       </div>
-      <div class="delete-actions"><button class="secondary-button" id="cancelAddDialog" type="button">Batal</button><button class="primary-button" id="submitAddDialog" type="button">Tambah</button></div>
+      <div class="delete-actions"><button class="secondary-button" id="cancelAddDialog" type="button">Batal</button><button class="primary-button" id="submitAddDialog" type="button" data-default-text="Tambah">Tambah</button></div>
     </dialog>
     <footer><span><i class="sync-dot"></i> Tersimpan otomatis ke cloud</span><span class="mono">reqord · REQUEST WORK ORDERS</span><span class="app-version">reqord v0.6.4</span><span class="maker-credit">crafted by <button class="maker-trigger" id="makerButton" type="button" aria-label="Meet the maker">budife.psd</button></span></footer>
   </main>
