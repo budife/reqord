@@ -5,10 +5,10 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 const statusLabels = {
   new_request: 'New Request', waiting_brief: 'Waiting Brief', working: 'Working',
   draft_preview: '1st Draft', revision: 'In Revision', preview: 'Preview',
-  on_hold: 'On Hold', approved: 'Approved', done: 'Done', daily: 'Daily', cancelled: 'Cancelled'
+  on_hold: 'On Hold', done: 'Done', daily: 'Daily', cancelled: 'Cancelled'
 };
 
-const statusOrder = ['new_request','waiting_brief','working','draft_preview','revision','preview','on_hold','approved','done','daily','cancelled'];
+const statusOrder = ['new_request','waiting_brief','working','draft_preview','revision','preview','on_hold','done','daily','cancelled'];
 const priorityOrder = ['high','normal','low'];
 
 let items = [];
@@ -71,7 +71,7 @@ function normalizeStatus(value) {
   if (text.includes('daily') || text.includes('harian')) return 'daily';
   if (text.includes('cancelled') || text.includes('cancel') || text.includes('batal')) return 'cancelled';
   if (text.includes('on hold') || text.includes('on_hold') || text.includes('hold')) return 'on_hold';
-  if (text.includes('approved') || text.includes('approve')) return 'approved';
+  if (text.includes('approved') || text.includes('approve')) return 'done';
   return 'new_request';
 }
 

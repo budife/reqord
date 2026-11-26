@@ -16,10 +16,10 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 ## Current State
 
 - 2026-11-26: Fitur subitem dihapus dari UI, event handler, CSS, dan payload sync. Data lama di kolom Supabase `subitems` sengaja tidak dihapus.
-- Produk: reqord adalah work order tracker **manual** (tanpa scan folder) dengan **11 panel status** ( satu tabel per status) berisi semua work order + daily task.
+- Produk: reqord adalah work order tracker **manual** (tanpa scan folder) dengan **10 panel status** (satu tabel per status) berisi semua work order + daily task.
 - Input: manual lewat tombol `+ Tambah` (modal Title + Requestor + Priority) → masuk dengan status `new_request`. Fitur Scan Folder & Refresh sudah dihapus (2026-11-13) supaya data benar-benar tertrack.
-- Status: dropdown di tabel dengan 11 nilai: `new_request` (New Request), `waiting_brief` (Waiting Brief), `working` (Working), `draft_preview` (1st Draft), `revision` (In Revision), `preview` (Preview), `on_hold` (On Hold), `approved` (Approved), `done` (Done), `daily` (Daily), `cancelled` (Cancelled). Item pindah panel sesuai status.
-- Edit: klik Title membuka modal Work order details (edit + subitems). Subitem inline + checklist.
+- Status: dropdown di tabel dengan 10 nilai: `new_request` (New Request), `waiting_brief` (Waiting Brief), `working` (Working), `draft_preview` (1st Draft), `revision` (In Revision), `preview` (Preview), `on_hold` (On Hold), `done` (Done), `daily` (Daily), `cancelled` (Cancelled). Nilai lama `approved` dinormalisasi menjadi `done`.
+- Edit: tombol ✎ membuka modal Work order details; catatan dapat diedit di sana.
 - Search title/requestor, filter priority/sort/bulan/requestor.
 - Deadline: default 3 hari dari tanggal request, bisa diedit di modal Work order details. Estimasi durasi (`Est.`) dihapus.
 - Persist: localStorage (`reqord-request-work-orders`) + sync ke Supabase **manual** lewat tombol "Sync to Cloud" (status: Ada perubahan · belum disinkron → Menyinkron… n/N → Tersinkron). Bulk upsert chunk 50 + snapshot diff. IndexedDB folder handle dihapus.

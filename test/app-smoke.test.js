@@ -3,6 +3,11 @@ const fs = require('node:fs');
 
 const source = fs.readFileSync('app.js', 'utf8');
 const markup = fs.readFileSync('index.html', 'utf8');
+const publicSource = fs.readFileSync('public.js', 'utf8');
+const summarySource = fs.readFileSync('summary.js', 'utf8');
+const publicMarkup = fs.readFileSync('public.html', 'utf8');
+const migration = fs.readFileSync('migration-11-status.sql', 'utf8');
+const vm = require('node:vm');
 const styles = fs.readFileSync('styles.css', 'utf8') + fs.readFileSync('public.css', 'utf8');
 
 assert.match(source, /function normalizeStatus/);
@@ -55,7 +60,28 @@ assert.match(source, /new_request/);
 assert.match(source, /waiting_brief/);
 assert.match(source, /draft_preview/);
 assert.match(source, /on_hold/);
-assert.match(source, /approved/);
+assert.match(source, /approved.*return 'done'/);
+assert.match(publicSource, /approved.*return 'done'/);
+assert.match(summarySource, /approved.*return 'done'/);
+function loadStatusNormalizer(src, endMarker) {
+  const start = src.indexOf('function normalizeStatus');
+  const end = src.indexOf(endMarker, start);
+  const context = {};
+  vm.runInNewContext(`${src.slice(start, end)}\nthis.normalizeStatus = normalizeStatus;`, context);
+  return context.normalizeStatus;
+}
+const appNormalizeStatus = loadStatusNormalizer(source, 'function normalizePriority');
+const publicNormalizeStatus = loadStatusNormalizer(publicSource, 'function normalizeItem');
+const summaryNormalizeStatus = loadStatusNormalizer(summarySource, 'function normalizeItem');
+for (const normalizeStatus of [appNormalizeStatus, publicNormalizeStatus, summaryNormalizeStatus]) {
+  assert.equal(normalizeStatus('approved'), 'done');
+  assert.equal(normalizeStatus('done'), 'done');
+  assert.equal(normalizeStatus('preview'), 'preview');
+}
+assert.match(migration, /UPDATE work_orders SET status = 'done', done = true, completed_at = COALESCE\(completed_at, now\(\)\)[\s\S]*lower\(status\) = 'approved'/);
+assert.match(migration, /'on_hold',[\s\S]*'done',[\s\S]*'daily'/);
+assert.doesNotMatch(migration, /'approved',/);
+assert.doesNotMatch(migration, /SET status = 'draft_preview'.*preview/);
 assert.match(source, /cancelled/);
 assert.match(source, /groups\s*=.*new_request/);
 assert.match(markup, /New Request/);
@@ -63,11 +89,13 @@ assert.match(markup, /Waiting Brief/);
 assert.match(markup, /1st Draft/);
 assert.match(markup, /In Revision/);
 assert.match(markup, /On Hold/);
-assert.match(markup, /Approved/);
+assert.doesNotMatch(markup, /Approved/);
 assert.match(markup, /Done/);
 assert.match(markup, /Daily/);
 assert.match(markup, /Cancelled/);
-// 11 separate table bodies
+assert.match(publicMarkup, /Done/);
+assert.doesNotMatch(publicMarkup, /<option value="approved">Approved<\/option>/);
+// 10 canonical table bodies; approved is normalized to done.
 assert.match(markup, /id="new_requestTable"/);
 assert.match(markup, /id="waiting_briefTable"/);
 assert.match(markup, /id="workingTable"/);
@@ -75,7 +103,7 @@ assert.match(markup, /id="draft_previewTable"/);
 assert.match(markup, /id="revisionTable"/);
 assert.match(markup, /id="previewTable"/);
 assert.match(markup, /id="on_holdTable"/);
-assert.match(markup, /id="approvedTable"/);
+assert.doesNotMatch(markup, /id="approvedTable"/);
 assert.match(markup, /id="doneTable"/);
 assert.match(markup, /id="dailyTable"/);
 assert.match(markup, /id="cancelledTable"/);
@@ -93,7 +121,7 @@ assert.match(styles, /pill-new_request/);
 assert.match(styles, /pill-waiting_brief/);
 assert.match(styles, /pill-draft_preview/);
 assert.match(styles, /pill-on_hold/);
-assert.match(styles, /pill-approved/);
+assert.doesNotMatch(styles, /pill-approved/);
 assert.match(styles, /pill-done/);
 assert.match(styles, /pill-daily/);
 assert.match(styles, /pill-cancelled/);
@@ -124,7 +152,6 @@ assert.match(source, /hasUnsavedChanges = false;/);
 assert.doesNotMatch(source, /window\.confirm/);
 
 // Date formatting + deadline urgency badges
-const vm = require('node:vm');
 const helperSrc = source.slice(source.indexOf('function formatShortDate'), source.indexOf('function urgencyClass'));
 const dateCtx = { Date, String, Math, Number, escapeHtml: value => String(value), today: () => '2026-11-25' };
 vm.runInNewContext(`${helperSrc}\nthis.formatRequestDate = formatRequestDate; this.targetDoneLabel = targetDoneLabel;`, dateCtx);
@@ -177,7 +204,7 @@ assert.match(fs.readFileSync('migration-team.sql', 'utf8'), /ADD COLUMN IF NOT E
 assert.match(source, /chunk\.map\(\(\{ team, \.\.\.rest \}\) => rest\)/);
 assert.match(source, /sbHasTeamColumn === null/);
 assert.match(source, /if \(!sbHasTeamColumn\) delete row\.team/);
-assert.match(markup, /app\.js\?v=104/);
+assert.match(markup, /app\.js\?v=105/);
 assert.match(markup, /id="teamSuggestions"/);
 assert.match(markup, /id="editTeamSuggestions"/);
 assert.match(source, /function renderTeamSuggestions/);

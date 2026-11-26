@@ -9,7 +9,7 @@ const LEGACY_STORAGE_KEY = 'synaps-project-work-orders';
 // saat fallback, dan `const` yang belum tereksekusi (TDZ) akan melempar ReferenceError.
 const BACKUP_PREFIX = 'reqord-backup-';
 const BACKUP_LIMIT = 5;
-const groups = { new_request: 'New Request', waiting_brief: 'Waiting Brief', working: 'Working', draft_preview: '1st Draft', revision: 'In Revision', preview: 'Preview', on_hold: 'On Hold', approved: 'Approved', done: 'Done', daily: 'Daily', cancelled: 'Cancelled' };
+const groups = { new_request: 'New Request', waiting_brief: 'Waiting Brief', working: 'Working', draft_preview: '1st Draft', revision: 'In Revision', preview: 'Preview', on_hold: 'On Hold', done: 'Done', daily: 'Daily', cancelled: 'Cancelled' };
 let userName = '';
 try { const stored = localStorage.getItem('reqord-username'); if (stored) userName = atob(stored); } catch(e) {}
 let isAdmin = false;
@@ -148,7 +148,7 @@ function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, char => ({
 let _itemSeq = 0;
 function generateItemId() { return `${Date.now().toString(36)}-${(++_itemSeq).toString(36)}-${Math.random().toString(36).slice(2, 8)}`; }
 function repairItemIds(list) { const seen = new Set(); return (Array.isArray(list) ? list : []).map(item => { const id = String(item.id); if (seen.has(id)) return { ...item, id: generateItemId() }; seen.add(id); return item; }); }
-function normalizeItem(item) { return { ...item, id: String(item.id || generateItemId()), title: String(item.title || '').trim(), requestor: String(item.requestor || item.owner || '').trim(), team: String(item.team || '').trim(), subitems: Array.isArray(item.subitems) ? item.subitems.map((subitem, index) => ({ id: subitem.id || `${item.id}-${index}`, title: String(subitem.title || '').trim(), done: Boolean(subitem.done), order: subitem.order ?? index })).filter(subitem => subitem.title) : [], status: normalizeStatus(item.status), priority: normalizePriority(item.priority), requestDate: normalizeDateValue(item.requestDate), date: normalizeDateValue(item.date || item.targetDone) || defaultDeadline(normalizeDateValue(item.requestDate)), done: Boolean(item.done), completedAt: item.completedAt || '', updatedAt: item.updatedAt || '', month: (normalizeDateValue(item.requestDate) || normalizeDateValue(item.date || item.targetDone) || defaultDeadline(normalizeDateValue(item.requestDate))).slice(0, 7), public: Boolean(item.public) }; }
+function normalizeItem(item) { return { ...item, id: String(item.id || generateItemId()), title: String(item.title || '').trim(), requestor: String(item.requestor || item.owner || '').trim(), team: String(item.team || '').trim(), subitems: Array.isArray(item.subitems) ? item.subitems.map((subitem, index) => ({ id: subitem.id || `${item.id}-${index}`, title: String(subitem.title || '').trim(), done: Boolean(subitem.done), order: subitem.order ?? index })).filter(subitem => subitem.title) : [], status: normalizeStatus(item.status), priority: normalizePriority(item.priority), requestDate: normalizeDateValue(item.requestDate), date: normalizeDateValue(item.date || item.targetDone) || defaultDeadline(normalizeDateValue(item.requestDate)), done: Boolean(item.done) || normalizeStatus(item.status) === 'done', completedAt: item.completedAt || '', updatedAt: item.updatedAt || '', month: (normalizeDateValue(item.requestDate) || normalizeDateValue(item.date || item.targetDone) || defaultDeadline(normalizeDateValue(item.requestDate))).slice(0, 7), public: Boolean(item.public) }; }
 function normalizeStatus(value) {
   const text = String(value || '').toLowerCase();
   if (text === 'daily') return 'daily';
@@ -160,7 +160,7 @@ function normalizeStatus(value) {
   if (text.includes('done') || text.includes('selesai') || text.includes('complete')) return 'done';
   if (text.includes('cancelled') || text.includes('cancel') || text.includes('batal')) return 'cancelled';
   if (text.includes('on hold') || text.includes('on_hold') || text.includes('hold')) return 'on_hold';
-  if (text.includes('approved') || text.includes('approve')) return 'approved';
+  if (text.includes('approved') || text.includes('approve')) return 'done';
   return 'new_request';
 }
 function normalizePriority(value) { const text = String(value || 'normal').toLowerCase(); return text.includes('high') || text.includes('penting') ? 'high' : text.includes('low') || text.includes('nanti') ? 'low' : 'normal'; }
@@ -245,7 +245,7 @@ function render() {
   });
 
   // Group visible items by status
-  const statusOrder = ['new_request', 'waiting_brief', 'working', 'draft_preview', 'revision', 'preview', 'on_hold', 'approved', 'done', 'daily', 'cancelled'];
+  const statusOrder = ['new_request', 'waiting_brief', 'working', 'draft_preview', 'revision', 'preview', 'on_hold', 'done', 'daily', 'cancelled'];
   statusOrder.forEach(status => {
     const statusItems = visible.filter(item => item.status === status);
     const tbody = document.querySelector(`#${status}Table`);
@@ -288,7 +288,6 @@ const STATUS_OPTIONS = [
   { value: 'revision', label: 'In Revision' },
   { value: 'preview', label: 'Preview' },
   { value: 'on_hold', label: 'On Hold' },
-  { value: 'approved', label: 'Approved' },
   { value: 'done', label: 'Done' },
   { value: 'daily', label: 'Daily' },
   { value: 'cancelled', label: 'Cancelled' }
@@ -1307,6 +1306,7 @@ async function sbLoadItems(showLoading = false) {
 }
 
 function sbToItem(row) {
+  const status = normalizeStatus(row.status);
   return normalizeItem({
     id: row.id,
     title: row.title,
@@ -1314,7 +1314,7 @@ function sbToItem(row) {
     team: row.team || '',
     month: row.month,
     priority: row.priority,
-    status: row.status,
+    status,
     date: row.date ? row.date.replace('T', ' ').slice(0, 16) : '',
     requestDate: row.request_date ? row.request_date.replace('T', ' ').slice(0, 16) : '',
     done: row.done,

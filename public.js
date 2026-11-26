@@ -10,7 +10,6 @@ const statusLabels = {
   revision: 'In Revision',
   preview: 'Preview',
   on_hold: 'On Hold',
-  approved: 'Approved',
   done: 'Done',
   daily: 'Daily',
   cancelled: 'Cancelled'
@@ -65,7 +64,7 @@ function normalizeStatus(value) {
   if (text.includes('daily') || text.includes('harian')) return 'daily';
   if (text.includes('cancelled') || text.includes('cancel') || text.includes('batal')) return 'cancelled';
   if (text.includes('on hold') || text.includes('on_hold') || text.includes('hold')) return 'on_hold';
-  if (text.includes('approved') || text.includes('approve')) return 'approved';
+  if (text.includes('approved') || text.includes('approve')) return 'done';
   return 'new_request';
 }
 

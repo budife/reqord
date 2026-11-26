@@ -4,6 +4,10 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 ## [Unreleased]
 
+### Added
+
+- Merge status `Approved` into `Done`. Existing `approved` work orders normalize to `done` in app, public board, and summary; Supabase migration updates stored rows and constrains future statuses.
+
 ### Removed
 
 - Fitur subitem dihapus dari antarmuka. Kolom `subitems` Supabase tetap utuh agar data lama tidak terhapus.

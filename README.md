@@ -13,9 +13,9 @@ reqord adalah aplikasi work order tracker **manual** — pengguna menambah work 
 - Deadline default = tanggal request + 3 hari, bisa diedit di modal detail.
 - Edit: tombol ✎ membuka modal Work order details (edit + catatan).
 
-### 11 Panel Status
+### 10 Panel Status
 
-- Satu tabel per status: New Request, Waiting Brief, Working, 1st Draft, In Revision, Preview, On Hold, Approved, Done, Daily, Cancelled.
+- Satu tabel per status: New Request, Waiting Brief, Working, 1st Draft, In Revision, Preview, On Hold, Done, Daily, Cancelled. Approved masuk Done.
 - Panel kosong otomatis tersembunyi; muncul saat ada isi.
 - Dropdown status di tiap baris untuk pindah status.
 - Show more: 20 item per halaman, tombol "Show more (N lagi)".
@@ -83,7 +83,7 @@ reqord adalah aplikasi work order tracker **manual** — pengguna menambah work 
 ## Status
 
 - Versi: v0.6.4.
-- Fase: manual work order tracker (11 panel status, local-first + Supabase sync).
+- Fase: manual work order tracker (10 panel status, local-first + Supabase sync).
 - Stack: vanilla JS + HTML + CSS (no build step).
 - Storage: localStorage (items + activities).
 - Backend: Supabase (Postgres + Auth + Realtime).

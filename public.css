@@ -84,8 +84,7 @@ tbody tr:hover { background: #f7faf2; }
 .pill-revision { background: #fee2e2; color: #991b1b; }
 .pill-preview { background: #e0e7ff; color: #3730a3; }
 .pill-on_hold { background: #f3f4f6; color: #4b5563; }
-.pill-approved { background: #dcfce7; color: #166534; }
-.pill-done { background: #eef2e6; color: var(--muted); }
+.pill-done { background: #dcfce7; color: #166534; }
 .pill-daily { background: #dbeafe; color: #1e40af; }
 .pill-cancelled { background: #fef2f2; color: #991b1b; }
 

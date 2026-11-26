@@ -323,7 +323,6 @@ body:not(.is-admin) .admin-only { display: none !important; }
 .status-pill.pill-revision { background: #f6efd9; color: #9b7b48; }
 .status-pill.pill-preview { background: #e8f2ee; color: #4f806c; }
 .status-pill.pill-on_hold { background: #f1eee8; color: #756b5c; }
-.status-pill.pill-approved { background: #edf4e5; color: var(--green-dark); }
 .status-pill.pill-done { background: #edf4e5; color: var(--green-dark); }
 .status-pill.pill-cancelled { background: #f8e8e5; color: #a85e59; }
 
@@ -783,7 +782,6 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 .table-scroll td .status-revision{background-color:#fbf0d9;color:#8a5a12}
 .table-scroll td .status-preview{background-color:#eef3fa;color:#52688a}
 .table-scroll td .status-on_hold{background-color:#f0f1f3;color:#64748b}
-.table-scroll td .status-approved,
 .table-scroll td .status-done{background-color:#e8f5ec;color:#2f7d52}
 .table-scroll td .status-daily{background-color:#edf4f2;color:#3f7a70}
 .table-scroll td .status-cancelled{background-color:#fbecec;color:#b15252}
@@ -822,7 +820,6 @@ html .primary-button:focus{outline:none;border:1px solid #789b58!important;box-s
 .inline-option .opt-status-revision{background:#8a5a12}
 .inline-option .opt-status-preview{background:#52688a}
 .inline-option .opt-status-on_hold{background:#64748b}
-.inline-option .opt-status-approved,
 .inline-option .opt-status-done{background:#2f7d52}
 .inline-option .opt-status-daily{background:#3f7a70}
 .inline-option .opt-status-cancelled{background:#b15252}

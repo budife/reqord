@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS work_orders (
   team TEXT,
   month TEXT,
   priority TEXT DEFAULT 'normal' CHECK (priority IN ('high', 'normal', 'low')),
-  status TEXT DEFAULT 'list' CHECK (status IN ('list', 'ongoing', 'revision', 'preview', 'done')),
+  status TEXT DEFAULT 'new_request' CHECK (status IN ('new_request', 'waiting_brief', 'working', 'draft_preview', 'revision', 'preview', 'on_hold', 'done', 'daily', 'cancelled')),
   type TEXT DEFAULT 'project' CHECK (type IN ('project', 'daily')),
   date TIMESTAMPTZ,
   request_date TIMESTAMPTZ,
