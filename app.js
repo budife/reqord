@@ -645,7 +645,7 @@ document.querySelector('.table-stack').addEventListener('click', event => {
   openInlineMenu(trigger, trigger.dataset.customTrigger, trigger.dataset.id, trigger.dataset.value);
 });
 document.addEventListener('click', closeInlineMenu);
-document.addEventListener('keydown', event => { if (event.key === 'Escape') closeInlineMenu(); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeInlineMenu(); ['requestorSuggestions','editRequestorSuggestions','titleSuggestions','teamSuggestions','editTeamSuggestions'].forEach(id => { const s = document.querySelector('#'+id); const input = s?.closest('.edit-field')?.querySelector('input'); if (s && input) closeRequestorSuggestions(id, input.id); }); } });
 window.addEventListener('resize', closeInlineMenu);
 document.addEventListener('scroll', closeInlineMenu, true);
 let deleteTargetId = null;
