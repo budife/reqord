@@ -250,12 +250,14 @@ function renderTitleSuggestions() {
     submitBtn.textContent = 'Tetap Tambah';
     submitBtn.dataset.hasExactMatch = 'true';
     submitBtn.dataset.exactMatchId = exactMatch.id;
+    submitBtn.disabled = true;
+    submitBtn.title = `Sudah ada work order "${exactMatch.title}" di ${groups[exactMatch.status]} (oleh ${exactMatch.requestor || 'Tidak ada requestor'}). Ganti judul atau pilih "Tetap Tambah" untuk konfirmasi duplikat (tidak disimpan).`;
   } else {
     resetAddSubmitButton();
   }
   let html = '';
   if (exactMatch) {
-    html += `<div class="exact-match-warning"><span class="exact-match-warning-icon">⚠️</span><div class="exact-match-warning-text">Work order dengan judul ini sudah ada di <strong>${escapeHtml(groups[exactMatch.status] || 'Daily task')}</strong> (oleh <strong>${escapeHtml(exactMatch.requestor || 'Tidak ada requestor')}</strong>).</div><button type="button" class="exact-match-submit" data-action="confirm-duplicate">Tetap Tambah</button></div>`;
+    html += `<div class="exact-match-warning"><span class="exact-match-warning-icon">⚠️</span><div class="exact-match-warning-text">Work order dengan judul ini sudah ada di <strong>${escapeHtml(groups[exactMatch.status] || 'Daily task')}</strong> (oleh <strong>${escapeHtml(exactMatch.requestor || 'Tidak ada requestor')}</strong>). Ganti judul untuk melanjutkan.</div></div>`;
   }
   html += `<div class="suggestion-heading">Similar work orders<span>${matches.length}</span></div>`;
   html += matches.length ? `<div class="suggestion-list">${matches.map(({ item }) => `<button type="button" role="option" data-title-id="${item.id}" data-title="${escapeHtml(item.title)}"><span class="suggestion-name">${escapeHtml(item.title)} at ${escapeHtml(groups[item.status] || 'Daily task')} by ${escapeHtml(item.requestor || 'No requestor')}</span></button>`).join('')}</div>` : `<div class="suggestion-empty">Belum ada work order serupa</div>`;
@@ -274,6 +276,8 @@ function resetAddSubmitButton() {
     btn.textContent = btn.dataset.defaultText || 'Tambah';
     btn.dataset.hasExactMatch = 'false';
     delete btn.dataset.exactMatchId;
+    btn.disabled = false;
+    btn.title = '';
   }
 }
 function render() {
@@ -501,23 +505,6 @@ document.querySelector('#editTeamSuggestions').addEventListener('mousedown', eve
 document.querySelector('#editTeamSuggestions').addEventListener('click', event => { const btn = event.target.closest('[data-team]'); if (!btn) return; document.querySelector('#editTeamInput').value = btn.dataset.team; closeRequestorSuggestions('editTeamSuggestions', 'editTeamInput'); });
 document.querySelector('#titleSuggestions').addEventListener('mousedown', event => event.preventDefault());
 document.querySelector('#titleSuggestions').addEventListener('click', event => {
-  const exactBtn = event.target.closest('[data-action="confirm-duplicate"]');
-  if (exactBtn) {
-    const submitBtn = document.querySelector('#submitAddDialog');
-    const exactMatchId = submitBtn?.dataset.exactMatchId;
-    if (!exactMatchId) return;
-    const exactMatch = items.find(i => i.id === exactMatchId);
-    confirmModal(`Buat duplikat work order "${exactMatch?.title || ''}"? Judul ini sudah ada di ${escapeHtml(groups[exactMatch?.status] || 'Daily task')} (oleh ${escapeHtml(exactMatch?.requestor || 'Tidak ada requestor')}).`, {
-      title: 'Konfirmasi Duplikat',
-      eyebrow: 'DUPLICATE DETECTED',
-      confirmLabel: 'Ya, buat duplikat'
-    }).then(confirmed => {
-      if (confirmed) {
-        submitBtn.click();
-      }
-    });
-    return;
-  }
   const btn = event.target.closest('[data-title-id]');
   if (!btn) return;
   document.querySelector('#titleInput').value = btn.dataset.title || '';
