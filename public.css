@@ -167,6 +167,12 @@ footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wr
 }
 .mono { font-family: "DM Mono", monospace; letter-spacing: .04em; }
 
+/* Search field border/focus belong to input, never outer wrapper. */
+.search-wrap{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:0!important;border-radius:0!important}
+.search-wrap:focus-within{border:0!important;outline:0!important;box-shadow:none!important}
+.search-wrap input{flex:1;min-width:0;width:auto;height:38px;padding:8px 10px!important;border:1px solid var(--line)!important;border-radius:4px!important;outline:0!important;background:#fff!important;box-shadow:none!important;color:var(--text)}
+.search-wrap input:focus,.search-wrap input:focus-visible{border-color:var(--green)!important;outline:0!important;box-shadow:0 0 0 3px rgba(120,155,88,.2)!important}
+
 @media (max-width: 720px) {
   .shell { padding: 0 16px 40px; }
   .workspace { display: none; }

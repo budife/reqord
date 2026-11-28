@@ -35,6 +35,12 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-28 (Single-border input cleanup)
+
+- Permintaan: hilangkan double border pada Title, Requestor, Team, search bar, dan semua field modal Tambah/Edit.
+- Perubahan: `styles.css` dan `public.css` menetralkan wrapper `.field-input-wrap`, `.title-input-wrap`, `.requestor-field`, `.search-wrap` menjadi positioning/container tanpa visual chrome; border, radius, dan focus ring dipindah/ditetapkan pada native input/select/textarea. Cache-buster `styles.css?v=124`, `public.css?v=18`. Smoke test ditambah untuk aturan wrapper/native control.
+- Validasi: browser lokal memeriksa semua wrapper autocomplete border 0, shadow none, background transparent, padding 0; native controls satu border 1px/radius 4px. `node --check` lulus. Smoke test perlu mengikuti cache-buster baru.
+
 ### 2026-11-28 (Compact Add/Edit work order modals)
 
 - Permintaan: samakan proporsi Tambah/Edit, grid 2 kolom, Edit tambah kontrol Priority, compact note, footer Delete+Cancel+Save sejajar, suggestion tetap floating.

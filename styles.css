@@ -423,6 +423,16 @@ body:not(.is-admin) #selectAllButton { display: none !important; }
 body:not(.is-admin) .auth-only { display: none !important; }
 body:not(.is-admin) .admin-only { display: none !important; }
 
+/* Input chrome belongs to native controls only; autocomplete wrappers only anchor menus. */
+.field-input-wrap,.title-input-wrap,.requestor-field{position:relative!important;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:0!important;border-radius:0!important}
+#addDialog .field-input-wrap,#editDialog .field-input-wrap{width:100%;min-width:0}
+.search-wrap{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:0!important;border-radius:0!important}
+.search-wrap:focus-within{border:0!important;outline:0!important;box-shadow:none!important}
+.search-wrap input{flex:1;min-width:0;width:auto;height:38px;padding:8px 10px!important;border:1px solid var(--line)!important;border-radius:4px!important;outline:0!important;background:#fff!important;box-shadow:none!important;color:var(--text)}
+.search-wrap input:focus,.search-wrap input:focus-visible{border-color:var(--green)!important;outline:0!important;box-shadow:0 0 0 3px rgba(120,155,88,.2)!important}
+#addDialog .edit-field input:focus,#addDialog .edit-field select:focus,#addDialog .edit-field textarea:focus,#editDialog .edit-field input:focus,#editDialog .edit-field select:focus,#editDialog .edit-field textarea:focus{outline:0!important;box-shadow:0 0 0 3px rgba(120,155,88,.2)!important}
+#addDialog .edit-field input:focus-visible,#addDialog .edit-field select:focus-visible,#addDialog .edit-field textarea:focus-visible,#editDialog .edit-field input:focus-visible,#editDialog .edit-field select:focus-visible,#editDialog .edit-field textarea:focus-visible{outline:0!important}
+
 /* Invite codes list */
 .invite-code-item { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line-soft,#e2e8f0);border-radius:6px;margin-bottom:8px;background:var(--surface,#fff); }
 .invite-code-item.used { opacity:0.6;background:#f8faf8;border-color:var(--green-soft,#d4e9d4); }

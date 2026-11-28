@@ -52,7 +52,12 @@ assert.match(styles, /#editDialog \.field-title,#editDialog \.field-note\{grid-c
 assert.match(styles, /#editDialog \.edit-form-footer\{display:flex;align-items:center;justify-content:space-between/);
 assert.match(styles, /#addDialog,#editDialog\{width:min\(576px/);
 assert.match(styles, /#addDialog \.requestor-suggestions,#editDialog \.requestor-suggestions,[\s\S]*z-index:50/);
-assert.match(markup, /styles\.css\?v=123/);
+assert.match(markup, /styles\.css\?v=124/);
+assert.match(mainStyles, /\.field-input-wrap,\.title-input-wrap,\.requestor-field\{position:relative!important;border:0!important/);
+assert.match(mainStyles, /\.search-wrap\{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:0!important/);
+assert.match(mainStyles, /\.search-wrap input:focus,\.search-wrap input:focus-visible\{border-color:var\(--green\)!important/);
+assert.match(publicStyles, /\.search-wrap\{border:0!important;outline:0!important/);
+assert.match(publicStyles, /\.search-wrap input:focus,\.search-wrap input:focus-visible/);
 assert.match(styles, /Deadline/);
 assert.match(styles, /\.table-scroll thead\{display:none\}/);
 assert.match(styles, /td\.row-actions\{display:table-cell/);
@@ -240,7 +245,7 @@ assert.match(publicStyles, /\.table-scroll th\{font-size:11px;font-weight:700;co
 assert.match(publicStyles, /\.table-scroll td\.title-cell\{min-width:260px;max-width:28rem;font-size:14px;font-weight:600;line-height:1\.375;color:#0f172a;white-space:normal;overflow:visible;overflow-wrap:anywhere;word-break:break-word\}/);
 assert.match(publicStyles, /td\s*\{[^}]*vertical-align:\s*top/);
 assert.match(publicStyles, /\.table-scroll td\.date-cell \.date-secondary\{font-size:12px;font-weight:400;color:#64748b\}/);
-assert.match(publicMarkup, /public\.css\?v=17/);
+assert.match(publicMarkup, /public\.css\?v=18/);
 assert.match(publicMarkup, /public\.js\?v=11/);
 assert.match(markup, /<section class="intro">[\s\S]*?Request work orders[\s\S]*?id="activeFileName"[\s\S]*?id="addWorkOrderButton"[\s\S]*?id="syncCloudButton"[\s\S]*?href="public\.html"[\s\S]*?href="summary\.html"[\s\S]*?<\/section>/);
 const mainIntro = markup.match(/<section class="intro">[\s\S]*?<\/section>/)[0];
