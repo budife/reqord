@@ -35,6 +35,12 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-28 (Sticky topbar and toolbar)
+
+- Permintaan: `index.html` dan `public.html` memakai topbar sticky paling atas; toolbar sticky tepat di bawahnya; intro ikut scroll; aksi utama tetap tersedia dari toolbar.
+- Perubahan: `index.html` memindahkan active file, `+ Tambah`, `Sync to Cloud`, Board, dan Summary dari intro ke toolbar. `public.html` memindahkan live state, App, dan Summary dari intro ke toolbar. `styles.css` dan `public.css` memakai topbar `z-index:40`, toolbar `z-index:30`, offset CSS variable `--topbar-height` 78px desktop/64px mobile, latar solid dengan blur halus, border bawah tipis. Cache-buster index naik ke `styles.css?v=119`, public naik ke `public.css?v=15`. Smoke assertions ditambah.
+- Validasi: `node --check public.js app.js summary.js`, `node test/app-smoke.test.js`, `git diff --check` lulus. Browser desktop + viewport 390px mengonfirmasi `position:sticky`, topbar 78px/64px, toolbar offset 78px/64px, z-index 40/30; `intro` static; aksi utama berada di toolbar. Uji scroll distance tidak konklusif karena browser harness tidak mengubah scrollY pada fixture pendek; posisi CSS terverifikasi.
+
 ### 2026-11-28 (Public board title wrap)
 
 - Permintaan: kolom TITLE pada `public.html` harus menampilkan judul panjang penuh tanpa truncate, seluruh sel sejajar di atas, dan tipografi konsisten dengan halaman utama.

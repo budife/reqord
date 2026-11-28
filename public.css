@@ -151,6 +151,20 @@ footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wr
   .mono{font-size:11px}
 }
 
+/* Sticky navigation: intro scrolls while filters remain available. */
+:root{--topbar-height:78px}
+.topbar{position:sticky;top:0;z-index:40;height:var(--topbar-height);background:rgba(243,245,237,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.toolbar{position:sticky;top:var(--topbar-height);z-index:30;margin:0 -30px;padding:12px 30px 14px;background:rgba(243,245,237,.98);border-bottom:1px solid var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.toolbar-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.intro-actions{display:none}
+@media(max-width:600px){
+  :root{--topbar-height:64px}
+  .topbar{height:var(--topbar-height)}
+  .toolbar{margin:0 -12px;padding:10px 12px 12px}
+  .toolbar-actions{width:100%;margin-left:0}
+  .toolbar-actions .secondary-button{justify-content:center;min-height:40px}
+}
+
 @media(max-width:379px){
   .intro-actions .secondary-button{flex:1 1 100%}
   .summary-grid{grid-template-columns:1fr}

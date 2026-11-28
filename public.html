@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="public.css?v=14">
+  <link rel="stylesheet" href="public.css?v=15">
 </head>
 <body>
   <main class="shell">
@@ -23,11 +23,6 @@
         <div class="eyebrow">BOARD</div>
         <h1>Status work order</h1>
         <p>Requestor, judul, dan status terbaru. Data ini hanya bisa dibaca.</p>
-      </div>
-      <div class="intro-actions">
-        <span class="live"><i class="sync-dot"></i><span id="liveState">Menghubungkan...</span></span>
-        <a class="secondary-button" href="index.html">App</a>
-        <a class="secondary-button" href="summary.html">Summary</a>
       </div>
     </section>
 
@@ -48,6 +43,11 @@
       </select>
       <select id="monthFilter" aria-label="Filter bulan"><option value="all">Semua bulan</option></select>
       <span class="result-count" id="resultCount">0 work orders</span>
+      <div class="toolbar-actions">
+        <span class="live"><i class="sync-dot"></i><span id="liveState">Menghubungkan...</span></span>
+        <a class="secondary-button" href="index.html">App</a>
+        <a class="secondary-button" href="summary.html">Summary</a>
+      </div>
     </section>
 
     <div class="table-scroll">

@@ -8,8 +8,9 @@ const summarySource = fs.readFileSync('summary.js', 'utf8');
 const publicMarkup = fs.readFileSync('public.html', 'utf8');
 const migration = fs.readFileSync('migration-11-status.sql', 'utf8');
 const vm = require('node:vm');
+const mainStyles = fs.readFileSync('styles.css', 'utf8');
 const publicStyles = fs.readFileSync('public.css', 'utf8');
-const styles = fs.readFileSync('styles.css', 'utf8') + publicStyles;
+const styles = mainStyles + publicStyles;
 
 assert.match(source, /function normalizeStatus/);
 assert.match(source, /function normalizePriority/);
@@ -217,7 +218,19 @@ assert.match(publicStyles, /\.table-scroll th\{font-size:11px;font-weight:700;co
 assert.match(publicStyles, /\.table-scroll td\.title-cell\{min-width:260px;max-width:28rem;font-size:14px;font-weight:600;line-height:1\.375;color:#0f172a;white-space:normal;overflow:visible;overflow-wrap:anywhere;word-break:break-word\}/);
 assert.match(publicStyles, /td\s*\{[^}]*vertical-align:\s*top/);
 assert.match(publicStyles, /\.table-scroll td\.date-cell \.date-secondary\{font-size:12px;font-weight:400;color:#64748b\}/);
-assert.match(publicMarkup, /public\.css\?v=14/);
+assert.match(publicMarkup, /public\.css\?v=15/);
 assert.match(publicMarkup, /public\.js\?v=10/);
+assert.match(markup, /<header class="topbar">[\s\S]*?<\/header>/);
+assert.match(markup, /<section class="intro">[\s\S]*?Request work orders[\s\S]*?<\/section>/);
+assert.doesNotMatch(markup.match(/<section class="intro">[\s\S]*?<\/section>/)[0], /addWorkOrderButton|syncCloudButton/);
+assert.match(markup, /<section class="toolbar">[\s\S]*?id="addWorkOrderButton"[\s\S]*?id="syncCloudButton"/);
+assert.match(mainStyles, /\.app-shell>\.topbar\{position:sticky;top:0;z-index:40/);
+assert.match(mainStyles, /\.app-shell>\.toolbar\{position:sticky;top:var\(--topbar-height\);z-index:30/);
+assert.match(mainStyles, /\.app-shell\{--topbar-height:78px/);
+assert.match(publicMarkup, /<section class="intro">[\s\S]*?Status work order[\s\S]*?<\/section>/);
+assert.doesNotMatch(publicMarkup.match(/<section class="intro">[\s\S]*?<\/section>/)[0], /liveState|href="index\.html"|href="summary\.html"/);
+assert.match(publicMarkup, /<section class="toolbar">[\s\S]*?id="liveState"[\s\S]*?href="index\.html"[\s\S]*?href="summary\.html"/);
+assert.match(publicStyles, /\.topbar\{position:sticky;top:0;z-index:40/);
+assert.match(publicStyles, /\.toolbar\{position:sticky;top:var\(--topbar-height\);z-index:30/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');
