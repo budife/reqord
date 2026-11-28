@@ -69,11 +69,13 @@ html .secondary-button:focus{outline:none;border:1px solid var(--green)!importan
 
 .table-scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-th { text-align: left; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); padding: 10px 14px; border-bottom: 1px solid var(--line); background: #fbfcf8; }
-td { padding: 12px 14px; border-bottom: 1px solid #eef2e6; font-size: 13px; vertical-align: top; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #64748b; padding: 10px 14px; border-bottom: 1px solid var(--line); background: #fbfcf8; vertical-align: top; }
+td { padding: 12px 14px; border-bottom: 1px solid #eef2e6; font-size: 13px; vertical-align: top; }
 tbody tr:last-child td { border-bottom: 0; }
 tbody tr:hover { background: #f7faf2; }
-.title-cell { font-weight: 600; }
+.title-cell { min-width: 260px; max-width: 28rem; font-size: 14px; font-weight: 600; line-height: 1.375; color: #0f172a; white-space: normal; overflow: visible; overflow-wrap: anywhere; word-break: break-word; }
+.date-cell { white-space: nowrap; }
+.date-secondary { font-size: 12px; font-weight: 400; color: #64748b; }
 
 /* Status pills */
 .status-pill { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 9px; }
@@ -176,3 +178,15 @@ footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wr
   .table-scroll th,.table-scroll td{padding:10px 12px;font-size:13px}
   .load-more-button{margin:14px 14px 0;padding:14px 16px;font-size:14px;min-height:48px}
 }
+
+/* Public board table proportions and hierarchy; keep mobile overrides aligned. */
+.table-scroll table{min-width:780px}
+.table-scroll th:nth-child(1),.table-scroll td:nth-child(1){width:34%}
+.table-scroll th:nth-child(2),.table-scroll td:nth-child(2){width:15%}
+.table-scroll th:nth-child(3),.table-scroll td:nth-child(3){width:15%}
+.table-scroll th:nth-child(4),.table-scroll td:nth-child(4){width:12%}
+.table-scroll th:nth-child(5),.table-scroll td:nth-child(5){width:12%}
+.table-scroll th:nth-child(6),.table-scroll td:nth-child(6){width:12%}
+.table-scroll th{font-size:11px;font-weight:700;color:#64748b}
+.table-scroll td.title-cell{min-width:260px;max-width:28rem;font-size:14px;font-weight:600;line-height:1.375;color:#0f172a;white-space:normal;overflow:visible;overflow-wrap:anywhere;word-break:break-word}
+.table-scroll td.date-cell .date-secondary{font-size:12px;font-weight:400;color:#64748b}

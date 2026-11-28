@@ -8,7 +8,8 @@ const summarySource = fs.readFileSync('summary.js', 'utf8');
 const publicMarkup = fs.readFileSync('public.html', 'utf8');
 const migration = fs.readFileSync('migration-11-status.sql', 'utf8');
 const vm = require('node:vm');
-const styles = fs.readFileSync('styles.css', 'utf8') + fs.readFileSync('public.css', 'utf8');
+const publicStyles = fs.readFileSync('public.css', 'utf8');
+const styles = fs.readFileSync('styles.css', 'utf8') + publicStyles;
 
 assert.match(source, /function normalizeStatus/);
 assert.match(source, /function normalizePriority/);
@@ -209,5 +210,14 @@ assert.match(markup, /id="teamSuggestions"/);
 assert.match(markup, /id="editTeamSuggestions"/);
 assert.match(source, /function renderTeamSuggestions/);
 assert.match(source, /hsl\(\$\{hue\}/);
+assert.match(publicSource, /<td class="title-cell">\$\{escapeHtml\(item\.title\)\}<\/td>/);
+assert.match(publicSource, /class="date-cell"><span class="date-secondary">\$\{escapeHtml\(item\.requestDate\)\}/);
+assert.match(publicStyles, /\.table-scroll table\{min-width:780px\}/);
+assert.match(publicStyles, /\.table-scroll th\{font-size:11px;font-weight:700;color:#64748b\}/);
+assert.match(publicStyles, /\.table-scroll td\.title-cell\{min-width:260px;max-width:28rem;font-size:14px;font-weight:600;line-height:1\.375;color:#0f172a;white-space:normal;overflow:visible;overflow-wrap:anywhere;word-break:break-word\}/);
+assert.match(publicStyles, /td\s*\{[^}]*vertical-align:\s*top/);
+assert.match(publicStyles, /\.table-scroll td\.date-cell \.date-secondary\{font-size:12px;font-weight:400;color:#64748b\}/);
+assert.match(publicMarkup, /public\.css\?v=14/);
+assert.match(publicMarkup, /public\.js\?v=10/);
 
 console.log('REQORD smoke checks passed (v0.6.4)');

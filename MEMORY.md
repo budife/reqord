@@ -35,6 +35,12 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-28 (Public board title wrap)
+
+- Permintaan: kolom TITLE pada `public.html` harus menampilkan judul panjang penuh tanpa truncate, seluruh sel sejajar di atas, dan tipografi konsisten dengan halaman utama.
+- Perubahan: `public.css` menghapus overflow/ellipsis/nowrap dari `td`, menetapkan TITLE 34% dengan `min-width:260px`, wrap `anywhere`, 14px/600 slate; tabel minimum 780px agar kolom tidak menyusut di ponsel. Semua `td` dan `th` align-top. Header 11px/700 uppercase slate; tanggal kini `.date-secondary` 12px/400 muted. `public.js` memberi kelas date semantik. `public.html` cache-buster `public.css?v=14`, `public.js?v=10`. Smoke assertions dan `CHANGELOG.md` diperbarui.
+- Validasi: `node --check public.js app.js summary.js`, `node test/app-smoke.test.js`, `git diff --check` lulus. Browser fixture desktop dan 390px: `whiteSpace:normal`, `textOverflow:clip`, teks lengkap, TITLE 265px, semua sel top-aligned, header/body lebar cocok, tidak ada page overflow.
+
 ### 2026-11-25 (Team suggestions + HSL colors)
 
 - Agent/model: Hermes Agent (tencent/hy4-flash:free).

@@ -96,7 +96,7 @@ function render() {
   const query = searchQuery.trim().toLowerCase();
   const visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (statusFilter === 'all' || item.status === statusFilter) && (monthFilter === 'all' || item.month === monthFilter));
   const shown = visible.slice(0, visibleLimit);
-  boardBody.innerHTML = shown.map(item => `<tr class="status-${item.status}"><td class="title-cell">${escapeHtml(item.title)}</td><td>${renderRequestorPills(item.requestor)}</td><td><span class="status-pill pill-${item.status}">${escapeHtml(statusLabels[item.status] || item.status)}</span></td><td><span class="priority-pill priority-${item.priority}">${escapeHtml(item.priority)}</span></td><td>${escapeHtml(item.requestDate)}</td><td>${escapeHtml(item.date) || 'No deadline'}</td></tr>`).join('');
+  boardBody.innerHTML = shown.map(item => `<tr class="status-${item.status}"><td class="title-cell">${escapeHtml(item.title)}</td><td>${renderRequestorPills(item.requestor)}</td><td><span class="status-pill pill-${item.status}">${escapeHtml(statusLabels[item.status] || item.status)}</span></td><td><span class="priority-pill priority-${item.priority}">${escapeHtml(item.priority)}</span></td><td class="date-cell"><span class="date-secondary">${escapeHtml(item.requestDate)}</span></td><td class="date-cell"><span class="date-secondary">${escapeHtml(item.date) || 'No deadline'}</span></td></tr>`).join('');
   resultCount.textContent = `${visible.length} work orders`;
   if (loadMoreButton) {
     const remaining = visible.length - shown.length;
