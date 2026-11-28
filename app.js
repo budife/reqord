@@ -9,7 +9,7 @@ const LEGACY_STORAGE_KEY = 'synaps-project-work-orders';
 // saat fallback, dan `const` yang belum tereksekusi (TDZ) akan melempar ReferenceError.
 const BACKUP_PREFIX = 'reqord-backup-';
 const BACKUP_LIMIT = 5;
-const groups = { new_request: 'New Request', waiting_brief: 'Waiting Brief', working: 'Working', draft_preview: '1st Draft', revision: 'In Revision', preview: 'Preview', on_hold: 'On Hold', done: 'Done', daily: 'Daily', cancelled: 'Cancelled' };
+const groups = { new_request: 'New Request', waiting_brief: 'Waiting Brief / Working Files', working: 'Working', draft_preview: '1st Draft', revision: 'In Revision', preview: 'Preview', done: 'Done', on_hold: 'On Hold', cancelled: 'Cancelled', daily: 'Daily' };
 let userName = '';
 try { const stored = localStorage.getItem('reqord-username'); if (stored) userName = atob(stored); } catch(e) {}
 let isAdmin = false;
@@ -28,6 +28,7 @@ let activities = loadStoredActivities(userName);
 let isSaving = false;
 let deletedItem = null;
 let priorityFilter = 'all';
+let statusFilter = 'all';
 let sortFilter = 'newest';
 let monthFilter = 'all';
 let requestorFilter = 'all';
@@ -152,7 +153,7 @@ function normalizeItem(item) { return { ...item, id: String(item.id || generateI
 function normalizeStatus(value) {
   const text = String(value || '').toLowerCase();
   if (text === 'daily') return 'daily';
-  if (text.includes('waiting') && (text.includes('brief') || text.includes('full'))) return 'waiting_brief';
+  if (text === 'waiting_brief' || text === 'waiting_brief_working_files' || (text.includes('waiting') && (text.includes('brief') || text.includes('working files') || text.includes('full')))) return 'waiting_brief';
   if (text.includes('revision') || text.includes('revisi')) return 'revision';
   if (text.includes('1st') || text.includes('first') || text.includes('draft')) return 'draft_preview';
   if (text.includes('preview') || text.includes('review')) return 'preview';
@@ -283,7 +284,7 @@ function resetAddSubmitButton() {
 function render() {
   closeInlineMenu();
   const query = document.querySelector('#searchInput').value.trim().toLowerCase();
-  let visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (priorityFilter === 'all' || item.priority === priorityFilter) && (monthFilter === 'all' || item.month === monthFilter) && (requestorFilter === 'all' || item.requestor.split(',').map(r => r.trim()).includes(requestorFilter)));
+  let visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (priorityFilter === 'all' || item.priority === priorityFilter) && (statusFilter === 'all' || item.status === statusFilter) && (monthFilter === 'all' || item.month === monthFilter) && (requestorFilter === 'all' || item.requestor.split(',').map(r => r.trim()).includes(requestorFilter)));
   visible.sort((a, b) => {
     if (sortFilter === 'priority') return ['high', 'normal', 'low'].indexOf(a.priority) - ['high', 'normal', 'low'].indexOf(b.priority);
     if (sortFilter === 'target') return (a.date || '').localeCompare(b.date || '');
@@ -292,7 +293,9 @@ function render() {
   });
 
   // Group visible items by status
-  const statusOrder = ['new_request', 'waiting_brief', 'working', 'draft_preview', 'revision', 'preview', 'on_hold', 'done', 'daily', 'cancelled'];
+  const statusOrder = ['new_request', 'waiting_brief', 'working', 'draft_preview', 'revision', 'preview', 'done', 'on_hold', 'cancelled', 'daily'];
+  const stack = document.querySelector('.table-stack');
+  statusOrder.forEach(status => { const panel = document.querySelector(`.table-panel[data-status="${status}"]`); if (panel && stack) stack.appendChild(panel); });
   statusOrder.forEach(status => {
     const statusItems = visible.filter(item => item.status === status);
     const tbody = document.querySelector(`#${status}Table`);
@@ -329,15 +332,15 @@ function render() {
 }
 const STATUS_OPTIONS = [
   { value: 'new_request', label: 'New Request' },
-  { value: 'waiting_brief', label: 'Waiting Brief' },
+  { value: 'waiting_brief', label: 'Waiting Brief / Working Files' },
   { value: 'working', label: 'Working' },
   { value: 'draft_preview', label: '1st Draft' },
   { value: 'revision', label: 'In Revision' },
   { value: 'preview', label: 'Preview' },
-  { value: 'on_hold', label: 'On Hold' },
   { value: 'done', label: 'Done' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'cancelled', label: 'Cancelled' }
+  { value: 'on_hold', label: 'On Hold' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'daily', label: 'Daily' }
 ];
 const PRIORITY_OPTIONS = [
   { value: 'high', label: 'High' },
@@ -390,14 +393,14 @@ function renderRow(item) {
   const disabledAttr = canEdit ? '' : 'disabled';
   const statusLabel = STATUS_OPTIONS.find(option => option.value === item.status)?.label || 'New Request';
   const priorityLabel = PRIORITY_OPTIONS.find(option => option.value === item.priority)?.label || 'Normal';
-  const statusControl = `<div class="custom-select"><button type="button" class="custom-trigger status-select status-${item.status}" data-custom-trigger="status" data-id="${item.id}" data-value="${escapeHtml(item.status)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Status" ${disabledAttr}><span class="trigger-text">${escapeHtml(statusLabel)}</span><span class="trigger-chevron" aria-hidden="true"></span></button></div>`;
+  const statusControl = `<div class="custom-select"><button type="button" class="custom-trigger status-select status-${item.status} whitespace-nowrap" data-custom-trigger="status" data-id="${item.id}" data-value="${escapeHtml(item.status)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Status" ${disabledAttr}><span class="trigger-text">${escapeHtml(statusLabel)}</span><span class="trigger-chevron" aria-hidden="true"></span></button></div>`;
   const priorityControl = `<div class="custom-select"><button type="button" class="custom-trigger priority-select priority-${item.priority}" data-custom-trigger="priority" data-id="${item.id}" data-value="${escapeHtml(item.priority)}" aria-haspopup="listbox" aria-expanded="false" aria-label="Priority" ${disabledAttr}><span class="trigger-text">${escapeHtml(priorityLabel)}</span></button></div>`;
   const noteText = String(item.note || '').trim();
   const teamLabel = String(item.team || '').trim();
   const teamPalette = teamLabel ? getTeamPalette(teamLabel) : null;
   const teamBadge = teamLabel ? `<span class="title-meta-badge team-badge" style="color:${teamPalette.text};background:${teamPalette.bg};border-color:${teamPalette.border}">${escapeHtml(teamLabel)}</span>` : '';
   const noteBadge = noteText ? `<button type="button" class="title-meta-badge note-badge" data-row-action="note" data-id="${item.id}" data-note="${escapeHtml(noteText)}" title="${escapeHtml(noteText)}" aria-label="Lihat catatan">Note</button>` : '';
-  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><div class="title-cell-inner"><label class="row-check-wrap"><input type="checkbox" class="row-check" data-check-id="${item.id}" aria-label="Pilih work order"></label><div class="title-content"><div class="title-main"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</div><div class="title-meta">${teamBadge}${noteBadge}<button type="button" class="title-edit-badge" data-row-action="edit" data-id="${item.id}" title="Edit work order" aria-label="Edit work order" ${disabledAttr}>✎</button></div></div></div></td><td>${renderRequestorPills(item.requestor)}</td><td>${statusControl}</td><td>${priorityControl}</td><td class="request-date-cell">${formatRequestDate(item.requestDate)}</td><td class="target-cell deadline-cell" title="Deadline: ${formatShortDate(item.date)}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
+  return `<tr class="${urgencyClass(item.date)}"><td class="title-cell"><div class="title-cell-inner"><label class="row-check-wrap"><input type="checkbox" class="row-check" data-check-id="${item.id}" aria-label="Pilih work order"></label><div class="title-content"><div class="title-main"><span class="title-text">${escapeHtml(item.title)}</span>${orphanBadge}</div><div class="title-meta">${teamBadge}${noteBadge}<button type="button" class="title-edit-badge" data-row-action="edit" data-id="${item.id}" title="Edit work order" aria-label="Edit work order" ${disabledAttr}>✎</button></div></div></div></td><td>${renderRequestorPills(item.requestor)}</td><td class="status-cell whitespace-nowrap">${statusControl}</td><td>${priorityControl}</td><td class="request-date-cell">${formatRequestDate(item.requestDate)}</td><td class="target-cell deadline-cell" title="Deadline: ${formatShortDate(item.date)}">${targetDoneLabel(item.date)}</td><td class="row-actions">${takeButton}${completeButton}${revisionButton}${deleteButton}</td></tr>`;
 }
 function updateSyncStatus() {
   const el = document.querySelector('#saveState');
@@ -427,6 +430,7 @@ function showToast(message) { const toast = document.querySelector('#toast'); to
 function findItem(id) { return items.find(item => String(item.id) === String(id)); }
 
 document.querySelector('#searchInput').addEventListener('input', () => { resetPanelLimits(); render(); });
+document.querySelector('#statusFilter').addEventListener('change', event => { statusFilter = event.target.value; resetPanelLimits(); render(); });
 document.querySelector('#priorityFilter').addEventListener('change', event => { priorityFilter = event.target.value; resetPanelLimits(); render(); });
 document.querySelector('#sortFilter').addEventListener('change', event => { sortFilter = event.target.value; resetPanelLimits(); render(); });
 document.querySelector('#monthFilter').addEventListener('change', event => { monthFilter = event.target.value; resetPanelLimits(); render(); });
@@ -477,8 +481,9 @@ document.querySelector('#submitAddDialog').addEventListener('click', () => {
   const requestor = document.querySelector('#requestorInput').value.trim();
   const team = document.querySelector('#teamInput').value.trim();
   const priority = document.querySelector('#addPriority').value;
+  const status = normalizeStatus(document.querySelector('#addStatus').value);
   if (!title || !requestor) { showToast('Title dan requestor wajib diisi'); return; }
-  const item = normalizeItem({ id: generateItemId(), title, requestor, team, note: '', priority, status: 'new_request', requestDate: nowDateTime() });
+  const item = normalizeItem({ id: generateItemId(), title, requestor, team, note: '', priority, status, requestDate: nowDateTime() });
   items = [...items, item];
   addActivity('Work order ditambahkan', item);
   saveItems();
@@ -487,6 +492,7 @@ document.querySelector('#submitAddDialog').addEventListener('click', () => {
   document.querySelector('#requestorInput').value = '';
   document.querySelector('#teamInput').value = '';
   document.querySelector('#addPriority').value = 'normal';
+  document.querySelector('#addStatus').value = 'new_request';
   render();
   showToast('Work order ditambahkan');
 });
@@ -547,9 +553,9 @@ function openNoteDialog(id) { const item = findItem(id); if (!item) return; note
 document.querySelector('#closeNoteButton').addEventListener('click', () => noteDialog.close()); document.querySelector('#editNoteButton').addEventListener('click', () => { noteDialog.close(); openEditDialog(noteTargetId); setTimeout(() => document.querySelector('#editNoteInput').focus(), 0); }); const editTitleInput = document.querySelector('#editTitleInput');
 const editRequestorInput = document.querySelector('#editRequestorInput');
 const editTeamInput = document.querySelector('#editTeamInput');
-function openEditDialog(id) { const item = findItem(id); if (!item) return; editTargetId = item.id; editTitleInput.value = item.title; editRequestorInput.value = item.requestor; editTeamInput.value = item.team || ''; document.querySelector('#editRequestDateInput').value = item.requestDate ? item.requestDate.slice(0, 16) : ''; document.querySelector('#editNoteInput').value = item.note || ''; document.querySelector('#editDeadlineInput').value = item.date ? item.date.slice(0, 10) : ''; editDialog.showModal(); editTitleInput.focus(); }
+function openEditDialog(id) { const item = findItem(id); if (!item) return; editTargetId = item.id; editTitleInput.value = item.title; editRequestorInput.value = item.requestor; editTeamInput.value = item.team || ''; document.querySelector('#editRequestDateInput').value = item.requestDate ? item.requestDate.slice(0, 16) : ''; document.querySelector('#editStatus').value = normalizeStatus(item.status); document.querySelector('#editNoteInput').value = item.note || ''; document.querySelector('#editDeadlineInput').value = item.date ? item.date.slice(0, 10) : ''; editDialog.showModal(); editTitleInput.focus(); }
 function closeEditDialog() { editTargetId = null; editDialog.close(); }
-document.querySelector('#editForm').addEventListener('submit', event => { event.preventDefault(); const item = findItem(editTargetId); const title = editTitleInput.value.trim(); const requestor = editRequestorInput.value.trim(); const team = editTeamInput.value.trim(); const requestDate = document.querySelector('#editRequestDateInput').value; const note = document.querySelector('#editNoteInput').value.trim(); const deadline = document.querySelector('#editDeadlineInput').value; if (!item || !title || !requestor) return; const nextDate = deadline ? `${deadline}T00:00` : ''; const nextRequestDate = requestDate || ''; const changed = item.title !== title || item.requestor !== requestor || item.team !== team || item.note !== note || nextDate !== item.date || nextRequestDate !== item.requestDate; item.title = title; item.requestor = requestor; item.team = team; item.requestDate = nextRequestDate; item.note = note; item.date = nextDate; if (changed) { saveItems(); addActivity('Work order diedit', item, 'Title, requestor, team, tanggal, deadline, atau catatan diperbarui'); } closeEditDialog(); render(); showToast(changed ? 'Work order diperbarui' : 'Tidak ada perubahan'); });
+document.querySelector('#editForm').addEventListener('submit', event => { event.preventDefault(); const item = findItem(editTargetId); const title = editTitleInput.value.trim(); const requestor = editRequestorInput.value.trim(); const team = editTeamInput.value.trim(); const requestDate = document.querySelector('#editRequestDateInput').value; const note = document.querySelector('#editNoteInput').value.trim(); const deadline = document.querySelector('#editDeadlineInput').value; const status = normalizeStatus(document.querySelector('#editStatus').value); if (!item || !title || !requestor) return; const nextDate = deadline ? `${deadline}T00:00` : ''; const nextRequestDate = requestDate || ''; const changed = item.title !== title || item.requestor !== requestor || item.team !== team || item.note !== note || nextDate !== item.date || nextRequestDate !== item.requestDate || status !== item.status; const previousStatus = item.status; item.status = status; if (status === 'done') { item.done = true; item.completedAt = item.completedAt || new Date().toISOString(); } else item.done = false; item.title = title; item.requestor = requestor; item.team = team; item.requestDate = nextRequestDate; item.note = note; item.date = nextDate; if (changed) { saveItems(); addActivity('Work order diedit', item, status !== previousStatus ? `Status: ${groups[previousStatus]} → ${groups[status]}` : 'Title, requestor, team, tanggal, deadline, atau catatan diperbarui'); } closeEditDialog(); render(); showToast(changed ? 'Work order diperbarui' : 'Tidak ada perubahan'); });
 document.querySelector('#deleteFromEditButton').addEventListener('click', async () => { const item = findItem(editTargetId); if (!item) return; const okDelete = await confirmModal(`Request "${item.title}" akan dihapus permanen.`, { title: 'Delete request?', eyebrow: 'PERMANENT ACTION', confirmLabel: 'Delete' }); if (!okDelete) return; deletedItem = { item, index: items.indexOf(item) }; items = items.filter(candidate => candidate.id !== item.id); sbDeleteItem(item.id); saveItems(); addActivity('Request dihapus', item); closeEditDialog(); render(); showToast('Request dihapus · klik Undo dalam 5 detik'); setTimeout(() => { deletedItem = null; }, 5000); });
 document.querySelector('#closeEditButton').addEventListener('click', closeEditDialog); document.querySelector('#cancelEditButton').addEventListener('click', closeEditDialog);
 const profileDialog = document.querySelector('#profileDialog');
@@ -612,7 +618,7 @@ function openInlineMenu(trigger, kind, id, current) {
   menu.dataset.id = id;
   menu.innerHTML = options.map(option => {
     const active = option.value === current;
-    return `<button type="button" class="inline-option" role="option" aria-selected="${active}" data-value="${option.value}"><span class="option-dot opt-${kind}-${option.value}"></span><span class="option-label">${escapeHtml(option.label)}</span><span class="option-check">${active ? '✓' : ''}</span></button>`;
+    return `<button type="button" class="inline-option whitespace-nowrap" role="option" aria-selected="${active}" data-value="${option.value}"><span class="option-dot opt-${kind}-${option.value}"></span><span class="option-label">${escapeHtml(option.label)}</span><span class="option-check">${active ? '✓' : ''}</span></button>`;
   }).join('');
   menu.hidden = false;
   const rect = trigger.getBoundingClientRect();

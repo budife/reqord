@@ -4,6 +4,10 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 ## [Unreleased]
 
+### Fixed
+
+- Status reqord diseragamkan ke urutan 10 tahap di tabel utama, dropdown tambah/edit, filter, Board, dan Summary. Label Waiting Brief / Working Files, deskripsi alur, badge/dot 10 warna, nowrap untuk status panjang, serta dropdown inline hingga 320px.
+
 ### Added
 
 - Merge status `Approved` into `Done`. Existing `approved` work orders normalize to `done` in app, public board, and summary; Supabase migration updates stored rows and constrains future statuses.

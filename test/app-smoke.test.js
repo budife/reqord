@@ -109,10 +109,18 @@ assert.doesNotMatch(markup, /id="approvedTable"/);
 assert.match(markup, /id="doneTable"/);
 assert.match(markup, /id="dailyTable"/);
 assert.match(markup, /id="cancelledTable"/);
-// No single allTable or statusFilter
+// Main table status filter and all 10 options follow canonical order.
 assert.doesNotMatch(markup, /id="allTable"/);
-assert.doesNotMatch(source, /statusFilter/);
-assert.doesNotMatch(markup, /statusFilter/);
+assert.match(source, /statusFilter === 'all' \|\| item\.status === statusFilter/);
+assert.match(markup, /id="statusFilter"/);
+assert.match(markup, /Waiting Brief \/ Working Files/);
+assert.match(markup, /id="addStatus"/);
+assert.match(markup, /id="editStatus"/);
+const canonicalStatuses = ['new_request','waiting_brief','working','draft_preview','revision','preview','done','on_hold','cancelled','daily'];
+assert.deepEqual([...source.match(/const statusOrder = \[([^\]]+)\]/)[1].matchAll(/'([^']+)'/g)].map(match => match[1]), canonicalStatuses);
+assert.match(source, /status-cell whitespace-nowrap/);
+assert.match(source, /inline-option whitespace-nowrap/);
+assert.match(styles, /max-height:20rem/);
 assert.doesNotMatch(source, /normalizeStatusSelects/);
 assert.doesNotMatch(source, /reorderTableColumns/);
 assert.doesNotMatch(markup, /Request list/);
@@ -206,7 +214,7 @@ assert.match(fs.readFileSync('migration-team.sql', 'utf8'), /ADD COLUMN IF NOT E
 assert.match(source, /chunk\.map\(\(\{ team, \.\.\.rest \}\) => rest\)/);
 assert.match(source, /sbHasTeamColumn === null/);
 assert.match(source, /if \(!sbHasTeamColumn\) delete row\.team/);
-assert.match(markup, /app\.js\?v=105/);
+assert.match(markup, /app\.js\?v=107/);
 assert.match(markup, /id="teamSuggestions"/);
 assert.match(markup, /id="editTeamSuggestions"/);
 assert.match(source, /function renderTeamSuggestions/);
@@ -218,8 +226,8 @@ assert.match(publicStyles, /\.table-scroll th\{font-size:11px;font-weight:700;co
 assert.match(publicStyles, /\.table-scroll td\.title-cell\{min-width:260px;max-width:28rem;font-size:14px;font-weight:600;line-height:1\.375;color:#0f172a;white-space:normal;overflow:visible;overflow-wrap:anywhere;word-break:break-word\}/);
 assert.match(publicStyles, /td\s*\{[^}]*vertical-align:\s*top/);
 assert.match(publicStyles, /\.table-scroll td\.date-cell \.date-secondary\{font-size:12px;font-weight:400;color:#64748b\}/);
-assert.match(publicMarkup, /public\.css\?v=16/);
-assert.match(publicMarkup, /public\.js\?v=10/);
+assert.match(publicMarkup, /public\.css\?v=17/);
+assert.match(publicMarkup, /public\.js\?v=11/);
 assert.match(markup, /<section class="intro">[\s\S]*?Request work orders[\s\S]*?id="activeFileName"[\s\S]*?id="addWorkOrderButton"[\s\S]*?id="syncCloudButton"[\s\S]*?href="public\.html"[\s\S]*?href="summary\.html"[\s\S]*?<\/section>/);
 const mainIntro = markup.match(/<section class="intro">[\s\S]*?<\/section>/)[0];
 const mainToolbar = markup.match(/<section class="toolbar">[\s\S]*?<\/section>/)[0];

@@ -4,7 +4,7 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 
 const statusLabels = {
   new_request: 'New Request',
-  waiting_brief: 'Waiting Brief',
+  waiting_brief: 'Waiting Brief / Working Files',
   working: 'Working',
   draft_preview: '1st Draft',
   revision: 'In Revision',
@@ -55,7 +55,8 @@ function renderRequestorPills(requestor) {
 
 function normalizeStatus(value) {
   const text = String(value || '').toLowerCase();
-  if (text.includes('waiting') && (text.includes('brief') || text.includes('full'))) return 'waiting_brief';
+  if (text === 'daily') return 'daily';
+  if (text === 'waiting_brief' || text === 'waiting_brief_working_files' || (text.includes('waiting') && (text.includes('brief') || text.includes('working files') || text.includes('full')))) return 'waiting_brief';
   if (text.includes('revision') || text.includes('revisi')) return 'revision';
   if (text.includes('1st') || text.includes('first') || text.includes('draft')) return 'draft_preview';
   if (text.includes('preview') || text.includes('review')) return 'preview';
@@ -96,7 +97,7 @@ function render() {
   const query = searchQuery.trim().toLowerCase();
   const visible = items.filter(item => (!query || `${item.title} ${item.requestor}`.toLowerCase().includes(query)) && (statusFilter === 'all' || item.status === statusFilter) && (monthFilter === 'all' || item.month === monthFilter));
   const shown = visible.slice(0, visibleLimit);
-  boardBody.innerHTML = shown.map(item => `<tr class="status-${item.status}"><td class="title-cell">${escapeHtml(item.title)}</td><td>${renderRequestorPills(item.requestor)}</td><td><span class="status-pill pill-${item.status}">${escapeHtml(statusLabels[item.status] || item.status)}</span></td><td><span class="priority-pill priority-${item.priority}">${escapeHtml(item.priority)}</span></td><td class="date-cell"><span class="date-secondary">${escapeHtml(item.requestDate)}</span></td><td class="date-cell"><span class="date-secondary">${escapeHtml(item.date) || 'No deadline'}</span></td></tr>`).join('');
+  boardBody.innerHTML = shown.map(item => `<tr class="status-${item.status}"><td class="title-cell">${escapeHtml(item.title)}</td><td>${renderRequestorPills(item.requestor)}</td><td><span class="status-pill pill-${item.status} whitespace-nowrap">${escapeHtml(statusLabels[item.status] || item.status)}</span></td><td><span class="priority-pill priority-${item.priority}">${escapeHtml(item.priority)}</span></td><td class="date-cell"><span class="date-secondary">${escapeHtml(item.requestDate)}</span></td><td class="date-cell"><span class="date-secondary">${escapeHtml(item.date) || 'No deadline'}</span></td></tr>`).join('');
   resultCount.textContent = `${visible.length} work orders`;
   if (loadMoreButton) {
     const remaining = visible.length - shown.length;

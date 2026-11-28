@@ -3,12 +3,12 @@ const SUPABASE_ANON_KEY = 'sb_publishable_iUul7iVeH-ReFlSxVT-ulQ_qhkgzPAz';
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 const statusLabels = {
-  new_request: 'New Request', waiting_brief: 'Waiting Brief', working: 'Working',
+  new_request: 'New Request', waiting_brief: 'Waiting Brief / Working Files', working: 'Working',
   draft_preview: '1st Draft', revision: 'In Revision', preview: 'Preview',
   on_hold: 'On Hold', done: 'Done', daily: 'Daily', cancelled: 'Cancelled'
 };
 
-const statusOrder = ['new_request','waiting_brief','working','draft_preview','revision','preview','on_hold','done','daily','cancelled'];
+const statusOrder = ['new_request','waiting_brief','working','draft_preview','revision','preview','done','on_hold','cancelled','daily'];
 const priorityOrder = ['high','normal','low'];
 
 let items = [];
@@ -62,7 +62,8 @@ function escapeHtml(value) {
 
 function normalizeStatus(value) {
   const text = String(value || '').toLowerCase();
-  if (text.includes('waiting') && (text.includes('brief') || text.includes('full'))) return 'waiting_brief';
+  if (text === 'daily') return 'daily';
+  if (text === 'waiting_brief' || text === 'waiting_brief_working_files' || (text.includes('waiting') && (text.includes('brief') || text.includes('working files') || text.includes('full')))) return 'waiting_brief';
   if (text.includes('revision') || text.includes('revisi')) return 'revision';
   if (text.includes('1st') || text.includes('first') || text.includes('draft')) return 'draft_preview';
   if (text.includes('preview') || text.includes('review')) return 'preview';
@@ -114,7 +115,7 @@ function renderBars(containerId, data, maxVal) {
   const container = document.getElementById(containerId);
   container.innerHTML = data.map(d => `
     <div class="chart-bar-row">
-      <span class="chart-bar-label">${escapeHtml(d.label)}</span>
+      <span class="chart-bar-label whitespace-nowrap">${escapeHtml(d.label)}</span>
       <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${maxVal > 0 ? (d.value / maxVal * 100) : 0}%"></div></div>
       <span class="chart-bar-value">${d.value}</span>
     </div>

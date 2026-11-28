@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="public.css?v=16">
+  <link rel="stylesheet" href="public.css?v=17">
 </head>
 <body>
   <main class="shell">
@@ -36,15 +36,15 @@
       <select id="statusFilter" aria-label="Filter status">
         <option value="all">Semua status</option>
         <option value="new_request">New Request</option>
-        <option value="waiting_brief">Waiting Brief</option>
+        <option value="waiting_brief">Waiting Brief / Working Files</option>
         <option value="working">Working</option>
         <option value="draft_preview">1st Draft</option>
         <option value="revision">In Revision</option>
         <option value="preview">Preview</option>
-        <option value="on_hold">On Hold</option>
         <option value="done">Done</option>
-        <option value="daily">Daily</option>
+        <option value="on_hold">On Hold</option>
         <option value="cancelled">Cancelled</option>
+        <option value="daily">Daily</option>
       </select>
       <select id="monthFilter" aria-label="Filter bulan"><option value="all">Semua bulan</option></select>
       <span class="result-count" id="resultCount">0 work orders</span>
@@ -73,6 +73,6 @@
     </footer>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="public.js?v=10"></script>
+  <script src="public.js?v=11"></script>
 </body>
 </html>
