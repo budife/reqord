@@ -35,6 +35,12 @@ Dokumen ini menyimpan konteks kerja yang perlu diketahui oleh AI agent berikutny
 
 ## Handoff Log
 
+### 2026-11-28 (Compact Add/Edit work order modals)
+
+- Permintaan: samakan proporsi Tambah/Edit, grid 2 kolom, Edit tambah kontrol Priority, compact note, footer Delete+Cancel+Save sejajar, suggestion tetap floating.
+- Perubahan: `index.html` — Add/Edit form grid 2 kolom; Edit punya Status+Priority; Edit footer satu baris; note rows=2. `app.js` — load/save priority pada edit, masuk perbandingan changed. `styles.css` — kedua dialog max 576px, spacing compact, full-width Title/note, dropdown suggestions absolute z-50, mobile controls dan footer dipadatkan. CSS cache-buster `styles.css?v=123`; smoke assertions dan `CHANGELOG.md` diperbarui.
+- Validasi: `node --check app.js`, `node test/app-smoke.test.js`, `git diff --check` lulus. Browser: Add 576×360 desktop; Edit 576×530, semua field lengkap di viewport 900px; mobile 336×538 di viewport 360×800, tidak overflow; footer text/button masing-masing tidak terpotong, Hapus request + Batal + Simpan perubahan satu baris. Priority test normal→high tersimpan dan nilai terbaca kembali saat modal dibuka ulang. Suggestions absolute z-index 50; tidak menggeser Team row.
+
 ### 2026-11-28 (Sticky layout corrected)
 
 - Permintaan: kembalikan aksi ke sisi kanan intro dan pastikan toolbar hanya berisi search, filter, status; sticky berlaku tanpa mengubah layout, container align.

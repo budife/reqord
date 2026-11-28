@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=122">
+  <link rel="stylesheet" href="styles.css?v=123">
 </head>
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
@@ -51,8 +51,8 @@
                </section>
            <dialog id="addDialog" class="delete-dialog add-dialog">
       <div class="delete-modal-head"><span class="delete-warning">+</span><div><span class="eyebrow">NEW WORK ORDER</span><h2>Tambah work order</h2></div><button type="button" class="modal-close" id="closeAddDialog" aria-label="Tutup">×</button></div>
-      <div class="dialog-content">
-        <label class="edit-field" id="titleField" for="titleInput">Title<div class="field-input-wrap"><input id="titleInput" type="text" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="title-suggestions" hidden></div></div></label>
+      <div class="dialog-content add-form-grid">
+        <label class="edit-field field-title" id="titleField" for="titleInput">Title<div class="field-input-wrap"><input id="titleInput" type="text" required placeholder="Judul work order" autocomplete="off"><div id="titleSuggestions" class="title-suggestions" hidden></div></div></label>
         <label class="edit-field" id="requestorField" for="requestorInput">Requestor<div class="field-input-wrap"><input id="requestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="requestorSuggestions" class="requestor-suggestions" hidden></div></div></label>
         <label class="edit-field" id="teamField" for="teamInput">Team<div class="field-input-wrap"><input id="teamInput" type="text" placeholder="Nama team (opsional), bebas diisi" autocomplete="off"><div id="teamSuggestions" class="requestor-suggestions" hidden></div></div></label>
         <label class="edit-field" id="statusField">Status<select id="addStatus"><option value="new_request" selected>New Request</option><option value="waiting_brief">Waiting Brief / Working Files</option><option value="working">Working</option><option value="draft_preview">1st Draft</option><option value="revision">In Revision</option><option value="preview">Preview</option><option value="done">Done</option><option value="on_hold">On Hold</option><option value="cancelled">Cancelled</option><option value="daily">Daily</option></select></label>
@@ -179,20 +179,20 @@
     <div class="delete-actions"><button type="button" class="secondary-button" id="cancelConfirmButton">Batal</button><button type="button" class="delete-confirm-button" id="acceptConfirmButton">Ya, lanjutkan</button></div>
   </dialog>
   <dialog id="editDialog" class="delete-dialog edit-dialog">
-     <div class="delete-modal-head"><span class="delete-warning edit-warning">✎</span><div><span class="eyebrow">WORK ORDER DETAILS</span><h2>Edit work order</h2></div><button type="button" class="modal-close" id="closeEditButton" aria-label="Tutup work order details">×</button></div>
-     <form id="editForm">
-       <div class="dialog-content">
-               <label class="edit-field" id="editTitleField">Title<div class="field-input-wrap"><input id="editTitleInput" type="text" required><div id="editTitleSuggestions" class="requestor-suggestions" hidden></div></div></label>
-               <label class="edit-field" id="editRequestorField" for="editRequestorInput">Requestor<div class="field-input-wrap"><input id="editRequestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></div></label>
-               <label class="edit-field" id="editTeamField" for="editTeamInput">Team<div class="field-input-wrap"><input id="editTeamInput" type="text" placeholder="Nama team (opsional), bebas diisi" autocomplete="off"><div id="editTeamSuggestions" class="requestor-suggestions" hidden></div></div></label>
-               <label class="edit-field" id="editStatusField">Status<select id="editStatus"><option value="new_request" selected>New Request</option><option value="waiting_brief">Waiting Brief / Working Files</option><option value="working">Working</option><option value="draft_preview">1st Draft</option><option value="revision">In Revision</option><option value="preview">Preview</option><option value="done">Done</option><option value="on_hold">On Hold</option><option value="cancelled">Cancelled</option><option value="daily">Daily</option></select></label>
-               <label class="edit-field" id="editRequestDateField">Request date<input id="editRequestDateInput" type="datetime-local" aria-label="Request date"></label>
-               <label class="edit-field" id="editDeadlineField">Deadline<input id="editDeadlineInput" type="date" aria-label="Deadline"></label>
-               <label class="edit-field" id="editNoteField">Catatan<textarea id="editNoteInput" rows="4" placeholder="Contoh: Revisi karena menunggu feedback client..."></textarea></label>
-             </div>
-       <div class="delete-actions"><button type="button" class="secondary-button" id="cancelEditButton">Batal</button><button class="primary-button" id="saveEditButton" type="submit">Simpan perubahan</button></div>
-       <button type="button" class="modal-delete-link" id="deleteFromEditButton">Hapus request</button>
-     </form>
+    <div class="delete-modal-head"><span class="delete-warning edit-warning">✎</span><div><span class="eyebrow">WORK ORDER DETAILS</span><h2>Edit work order</h2></div><button type="button" class="modal-close" id="closeEditButton" aria-label="Tutup work order details">×</button></div>
+    <form id="editForm">
+      <div class="dialog-content edit-form-grid">
+        <label class="edit-field field-title" id="editTitleField">Title<div class="field-input-wrap"><input id="editTitleInput" type="text" required><div id="editTitleSuggestions" class="requestor-suggestions" hidden></div></div></label>
+        <label class="edit-field" id="editRequestorField" for="editRequestorInput">Requestor<div class="field-input-wrap"><input id="editRequestorInput" type="text" required placeholder="Nama requestor, pisahkan koma untuk banyak" autocomplete="off"><div id="editRequestorSuggestions" class="requestor-suggestions" hidden></div></div></label>
+        <label class="edit-field" id="editTeamField" for="editTeamInput">Team<div class="field-input-wrap"><input id="editTeamInput" type="text" placeholder="Nama team (opsional), bebas diisi" autocomplete="off"><div id="editTeamSuggestions" class="requestor-suggestions" hidden></div></div></label>
+        <label class="edit-field" id="editStatusField">Status<select id="editStatus"><option value="new_request">New Request</option><option value="waiting_brief">Waiting Brief / Working Files</option><option value="working">Working</option><option value="draft_preview">1st Draft</option><option value="revision">In Revision</option><option value="preview">Preview</option><option value="done">Done</option><option value="on_hold">On Hold</option><option value="cancelled">Cancelled</option><option value="daily">Daily</option></select></label>
+        <label class="edit-field" id="editPriorityField">Priority<select id="editPriority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
+        <label class="edit-field" id="editRequestDateField">Request date<input id="editRequestDateInput" type="datetime-local" aria-label="Request date"></label>
+        <label class="edit-field" id="editDeadlineField">Deadline<input id="editDeadlineInput" type="date" aria-label="Deadline"></label>
+        <label class="edit-field field-note" id="editNoteField">Catatan<textarea id="editNoteInput" rows="2" placeholder="Contoh: Revisi karena menunggu feedback client..."></textarea></label>
+      </div>
+      <div class="edit-form-footer"><button type="button" class="modal-delete-link" id="deleteFromEditButton">Hapus request</button><div class="delete-actions"><button type="button" class="secondary-button" id="cancelEditButton">Batal</button><button class="primary-button" id="saveEditButton" type="submit">Simpan perubahan</button></div></div>
+    </form>
   </dialog>
   <dialog id="noteDialog" class="delete-dialog note-dialog">
     <div class="delete-modal-head"><span class="delete-warning note-warning">✎</span><div><span class="eyebrow">WORK ORDER NOTE</span><h2 id="noteDialogTitle">Catatan</h2></div><button type="button" class="modal-close" id="closeNoteButton" aria-label="Tutup catatan">×</button></div>

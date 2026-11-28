@@ -6,6 +6,7 @@ Semua perubahan penting pada repository ini dicatat di sini. Format mengikuti ka
 
 ### Fixed
 
+- Modal Edit work order disusun ulang menjadi grid 2 kolom compact: Title dan Catatan full-width, Requestor/Team, Status/Priority, Request date/Deadline berpasangan. Priority kini bisa diedit dari modal Edit; footer Hapus/Batal/Simpan sejajar; suggestion tetap floating.
 - Status reqord diseragamkan ke urutan 10 tahap di tabel utama, dropdown tambah/edit, filter, Board, dan Summary. Label Waiting Brief / Working Files, deskripsi alur, badge/dot 10 warna, nowrap untuk status panjang, serta dropdown inline hingga 320px.
 
 ### Added
